@@ -28,7 +28,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
     children: React.ReactNode
   }) => (
     <div className="py-3 border-b border-slate-100 last:border-0 text-start">
-      <h4 className="text-xs font-black text-slate-800 mb-2">{title}</h4>
+      <h4 className="text-xs font-bold text-slate-800 mb-2">{title}</h4>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   )
@@ -39,7 +39,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       <div className="py-3 border-b border-slate-100 flex items-center justify-between text-start">
         <div>
           <span className="text-xs font-bold text-slate-900 block">فقط کالاهای موجود در انبار</span>
-          <span className="text-[11px] text-slate-500">پنهان‌سازی کالاهای ناموجود یا بدون سهمیه</span>
+          <span className="text-xs text-slate-500">پنهان‌سازی کالاهای ناموجود یا بدون سهمیه</span>
         </div>
         <button
           type="button"
@@ -208,7 +208,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
               key={tag}
               type="button"
               onClick={() => toggleArrayFilter('selectedTags', tag)}
-              className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold border transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
                 isSelected
                   ? 'bg-slate-900 border-slate-900 text-white font-bold'
                   : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'

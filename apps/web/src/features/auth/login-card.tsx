@@ -88,10 +88,10 @@ export function LoginCard() {
         <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center mx-auto mb-2.5 shadow-xs">
           <ShieldCheckIcon size={22} />
         </div>
-        <h2 className="text-base font-black text-slate-900 tracking-tight">
+        <h2 className="text-base font-bold text-slate-900">
           ورود همکاران و خریداران B2B
         </h2>
-        <p className="text-[11px] text-slate-500 mt-1 leading-relaxed">
+        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
           سامانه سفارش‌گذاری سریع محصولات پرشین‌پارت
         </p>
       </div>
@@ -123,7 +123,7 @@ export function LoginCard() {
               />
               <PhoneIcon size={18} className="absolute start-3 top-3 text-slate-400 pointer-events-none" />
             </div>
-            <p className="text-[10px] text-slate-400 mt-1 text-start">
+            <p className="text-xs text-slate-500 mt-1.5 text-start leading-relaxed">
               کد اعتبارسنجی یکبارمصرف به این شماره پیامک خواهد شد.
             </p>
           </div>
@@ -131,7 +131,7 @@ export function LoginCard() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50"
+            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-4 h-4 animate-spin" />
@@ -147,7 +147,7 @@ export function LoginCard() {
         <div className="space-y-4">
           <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
             <div className="text-start">
-              <span className="text-[11px] text-slate-500 block">ارسال کد به شماره:</span>
+              <span className="text-xs text-slate-500 block">ارسال کد به شماره:</span>
               <span className="text-sm font-extrabold text-slate-900" dir="ltr">
                 {toPersianDigits(phone)}
               </span>
@@ -177,7 +177,7 @@ export function LoginCard() {
               placeholder="• • • • •"
               dir="ltr"
               autoFocus
-              className="w-full h-14 text-center text-2xl font-black tracking-[0.5em] rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all outline-hidden"
+              className="w-full h-14 text-center text-2xl font-bold tracking-[0.5em] rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all outline-hidden"
               disabled={isLoading}
             />
           </div>

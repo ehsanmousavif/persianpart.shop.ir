@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import type { Product } from '../../lib/mock-data/products'
 import { api } from '../../lib/api-client'
+import { plansStore } from '../plans/plans-store'
 
 export type SortOption = 'default' | 'cheapest' | 'expensive' | 'newest' | 'oldest'
 
@@ -51,8 +52,32 @@ export function useCatalog() {
               const dimStr = `${width}×${height}`
               const brandName = typeof item.brand === 'object' && item.brand !== null ? item.brand.name : (item.brandName || 'پرشین پارت')
               const categoryName = typeof item.category === 'object' && item.category !== null ? item.category.name : (item.categoryName || 'عمومی')
-              const price = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
+              const basePrice = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
               const coverUrl = item.cover?.url || (typeof item.cover === 'string' ? item.cover : '/assets/images/tile-sample-1.jpg')
+
+              // Check if any active product_discount plan covers this product
+              const activeDiscountPlans = plansStore
+                .getPlans()
+                .filter((p) => (p.status === 'active' || p.isActive) && p.type === 'product_discount')
+
+              const matchedPlan = activeDiscountPlans.find(
+                (p) =>
+                  p.productIds.includes(String(item.id)) ||
+                  p.productIds.includes(`prod-${item.id}`) ||
+                  p.productIds.includes(item.slug)
+              )
+
+              let finalPrice = basePrice
+              let discountPercent: number | undefined = undefined
+              let originalPricePerSqm: number | undefined = undefined
+              let discountPlanTitle: string | undefined = undefined
+
+              if (matchedPlan) {
+                discountPercent = matchedPlan.discountPercent || 10
+                originalPricePerSqm = basePrice
+                finalPrice = Math.round(basePrice * (1 - discountPercent / 100))
+                discountPlanTitle = matchedPlan.title
+              }
 
               return {
                 id: String(item.id),
@@ -66,8 +91,11 @@ export function useCatalog() {
                 finish: (item.finish as any) || 'فابریک',
                 grade: (item.grade as any) || 'اصلی (Genuine)',
                 category: categoryName,
-                finalCustomerPricePerSqm: price,
-                pricePerM2: price,
+                finalCustomerPricePerSqm: finalPrice,
+                pricePerM2: finalPrice,
+                originalPricePerSqm,
+                discountPercent,
+                discountPlanTitle,
                 sqmPerCarton: item.sqmPerCarton || 1,
                 areaPerCarton: item.sqmPerCarton || 1,
                 piecesPerCarton: item.piecesPerCarton || 1,

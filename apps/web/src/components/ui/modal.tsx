@@ -54,7 +54,7 @@ export function Modal({
             {/* Header */}
             {title && (
               <HeroUIModal.Header className="flex items-center justify-between px-4.5 py-3 border-b border-slate-100">
-                <HeroUIModal.Heading className="text-sm font-black text-slate-900">
+                <HeroUIModal.Heading className="text-sm font-bold text-slate-900">
                   {title}
                 </HeroUIModal.Heading>
                 <HeroUIModal.CloseTrigger

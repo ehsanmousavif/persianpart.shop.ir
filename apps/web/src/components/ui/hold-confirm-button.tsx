@@ -118,10 +118,10 @@ export function HoldConfirmButton({
         <div className="relative z-10 w-full flex items-center justify-between gap-3">
           {/* Status Label & Micro-Prompt */}
           <div className="flex flex-col text-start min-w-0">
-            <span className="text-xs sm:text-sm font-black tracking-tight truncate">
+            <span className="text-xs sm:text-sm font-bold truncate">
               {isConfirmed ? confirmedText : isHolding ? holdingText : idleText}
             </span>
-            <span className="text-[10px] font-medium opacity-75 truncate">
+            <span className="text-xs font-normal opacity-85 truncate leading-relaxed">
               {isConfirmed
                 ? 'درخواست شما ثبت قطعی گردید'
                 : isHolding

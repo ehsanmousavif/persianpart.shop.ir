@@ -22,6 +22,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      '/api/media': {
+        target: 'http://localhost:5148',
+        changeOrigin: true,
+      },
       '/api': {
         target: 'http://localhost:5149',
         changeOrigin: true,

@@ -162,10 +162,10 @@ export function PreInvoiceModal({
                   <FileTextIcon size={18} />
                 </span>
                 <div>
-                  <HeroUIModal.Heading className="text-sm sm:text-base font-black text-slate-900">
+                  <HeroUIModal.Heading className="text-sm sm:text-base font-bold text-slate-900">
                     پیش‌فاکتور تایید سفارش
                   </HeroUIModal.Heading>
-                  <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium">
+                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
                     <span>بازرگانی پرشین پارت</span>
                     <span>•</span>
                     <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" dir="ltr">
@@ -195,8 +195,8 @@ export function PreInvoiceModal({
                     <ClockIcon size={18} />
                   </div>
                   <div className="leading-tight min-w-0">
-                    <span className="font-black text-xs block">اعتبار پیش‌فاکتور: ۱۰ دقیقه</span>
-                    <span className="text-[11px] text-amber-800 truncate block mt-0.5">
+                    <span className="font-bold text-xs block">اعتبار پیش‌فاکتور: ۱۰ دقیقه</span>
+                    <span className="text-xs text-amber-850 truncate block mt-0.5">
                       برای رزرو سهمیه انبار و تثبیت قیمت، سفارش خود را تایید نمایید.
                     </span>
                   </div>
@@ -205,7 +205,7 @@ export function PreInvoiceModal({
                 {/* Countdown Badge */}
                 <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs shrink-0">
                   <span className={`w-2 h-2 rounded-full ${secondsRemaining < 120 ? 'bg-rose-500 animate-ping' : 'bg-amber-500'}`} />
-                  <span className="font-black text-xs sm:text-sm text-slate-900" dir="ltr">
+                  <span className="font-bold text-xs sm:text-sm text-slate-900" dir="ltr">
                     {formatTimer(secondsRemaining)}
                   </span>
                 </div>
@@ -218,7 +218,7 @@ export function PreInvoiceModal({
                     <LayersIcon size={14} className="text-slate-500" />
                     <span>اقلام پیش‌فاکتور</span>
                   </span>
-                  <span className="text-[11px] text-slate-500 font-medium">
+                  <span className="text-xs text-slate-500 font-medium">
                     {toPersianDigits(invoiceItems.length)} قلم کالا
                   </span>
                 </div>
@@ -239,10 +239,10 @@ export function PreInvoiceModal({
                           />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-black text-slate-900 truncate">
+                          <h4 className="font-bold text-slate-900 truncate">
                             {item.product.name}
                           </h4>
-                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
                             <span>ابعاد: {toPersianDigits(item.product.dimensions.width)}×{toPersianDigits(item.product.dimensions.height)}</span>
                             <span>•</span>
                             <span>{item.product.brand}</span>
@@ -253,22 +253,22 @@ export function PreInvoiceModal({
                       {/* Calculation metrics */}
                       <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                         <div className="text-center sm:text-end">
-                          <span className="text-[10px] text-slate-400 block">تعداد کارتن</span>
-                          <span className="font-extrabold text-blue-700">
+                          <span className="text-xs text-slate-500 block">تعداد کارتن</span>
+                          <span className="font-bold text-blue-700">
                             {toPersianDigits(item.cartonCount)} کارتن
                           </span>
                         </div>
 
                         <div className="text-center sm:text-end">
-                          <span className="text-[10px] text-slate-400 block">متراژ تحویلی</span>
+                          <span className="text-xs text-slate-500 block">متراژ تحویلی</span>
                           <span className="font-bold text-slate-800">
                             {toPersianDigits(item.deliverableArea)}
                           </span>
                         </div>
 
                         <div className="text-end min-w-[90px]">
-                          <span className="text-[10px] text-slate-400 block">مبلغ ردیف</span>
-                          <span className="font-black text-slate-900 text-xs sm:text-sm">
+                          <span className="text-xs text-slate-500 block">مبلغ ردیف</span>
+                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
                             {formatToman(item.totalPrice)}
                           </span>
                         </div>
@@ -285,7 +285,7 @@ export function PreInvoiceModal({
                     <BoxIcon size={14} className="text-emerald-400" />
                     <span>مجموع کارتن‌ها:</span>
                   </span>
-                  <span className="font-black text-white text-sm">
+                  <span className="font-bold text-white text-sm">
                     {toPersianDigits(invoiceTotals.totalCartons)} کارتن ({toPersianDigits(invoiceTotals.totalDeliverableArea)})
                   </span>
                 </div>
@@ -294,7 +294,7 @@ export function PreInvoiceModal({
 
                 <div className="flex items-center justify-between text-sm">
                   <span className="font-bold text-slate-200">جمع کل قابل پرداخت:</span>
-                  <span className="text-base sm:text-lg font-black text-emerald-400">
+                  <span className="text-base sm:text-lg font-bold text-emerald-400">
                     {formatToman(invoiceTotals.totalPrice)}
                   </span>
                 </div>

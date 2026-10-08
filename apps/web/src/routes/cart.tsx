@@ -87,11 +87,11 @@ function CartPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
             <ShoppingCartIcon size={20} className="text-blue-600" />
             <span>سبد خرید و فاکتور B2B</span>
           </h1>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-500 mt-1">
             بررسی متراژ تحویلی، تخفیف‌های تجاری و صدور پیش‌فاکتور
           </p>
         </div>
@@ -100,7 +100,7 @@ function CartPage() {
           <button
             type="button"
             onClick={clearCart}
-            className="text-[11px] font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer active:scale-95 transition-transform"
+            className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer active:scale-95 transition-transform"
           >
             <Trash2Icon size={13} />
             <span>خالی کردن</span>
@@ -115,7 +115,7 @@ function CartPage() {
             <ShoppingCartIcon size={28} />
           </div>
           <div>
-            <h3 className="text-sm font-black text-slate-900">
+            <h3 className="text-sm font-bold text-slate-900">
               سبد خرید شما در حال حاضر خالی است
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
@@ -149,7 +149,7 @@ function CartPage() {
 
           {/* Invoice Summary Card */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
-            <h3 className="text-xs font-black text-slate-900 pb-2 border-b border-slate-100">
+            <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100">
               خلاصه صورت‌حساب تجاری
             </h3>
 
@@ -186,8 +186,8 @@ function CartPage() {
             </div>
 
             <div className="pt-2 border-t-2 border-slate-200/80 flex items-baseline justify-between">
-              <span className="text-xs font-black text-slate-900">مبلغ نهایی فاکتور:</span>
-              <span className="text-lg font-black text-blue-700">
+              <span className="text-sm font-bold text-slate-900">مبلغ نهایی فاکتور:</span>
+              <span className="text-lg font-bold text-blue-700">
                 {formatToman(finalTotal)}
               </span>
             </div>
@@ -203,7 +203,7 @@ function CartPage() {
               type="button"
               onClick={() => setIsCheckoutModalOpen(true)}
               disabled={hasBlockingIssues || items.length === 0}
-              className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>تأیید و ادامه ثبت سفارش</span>
               <ArrowRightIcon size={15} />
@@ -247,9 +247,9 @@ function CartPage() {
           <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs space-y-1">
             <div className="flex justify-between font-bold text-emerald-900">
               <span>مبلغ نهایی قابل تسویه:</span>
-              <span className="text-sm font-black">{formatToman(finalTotal)}</span>
+              <span className="text-sm font-bold">{formatToman(finalTotal)}</span>
             </div>
-            <div className="flex justify-between text-emerald-700 text-[11px]">
+            <div className="flex justify-between text-emerald-700 text-xs">
               <span>شیوه تسویه:</span>
               <span>اعتبار تجاری باز ۶۰ روزه پرشین پارت</span>
             </div>

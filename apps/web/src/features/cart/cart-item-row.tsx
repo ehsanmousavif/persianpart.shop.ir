@@ -18,14 +18,14 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertTriangleIcon size={15} className="text-amber-600 shrink-0" />
-            <span className="text-[11px]">
+            <span className="text-xs">
               موجودی محدود است (حداکثر <strong>{toPersianDigits(item.stockCartons)}</strong> کارتن).
             </span>
           </div>
           <button
             type="button"
             onClick={() => updateCartonCount(item.productId, item.stockCartons)}
-            className="text-[10px] font-bold text-amber-900 underline cursor-pointer shrink-0"
+            className="text-xs font-semibold text-amber-900 underline cursor-pointer shrink-0"
           >
             اصلاح به سقف
           </button>
@@ -36,12 +36,12 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="p-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-rose-600 shrink-0" />
-            <span className="text-[11px]">این محصول متأسفانه در انبار ناموجود شده است.</span>
+            <span className="text-xs">این محصول متأسفانه در انبار ناموجود شده است.</span>
           </div>
           <button
             type="button"
             onClick={() => removeItem(item.productId)}
-            className="text-[10px] font-bold text-rose-800 underline cursor-pointer shrink-0"
+            className="text-xs font-semibold text-rose-800 underline cursor-pointer shrink-0"
           >
             حذف از سبد
           </button>
@@ -52,11 +52,11 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-blue-600 shrink-0" />
-            <span className="text-[11px]">
+            <span className="text-xs">
               قیمت به‌روزرسانی شد ({formatToman(item.oldUnitPrice || 0)}).
             </span>
           </div>
-          <span className="text-[10px] font-bold text-blue-700 bg-white px-1.5 py-0.5 rounded border border-blue-200">
+          <span className="text-xs font-semibold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
             نرخ جدید
           </span>
         </div>
@@ -80,7 +80,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
             <Link
               to="/products"
               search={{ productname: item.slug }}
-              className="text-xs font-black text-slate-900 hover:text-blue-600 transition-colors line-clamp-1"
+              className="text-sm font-bold text-slate-900 hover:text-blue-600 transition-colors line-clamp-1"
             >
               {item.name}
             </Link>
@@ -95,16 +95,16 @@ export function CartItemRow({ item }: CartItemRowProps) {
             </button>
           </div>
 
-          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mt-0.5">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
             <span className="font-mono" dir="ltr">{item.sku}</span>
             <span>•</span>
             <span>{toPersianDigits(item.dimension)}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-slate-500 mt-1">
+          <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
             <BoxIcon size={13} className="text-slate-400" />
             <span>متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong></span>
-            <span className="text-[10px] text-slate-400">({toPersianDigits(item.cartonCount)} ک)</span>
+            <span className="text-xs text-slate-500">({toPersianDigits(item.cartonCount)} ک)</span>
           </div>
         </div>
       </div>
@@ -136,10 +136,10 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
         {/* Pricing */}
         <div className="text-end">
-          <span className="text-[10px] text-slate-400 block font-medium">
+          <span className="text-xs text-slate-500 block font-medium leading-tight">
             {formatToman(item.unitPrice)}
           </span>
-          <span className="text-sm font-black text-slate-900 leading-tight">
+          <span className="text-sm font-bold text-slate-900 leading-normal">
             {formatToman(item.totalPrice)}
           </span>
         </div>

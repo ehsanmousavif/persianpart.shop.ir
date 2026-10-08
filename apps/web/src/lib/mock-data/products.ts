@@ -18,6 +18,9 @@ export interface Product {
   finalCustomerPricePerSqm: number // Toman per m²
   pricePerM2: number
   previousPricePerM2?: number
+  discountPercent?: number
+  originalPricePerSqm?: number
+  discountPlanTitle?: string
   sqmPerCarton: number
   areaPerCarton: number
   piecesPerCarton: number

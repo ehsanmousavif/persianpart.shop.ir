@@ -53,7 +53,7 @@ export function MobileBottomNav() {
               <div className="relative">
                 <Icon size={20} className={item.isActive ? 'stroke-[2.2]' : 'stroke-2'} />
               </div>
-              <span className={`text-[10px] font-bold tracking-tight ${item.isActive ? 'text-blue-600' : 'text-slate-600'}`}>
+              <span className={`text-xs font-semibold ${item.isActive ? 'text-blue-600' : 'text-slate-600'}`}>
                 {item.label}
               </span>
               {item.isActive && (

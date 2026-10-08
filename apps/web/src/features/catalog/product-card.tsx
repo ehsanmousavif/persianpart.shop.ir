@@ -68,8 +68,16 @@ export function ProductCard({
           <img
             alt={product.name}
             className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
-            src={product.images[0]}
+            src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
             loading="lazy"
+            onError={(e) => {
+              const target = e.currentTarget
+              if (!target.src.includes('tile-sample-1.jpg') && !target.src.includes('placeholder.svg')) {
+                target.src = '/assets/images/tile-sample-1.jpg'
+              } else if (!target.src.includes('placeholder.svg')) {
+                target.src = '/assets/images/placeholder.svg'
+              }
+            }}
           />
 
           {/* Hover hint icon */}
@@ -83,27 +91,27 @@ export function ProductCard({
         {/* Center Content: Dimensions & Metadata */}
         <div className="flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-[10px] font-bold text-slate-500 truncate max-w-[110px]">
+            <span className="text-xs font-semibold text-slate-500 truncate max-w-[120px]">
               {product.brand}
             </span>
             {product.finish && (
               <>
-                <span className="text-[9px] text-slate-300">•</span>
-                <span className="text-[10px] text-slate-400 font-medium">{product.finish}</span>
+                <span className="text-xs text-slate-300">•</span>
+                <span className="text-xs text-slate-400 font-normal">{product.finish}</span>
               </>
             )}
           </div>
 
-          <h3 className="text-xs sm:text-sm font-black text-slate-900 leading-snug truncate mt-0.5">
+          <h3 className="text-sm font-bold text-slate-900 leading-snug truncate mt-0.5">
             {product.name}
           </h3>
 
           {/* Dimension and Grade Badges Below Title */}
           <div className="flex items-center gap-1.5 flex-wrap mt-1">
-            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200/80">
+            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
               {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
             </span>
-            <span className="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+            <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
               {product.grade}
             </span>
           </div>
@@ -111,16 +119,30 @@ export function ProductCard({
       </div>
 
       {/* Trailing Section: Price and Status Badges */}
-      <div className="flex flex-col items-end shrink-0 ps-2.5 border-s border-slate-100 text-end">
+      <div className="flex flex-col items-end shrink-0 ps-3 border-s border-slate-100 text-end">
         {isInCart && (
-          <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-blue-50 text-blue-700 border border-blue-100 mb-0.5">
+          <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100 mb-0.5">
             در سبد خرید
           </span>
         )}
-        <span className="text-xs sm:text-sm font-black text-slate-900">
-          {formatToman(product.finalCustomerPricePerSqm)}
-        </span>
-        <span className="text-[9px] font-medium text-slate-400">
+        {product.discountPercent ? (
+          <>
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-0.5 animate-pulse">
+              {toPersianDigits(product.discountPercent)}٪ تخفیف طرح
+            </span>
+            <span className="text-[11px] text-slate-400 line-through">
+              {formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}
+            </span>
+            <span className="text-sm font-bold text-rose-600">
+              {formatToman(product.finalCustomerPricePerSqm)}
+            </span>
+          </>
+        ) : (
+          <span className="text-sm font-bold text-slate-900">
+            {formatToman(product.finalCustomerPricePerSqm)}
+          </span>
+        )}
+        <span className="text-xs font-normal text-slate-400">
           هر متر مربع
         </span>
       </div>

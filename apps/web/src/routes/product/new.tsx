@@ -174,7 +174,7 @@ function ProductNewConfigurationPage() {
         <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
           <BoxIcon size={32} />
         </div>
-        <h2 className="text-base font-black text-slate-900">
+        <h2 className="text-base font-bold text-slate-900">
           محصولی برای تعیین متراژ انتخاب نشده است
         </h2>
         <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
@@ -183,7 +183,7 @@ function ProductNewConfigurationPage() {
         <button
           type="button"
           onClick={() => navigate({ to: '/product' })}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md cursor-pointer transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
           <span>بازگشت به کاتالوگ محصولات</span>
@@ -206,10 +206,10 @@ function ProductNewConfigurationPage() {
         </button>
 
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-black border border-blue-200">
+          <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold border border-blue-200">
             مرحله ۲ از ۲
           </span>
-          <span className="font-extrabold text-slate-800">تعیین متراژ و تایید</span>
+          <span className="font-bold text-slate-800">تعیین متراژ و تایید</span>
         </div>
       </div>
 
@@ -219,7 +219,7 @@ function ProductNewConfigurationPage() {
           <LayersIcon size={16} />
         </div>
         <div className="leading-relaxed">
-          <span className="font-black block leading-snug">تعیین متراژ:</span>
+          <span className="font-bold block leading-snug">تعیین متراژ:</span>
           متراژ مورد نیاز کالاها را مشخص نموده و دکمه «تایید» را بزنید.
         </div>
       </div>
@@ -253,25 +253,25 @@ function ProductNewConfigurationPage() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-800 border border-slate-200/80">
+                      <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
                         {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
                       </span>
-                      <span className="text-[10px] font-bold text-slate-500">
+                      <span className="text-xs font-semibold text-slate-600">
                         {product.brand}
                       </span>
-                      <span className="text-[10px] text-slate-400 font-medium">
+                      <span className="text-xs text-slate-400 font-normal">
                         {product.finish}
                       </span>
                     </div>
 
-                    <h3 className="text-xs sm:text-sm font-black text-slate-900 truncate mt-1">
+                    <h3 className="text-sm font-bold text-slate-900 truncate mt-1">
                       {product.name}
                     </h3>
 
-                    <div className="flex items-center gap-2 text-[10px] text-slate-500 mt-0.5 flex-wrap">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
                       <span className="font-mono text-slate-700 font-bold" dir="ltr">{product.sku}</span>
                       <span>•</span>
-                      <span>قیمت پایه: <strong className="font-black text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong></span>
+                      <span>قیمت پایه: <strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong></span>
                     </div>
                   </div>
                 </div>
@@ -294,10 +294,10 @@ function ProductNewConfigurationPage() {
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-black text-slate-900 block leading-tight">
+                    <span className="text-xs font-bold text-slate-900 block leading-normal">
                       متراژ مورد نیاز:
                     </span>
-                    <span className="text-[10px] text-slate-500">
+                    <span className="text-xs text-slate-500">
                       هر کارتن: <strong className="font-bold text-slate-700">{toPersianDigits(product.sqmPerCarton)}</strong>
                     </span>
                   </div>
@@ -348,7 +348,7 @@ function ProductNewConfigurationPage() {
                   </div>
 
                   {/* Presets */}
-                  <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 px-0.5">
+                  <div className="flex justify-between items-center text-xs font-semibold text-slate-400 px-0.5">
                     <button
                       type="button"
                       onClick={() => handleAreaChange(product.id, 0, product.inventorySqm)}
@@ -375,8 +375,8 @@ function ProductNewConfigurationPage() {
                     <SolarRulerIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">متراژ انتخابی</span>
-                    <span className="font-extrabold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ انتخابی</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
                   </div>
@@ -388,8 +388,8 @@ function ProductNewConfigurationPage() {
                     <SolarBoxIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">تعداد کارتن</span>
-                    <span className="font-extrabold text-blue-700 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">تعداد کارتن</span>
+                    <span className="font-bold text-blue-700 text-sm leading-normal truncate block">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
                   </div>
@@ -401,8 +401,8 @@ function ProductNewConfigurationPage() {
                     <SolarLayersIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">متراژ تحویلی</span>
-                    <span className="font-extrabold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ تحویلی</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
@@ -414,8 +414,8 @@ function ProductNewConfigurationPage() {
                     <SolarTagIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">مبلغ برآورد</span>
-                    <span className="font-black text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">مبلغ برآورد</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {formatToman(calc.totalPrice)}
                     </span>
                   </div>
@@ -432,7 +432,7 @@ function ProductNewConfigurationPage() {
           type="button"
           onClick={() => setIsInvoiceOpen(true)}
           disabled={!totals.hasValidQuantities}
-          className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-black flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
         >
           <span>تایید</span>
           <ArrowLeftIcon size={16} />

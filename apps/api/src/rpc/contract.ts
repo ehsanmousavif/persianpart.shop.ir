@@ -446,6 +446,17 @@ export const contract = {
   user: {
     profile: oc.errors({ UNAUTHORIZED: {} }).output(z.any()),
 
+    list: oc
+      .input(
+        z
+          .object({
+            limit: z.number().optional(),
+            search: z.string().optional(),
+          })
+          .optional()
+      )
+      .output(z.any()),
+
     update: oc
       .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
       .input(
@@ -538,6 +549,9 @@ export const contract = {
           title: z.string().optional(),
           users: z.array(z.union([z.number(), z.string()])).min(1, 'حداقل یک کاربر باید انتخاب شود'),
           content: z.string().min(1, 'متن پیام الزامی است'),
+          type: z.enum(['credit_terms', 'product_discount']).default('credit_terms').optional(),
+          discountPercent: z.number().optional(),
+          discountAmount: z.number().optional(),
           status: z.enum(['active', 'expired', 'draft']).default('active'),
           products: z.array(z.union([z.number(), z.string()])).optional(),
           expiresAt: z.string().optional(),
@@ -552,6 +566,9 @@ export const contract = {
           title: z.string().optional(),
           users: z.array(z.union([z.number(), z.string()])).optional(),
           content: z.string().optional(),
+          type: z.enum(['credit_terms', 'product_discount']).optional(),
+          discountPercent: z.number().optional(),
+          discountAmount: z.number().optional(),
           status: z.enum(['active', 'expired', 'draft']).optional(),
           products: z.array(z.union([z.number(), z.string()])).optional(),
           expiresAt: z.string().optional(),

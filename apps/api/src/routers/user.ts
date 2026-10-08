@@ -18,8 +18,17 @@ const update = base.user.update.handler(async ({ input, context, errors }) => {
   })
 })
 
+const list = base.user.list.handler(async ({ input }) => {
+  const result = await payload.crud.users.find({
+    limit: input?.limit || 100,
+    sort: '-createdAt',
+  })
+  return result.docs
+})
+
 export const user = base.user.router({
   profile,
+  list,
   update,
 })
 

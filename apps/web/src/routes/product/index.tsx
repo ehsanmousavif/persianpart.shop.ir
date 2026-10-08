@@ -174,7 +174,7 @@ function ProductCatalogPage() {
           <span className="hidden sm:inline">فیلترهای پیشرفته</span>
           <span className="sm:hidden">فیلترها</span>
           {activeFilterCount > 0 && (
-            <span className="min-w-4 h-4 px-1 rounded-full bg-blue-600 text-white text-[9px] font-black flex items-center justify-center shadow-xs">
+            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shadow-xs">
               {toPersianDigits(activeFilterCount)}
             </span>
           )}
@@ -227,7 +227,7 @@ function ProductCatalogPage() {
           <button
             type="button"
             onClick={resetFilters}
-            className="text-[11px] font-bold text-rose-600 hover:underline cursor-pointer"
+            className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
           >
             حذف همه فیلترها
           </button>
@@ -260,12 +260,12 @@ function ProductCatalogPage() {
           {/* 1. Pinned Selected Products (in selection order) */}
           {pinnedProducts.length > 0 && (
             <div className="space-y-2 pb-1">
-              <div className="flex items-center justify-between px-1 text-[11px] font-black text-emerald-800">
-                <span className="flex items-center gap-1">
+              <div className="flex items-center justify-between px-1 text-xs font-bold text-emerald-800">
+                <span className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-emerald-500" />
                   محصولات انتخاب‌شده:
                 </span>
-                <span className="text-[10px] text-slate-400">
+                <span className="text-xs text-slate-400">
                   {toPersianDigits(pinnedProducts.length)} مورد
                 </span>
               </div>
@@ -284,7 +284,7 @@ function ProductCatalogPage() {
               {unselectedProducts.length > 0 && (
                 <div className="flex items-center gap-2 pt-2 pb-0.5 px-1">
                   <div className="h-px bg-slate-200 flex-1" />
-                  <span className="text-[10px] font-bold text-slate-400">سایر محصولات</span>
+                  <span className="text-xs font-medium text-slate-400">سایر محصولات</span>
                   <div className="h-px bg-slate-200 flex-1" />
                 </div>
               )}
@@ -320,10 +320,10 @@ function ProductCatalogPage() {
             aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedProductIds.length)} محصول انتخاب شده`}
             className="h-12 px-5 rounded-full bg-slate-950/95 backdrop-blur-md text-white flex items-center gap-3 shadow-2xl border border-slate-800 ring-1 ring-white/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-slate-900"
           >
-            <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
+            <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs">
               {toPersianDigits(selectedProductIds.length)}
             </span>
-            <span className="text-xs font-black">تعیین متراژ و ثبت سفارش</span>
+            <span className="text-sm font-bold">تعیین متراژ و ثبت سفارش</span>
             <ArrowLeftIcon size={16} className="text-slate-200" />
           </Link>
         </div>

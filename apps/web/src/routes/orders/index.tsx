@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus } from '../../lib/mock-data/orders'
+import { OrderMiniStepper } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { toast } from '../../components/feedback/toast'
@@ -50,11 +51,11 @@ function OrdersListPage() {
     <div className="w-full px-3 py-3 space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+        <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
           <PackageIcon size={20} className="text-blue-600" />
           <span>سفارش‌ها و سوابق خرید</span>
         </h1>
-        <p className="text-[11px] text-slate-500 mt-0.5">
+        <p className="text-xs text-slate-500 mt-1">
           پیگیری وضعیت بارگیری، بارنامه‌ها و ثبت مجدد سفارش‌ها
         </p>
       </div>
@@ -81,7 +82,7 @@ function OrdersListPage() {
             >
               <span>{tab.label}</span>
               <span
-                className={`text-[9px] font-black px-1.5 py-0.2 rounded-full ${
+                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
                   isSelected ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
                 }`}
               >
@@ -98,7 +99,7 @@ function OrdersListPage() {
           <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
             <PackageIcon size={24} />
           </div>
-          <h3 className="text-sm font-black text-slate-900">
+          <h3 className="text-sm font-bold text-slate-900">
             سفارشی در این بخش یافت نشد
           </h3>
           <p className="text-xs text-slate-500">
@@ -120,7 +121,7 @@ function OrdersListPage() {
                 {/* Order Top Bar */}
                 <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-black text-slate-900 font-mono" dir="ltr">
+                    <span className="text-xs font-bold text-slate-900 font-mono" dir="ltr">
                       {order.orderNumber}
                     </span>
                     <Badge variant={statusConfig.color} size="sm">
@@ -128,7 +129,7 @@ function OrdersListPage() {
                     </Badge>
                   </div>
 
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400">
+                  <div className="flex items-center gap-1 text-xs text-slate-400">
                     <ClockIcon size={12} />
                     <span>{order.date}</span>
                   </div>
@@ -154,17 +155,22 @@ function OrdersListPage() {
                       <span className="font-bold text-slate-900 block text-xs">
                         {toPersianDigits(order.items.length)} ردیف کالا
                       </span>
-                      <span className="text-[10px] text-slate-500">
+                      <span className="text-xs text-slate-500">
                         {toPersianDigits(totalCartons)} کارتن ({toPersianDigits(totalArea)})
                       </span>
                     </div>
                   </div>
 
+                  {/* Order Timeline Progress / Position */}
+                  {order.timeline && order.timeline.length > 0 && (
+                    <OrderMiniStepper steps={order.timeline} />
+                  )}
+
                   {/* Financials & Action Buttons */}
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[10px] text-slate-400 block font-medium">مبلغ کل فاکتور:</span>
-                      <span className="text-sm font-black text-slate-900">
+                      <span className="text-xs text-slate-500 block font-medium leading-tight mb-0.5">مبلغ کل فاکتور:</span>
+                      <span className="text-sm font-bold text-slate-900">
                         {formatToman(order.finalTotal)}
                       </span>
                     </div>
@@ -183,7 +189,7 @@ function OrdersListPage() {
                       <Link
                         to="/orders/$id"
                         params={{ id: order.id }}
-                        className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-black transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
+                        className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
                       >
                         <span>پیگیری</span>
                         <ArrowLeftIcon size={13} />

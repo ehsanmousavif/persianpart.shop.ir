@@ -1,1 +1,4 @@
 /* PersianPart Payload CMS custom styles */
+body{
+direction: rtl;    
+}

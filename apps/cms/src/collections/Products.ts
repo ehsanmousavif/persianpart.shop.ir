@@ -8,6 +8,8 @@ export const Products: CollectionConfig = {
   },
   access: {
     read: () => true,
+    create: () => true,
+    update: () => true,
   },
   hooks: {
     beforeValidate: [
@@ -154,6 +156,38 @@ export const Products: CollectionConfig = {
                 width: '25%',
                 description: 'مبنای اصلی محاسبه کارتن و هزینه سفارش',
               },
+            },
+          ],
+        },
+      ],
+    },
+    {
+      type: 'collapsible',
+      label: 'قیمت‌گذاری و موجودی انبار مکانیزه',
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'basePricePerSqm',
+              type: 'number',
+              defaultValue: 500000,
+              label: 'قیمت پایه هر متر مربع (تومان)',
+              admin: { width: '33.3%' },
+            },
+            {
+              name: 'stockCartons',
+              type: 'number',
+              defaultValue: 350,
+              label: 'موجودی انبار (تعداد کارتن)',
+              admin: { width: '33.3%' },
+            },
+            {
+              name: 'inventorySqm',
+              type: 'number',
+              defaultValue: 504,
+              label: 'موجودی کل انبار (متر مربع)',
+              admin: { width: '33.3%' },
             },
           ],
         },

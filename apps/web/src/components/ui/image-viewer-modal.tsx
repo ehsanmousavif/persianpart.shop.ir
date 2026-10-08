@@ -171,7 +171,7 @@ export function ImageViewerModal({
           <span className="text-xs font-bold truncate max-w-[200px] sm:max-w-xs text-slate-200">
             {title}
           </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">
+          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300">
             {toPersianDigits(Math.round(scale * 100))}٪
           </span>
         </div>
@@ -242,7 +242,7 @@ export function ImageViewerModal({
       </div>
 
       {/* Bottom Hint */}
-      <div className="w-full text-center pb-4 pt-1 text-[11px] text-slate-400 z-10 shrink-0 pointer-events-none">
+      <div className="w-full text-center pb-4 pt-1 text-xs text-slate-400 z-10 shrink-0 pointer-events-none">
         با انگشت بزرگ‌نمایی کنید یا دو بار ضربه بزنید (زوم فقط روی تصویر اعمال می‌شود)
       </div>
           </HeroUIModal.Dialog>

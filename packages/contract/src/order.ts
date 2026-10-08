@@ -58,12 +58,20 @@ export type ValidateCartOutput = z.infer<typeof ValidateCartOutputSchema>
 // ============================================================================
 
 export const OrderStatusSchema = z.enum([
+  'pending',
+  'checking',
+  'approved',
+  'preparing',
+  'shipping',
+  'completed',
+  'cancelled_by_customer',
+  'cancelled_by_admin',
+  'cancelled',
+  // Backwards compatibility aliases
   'pending_review',
   'confirmed',
-  'preparing',
   'ready',
-  'completed',
-  'cancelled',
+  'processing',
 ])
 
 export type OrderStatus = z.infer<typeof OrderStatusSchema>

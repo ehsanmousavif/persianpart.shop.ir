@@ -28,10 +28,29 @@ export const Route = createFileRoute('/orders/$id')({
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData()
   const navigate = useNavigate()
-  const { getOrderById, fetchOrderById, cancelOrder, reorderToCart, orders } = useOrders()
+  const {
+    getOrderById,
+    fetchOrderById,
+    cancelOrder,
+    staffCancelOrder,
+    updateOrderStatus,
+    reorderToCart,
+    orders,
+  } = useOrders()
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('تغییر در متراژ یا اقلام سفارش')
   const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
   const [isLoading, setIsLoading] = useState(!order)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
+
+  // 10-Minute Countdown Timer calculation
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
+    if (!order) return 0
+    const deadline = order.cancellationDeadline
+      ? new Date(order.cancellationDeadline).getTime()
+      : new Date(order.date).getTime() + 10 * 60 * 1000
+    return Math.max(0, Math.floor((deadline - Date.now()) / 1000))
+  })
 
   useEffect(() => {
     let isMounted = true
@@ -55,6 +74,28 @@ function OrderDetailPage() {
     }
   }, [orderId, orders])
 
+  useEffect(() => {
+    if (!order) return
+    const deadline = order.cancellationDeadline
+      ? new Date(order.cancellationDeadline).getTime()
+      : new Date(order.date).getTime() + 10 * 60 * 1000
+
+    const updateTimer = () => {
+      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
+      setTimeLeftSeconds(remaining)
+    }
+
+    updateTimer()
+    const timer = setInterval(updateTimer, 1000)
+    return () => clearInterval(timer)
+  }, [order?.cancellationDeadline, order?.date])
+
+  const formatCountdown = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${toPersianDigits(mins.toString().padStart(2, '0'))}:${toPersianDigits(secs.toString().padStart(2, '0'))}`
+  }
+
   if (isLoading) {
     return (
       <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
@@ -67,7 +108,7 @@ function OrderDetailPage() {
   if (!order) {
     return (
       <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
-        <h2 className="text-sm font-black text-slate-800">سفارش مورد نظر یافت نشد</h2>
+        <h2 className="text-sm font-bold text-slate-800">سفارش مورد نظر یافت نشد</h2>
         <p className="text-xs text-slate-500">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
         <Link
           to="/orders"
@@ -80,13 +121,26 @@ function OrderDetailPage() {
     )
   }
 
-  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || { label: order.statusLabel || 'در انتظار بررسی', color: 'warning' as const }
-  const isCancellable = order.status === 'pending' || order.status === 'approved'
+  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || {
+    label: order.statusLabel || 'در انتظار بررسی',
+    color: 'warning' as const,
+  }
 
-  const handleCancel = () => {
-    cancelOrder(order.id)
+  const isCancelled =
+    order.status === 'cancelled' ||
+    order.status === 'cancelled_by_customer' ||
+    order.status === 'cancelled_by_admin'
+
+  const isCompleted = order.status === 'completed'
+  const isWithin10Minutes = timeLeftSeconds > 0
+  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin10Minutes
+
+  const handleCancel = async () => {
+    await cancelOrder(order.id, cancelReason)
     setShowCancelModal(false)
-    toast.info('سفارش لغو شد', `سفارش ${order.orderNumber} لغو گردید.`)
+    toast.info('سفارش لغو شد', `سفارش ${order.orderNumber} لغو گردید و موجودی به انبار بازگردانی شد.`)
+    const fresh = await fetchOrderById(order.id)
+    if (fresh) setOrder(fresh)
   }
 
   const handleReorder = () => {
@@ -113,16 +167,100 @@ function OrderDetailPage() {
         <span className="text-slate-900 font-bold" dir="ltr">{order.orderNumber}</span>
       </nav>
 
+      {/* Admin / Sub-Admin Operational Status Toolbar */}
+      <div className="bg-slate-900 text-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-800 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-xs font-bold text-slate-200">کنترل عملیاتی موقعیت سفارش (پنل ادمین / ساب‌ادمین):</span>
+          </div>
+          <span className="text-[11px] text-slate-400">
+            تغییر موقعیت مستقیم در CMS و ثبت آنی در گاه‌شمار
+          </span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs text-slate-300 font-medium">تغییر موقعیت به:</span>
+          {[
+            { val: 'pending', label: 'در انتظار تأیید اولیه' },
+            { val: 'checking', label: 'در حال بررسی واحد بازرگانی' },
+            { val: 'approved', label: 'تأیید بازرگانی' },
+            { val: 'preparing', label: 'در حال آماده‌سازی' },
+            { val: 'shipping', label: 'در حال ارسال' },
+            { val: 'completed', label: 'تحویل نهایی' },
+          ].map((st) => (
+            <button
+              key={st.val}
+              type="button"
+              disabled={isUpdatingStatus || order.status === st.val}
+              onClick={async () => {
+                setIsUpdatingStatus(true)
+                await updateOrderStatus(order.id, st.val)
+                const fresh = await fetchOrderById(order.id)
+                if (fresh) setOrder(fresh)
+                setIsUpdatingStatus(false)
+                toast.success('موقعیت سفارش به‌روز شد', `موقعیت سفارش به «${st.label}» تغییر یافت.`)
+              }}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                order.status === st.val
+                  ? 'bg-blue-600 text-white ring-2 ring-blue-400 shadow-xs'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
+              }`}
+            >
+              {st.label}
+            </button>
+          ))}
+
+          {!isCancelled && (
+            <button
+              type="button"
+              disabled={isUpdatingStatus}
+              onClick={async () => {
+                if (confirm(`آیا از لغو سفارش توسط مدیریت اطمینان دارید؟ موجودی به انبار بازگردانی می‌شود.`)) {
+                  setIsUpdatingStatus(true)
+                  await staffCancelOrder(order.id, 'لغو اداری توسط مدیریت بازرگانی')
+                  const fresh = await fetchOrderById(order.id)
+                  if (fresh) setOrder(fresh)
+                  setIsUpdatingStatus(false)
+                  toast.warning('سفارش لغو شد', 'سفارش توسط مدیریت لغو و موجودی به انبار بازگردانی گردید.')
+                }
+              }}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-800/80 hover:bg-rose-900 transition-all cursor-pointer"
+            >
+              لغو توسط مدیریت
+            </button>
+          )}
+        </div>
+      </div>
+
       {/* Main Order Header Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1.5">
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 font-mono" dir="ltr">
+          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 font-mono" dir="ltr">
               {order.orderNumber}
             </h1>
             <Badge variant={statusConfig.color} size="md">
               {statusConfig.label}
             </Badge>
+
+            {/* 10-Minute Customer Countdown Badge */}
+            {!isCancelled && !isCompleted && (
+              <span
+                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs ${
+                  isWithin10Minutes
+                    ? 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'
+                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                }`}
+              >
+                <span>⏱️</span>
+                <span>
+                  {isWithin10Minutes
+                    ? `مهلت لغو خریدار: ${formatCountdown(timeLeftSeconds)}`
+                    : 'مهلت ۱۰ دقیقه‌ای لغو منقضی شد (ثبت قطعی)'}
+                </span>
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500">
             تاریخ ثبت سفارش: <strong className="text-slate-700">{order.date}</strong>
@@ -131,14 +269,14 @@ function OrderDetailPage() {
 
         {/* Action Buttons */}
         <div className="flex items-center gap-2.5">
-          {isCancellable && (
+          {isCancellableByCustomer && (
             <button
               type="button"
               onClick={() => setShowCancelModal(true)}
-              className="py-2.5 px-4 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer"
+              className="py-2.5 px-4 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <XIcon size={16} />
-              <span>لغو سفارش</span>
+              <span>لغو سفارش (مهلت ۱۰ دقیقه)</span>
             </button>
           )}
 
@@ -202,7 +340,7 @@ function OrderDetailPage() {
 
               <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-slate-100">
                 <span className="text-xs text-slate-400 block">{formatToman(item.unitPrice)}</span>
-                <span className="text-sm font-black text-slate-900">{formatToman(item.totalPrice)}</span>
+                <span className="text-sm font-bold text-slate-900">{formatToman(item.totalPrice)}</span>
               </div>
             </div>
           ))}
@@ -224,9 +362,9 @@ function OrderDetailPage() {
             <span>مالیات بر ارزش افزوده:</span>
             <span>{formatToman(order.taxAmount)}</span>
           </div>
-          <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-black text-slate-900">
+          <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-slate-900">
             <span>مبلغ نهایی پرداخت‌شده / تعهد:</span>
-            <span className="text-base text-blue-700">{formatToman(order.finalTotal)}</span>
+            <span className="text-base font-bold text-blue-700">{formatToman(order.finalTotal)}</span>
           </div>
         </div>
       </div>
@@ -292,13 +430,34 @@ function OrderDetailPage() {
                 <AlertTriangleIcon size={24} />
               </div>
               <div>
-                <HeroUIModal.Heading className="text-base font-black text-slate-900">
-                  لغو سفارش
+                <HeroUIModal.Heading className="text-base font-bold text-slate-900">
+                  لغو سفارش خریدار
                 </HeroUIModal.Heading>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  آیا از لغو سفارش <strong dir="ltr">{order.orderNumber}</strong> اطمینان دارید؟ سهمیه اختصاص‌یافته در انبار آزاد خواهد شد.
+                  آیا از لغو سفارش <strong dir="ltr">{order.orderNumber}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
+                <div className="mt-2.5 p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 text-start">
+                  ✓ با لغو سفارش، کلیه اقلام بلافاصله به موجودی انبار بازگردانده خواهند شد.
+                </div>
               </div>
+
+              {/* Cancellation Reason Selector */}
+              <div className="text-start space-y-1">
+                <label className="text-[11px] font-bold text-slate-700 block">
+                  دلیل لغو سفارش:
+                </label>
+                <select
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full h-9 px-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-800 bg-white outline-hidden cursor-pointer"
+                >
+                  <option value="تغییر در متراژ یا اقلام سفارش">تغییر در متراژ یا اقلام سفارش</option>
+                  <option value="تغییر در زمان‌بندی پروژه و ارسال">تغییر در زمان‌بندی پروژه و ارسال</option>
+                  <option value="ثبت اشتباه فاکتور">ثبت اشتباه فاکتور</option>
+                  <option value="انصراف موقت خریدار">انصراف موقت خریدار</option>
+                </select>
+              </div>
+
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <button
                   type="button"
@@ -312,7 +471,7 @@ function OrderDetailPage() {
                   onClick={handleCancel}
                   className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer transition-all"
                 >
-                  تأیید لغو سفارش
+                  تأیید لغو و بازگشت موجودی
                 </button>
               </div>
             </HeroUIModal.Dialog>

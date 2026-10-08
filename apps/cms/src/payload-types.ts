@@ -331,6 +331,9 @@ export interface Product {
    * مبنای اصلی محاسبه کارتن و هزینه سفارش
    */
   sqmPerCarton: number;
+  basePricePerSqm?: number | null;
+  stockCartons?: number | null;
+  inventorySqm?: number | null;
   cover?: (number | null) | Media;
   gallery?:
     | {
@@ -368,7 +371,23 @@ export interface Order {
    */
   orderNumber: string;
   user: number | User;
-  status: 'pending' | 'approved' | 'processing' | 'ready' | 'completed' | 'cancelled';
+  /**
+   * موقعیت عملیاتی سفارش در گردش کار تأمین و انبارداری
+   */
+  status:
+    | 'pending'
+    | 'checking'
+    | 'approved'
+    | 'preparing'
+    | 'shipping'
+    | 'completed'
+    | 'cancelled_by_customer'
+    | 'cancelled_by_admin'
+    | 'cancelled';
+  /**
+   * تا این زمان خریدار فرصت دارد سفارش را لغو کند. پس از آن سفارش نهایی و قفل می‌گردد.
+   */
+  cancellationDeadline?: string | null;
   items: {
     product: number | Product;
     requestedArea: number;
@@ -413,9 +432,21 @@ export interface Plan {
    */
   users: (number | User)[];
   /**
-   * متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.
+   * متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود (مثلاً شرایط پرداخت مدت‌دار ۳ ماهه یا توضیحات آفر ویژه).
    */
   content: string;
+  /**
+   * تعیین کنید این طرح اعتباری/مدت‌دار است یا تخفیف مستقیم روی کالاها.
+   */
+  type: 'credit_terms' | 'product_discount';
+  /**
+   * درصد تخفیف اعمالی روی محصولات منتخب طرح (مثلاً ۱۰ یا ۱۵ درصد)
+   */
+  discountPercent?: number | null;
+  /**
+   * تخفیف مقطوع به تومان به جای درصدی
+   */
+  discountAmount?: number | null;
   /**
    * وضعیت اجرای طرح: در حال اجرا، منقضی شده یا پیش‌نویس.
    */
@@ -684,6 +715,9 @@ export interface ProductsSelect<T extends boolean = true> {
   height?: T;
   piecesPerCarton?: T;
   sqmPerCarton?: T;
+  basePricePerSqm?: T;
+  stockCartons?: T;
+  inventorySqm?: T;
   cover?: T;
   gallery?:
     | T
@@ -704,6 +738,7 @@ export interface OrdersSelect<T extends boolean = true> {
   orderNumber?: T;
   user?: T;
   status?: T;
+  cancellationDeadline?: T;
   items?:
     | T
     | {
@@ -741,6 +776,9 @@ export interface PlansSelect<T extends boolean = true> {
   title?: T;
   users?: T;
   content?: T;
+  type?: T;
+  discountPercent?: T;
+  discountAmount?: T;
   status?: T;
   products?: T;
   expiresAt?: T;

@@ -87,10 +87,10 @@ export function OrderEntryModal({
                   <BoxIcon size={18} />
                 </div>
                 <div>
-                  <HeroUIModal.Heading className="text-xs sm:text-sm font-black text-slate-900">
+                  <HeroUIModal.Heading className="text-sm font-bold text-slate-900">
                     تعیین متراژ و محاسبه کارتن
                   </HeroUIModal.Heading>
-                  <span className="text-[10px] text-slate-500 font-medium">
+                  <span className="text-xs text-slate-500 font-medium">
                     فروش صرفاً بر مبنای کارتن کامل کارخانه
                   </span>
                 </div>
@@ -115,21 +115,21 @@ export function OrderEntryModal({
               className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0"
             />
             <div className="flex-1 min-w-0">
-              <span className="text-[10px] font-bold text-blue-600 block">
+              <span className="text-xs font-semibold text-blue-600 block">
                 {product.brand} · {product.dimension}
               </span>
-              <h3 className="text-xs font-black text-slate-900 truncate">
+              <h3 className="text-sm font-bold text-slate-900 truncate mt-0.5">
                 {product.name}
               </h3>
-              <div className="text-[10px] text-slate-500 mt-0.5">
+              <div className="text-xs text-slate-500 mt-0.5">
                 موجودی انبار: <strong>{toPersianDigits(product.inventorySqm)}</strong> ({toPersianDigits(product.stockCartons)} کارتن)
               </div>
             </div>
             <div className="text-end shrink-0">
-              <span className="text-xs font-black text-blue-700 block">
+              <span className="text-sm font-bold text-blue-700 block">
                 {formatToman(product.finalCustomerPricePerSqm)}
               </span>
-              <span className="text-[9px] text-slate-400">هر متر مربع</span>
+              <span className="text-xs text-slate-400">هر متر مربع</span>
             </div>
           </div>
 
@@ -147,19 +147,19 @@ export function OrderEntryModal({
                 value={requestedArea || ''}
                 onChange={(e) => handleAreaChange(e.target.value)}
                 placeholder="مثال: ۳۵"
-                className="w-full h-12 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-black text-lg text-start transition-all outline-hidden bg-white"
+                className="w-full h-12 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-lg text-start transition-all outline-hidden bg-white"
               />
             </div>
 
             {/* Quick Add Presets */}
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
-              <span className="text-[10px] text-slate-400 font-medium">افزودن سریع:</span>
+              <span className="text-xs text-slate-500 font-medium">افزودن سریع:</span>
               {[10, 25, 50, 100].map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
-                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-[11px] font-bold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
+                  className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
                 >
                   +{toPersianDigits(preset)}
                 </button>
@@ -167,7 +167,7 @@ export function OrderEntryModal({
               <button
                 type="button"
                 onClick={() => setRequestedArea(product.sqmPerCarton)}
-                className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-[11px] font-bold transition-all cursor-pointer active:scale-95"
+                className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-all cursor-pointer active:scale-95"
               >
                 ۱ کارتن ({toPersianDigits(product.sqmPerCarton)})
               </button>
@@ -177,36 +177,36 @@ export function OrderEntryModal({
           {/* Carton Calculation Live Preview (Transparent Ceil Breakdown) */}
           <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between pb-2 border-b border-slate-200/70 text-xs">
-              <span className="font-extrabold text-slate-800">پیش‌نمایش محاسبه هوشمند کارتن</span>
-              <span className="text-[11px] font-semibold text-slate-500">
+              <span className="font-bold text-slate-800">پیش‌نمایش محاسبه هوشمند کارتن</span>
+              <span className="text-xs font-medium text-slate-500">
                 هر کارتن = {toPersianDigits(product.sqmPerCarton)}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                <span className="text-[10px] text-slate-400 block mb-0.5">مقدار درخواستی</span>
+                <span className="text-xs text-slate-500 block mb-0.5">مقدار درخواستی</span>
                 <span className="font-bold text-slate-900">
                   {toPersianDigits(calc.requestedArea)}
                 </span>
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                <span className="text-[10px] text-slate-400 block mb-0.5">تعداد کارتن (رند به بالا)</span>
-                <span className="font-extrabold text-blue-700">
+                <span className="text-xs text-slate-500 block mb-0.5">تعداد کارتن (رند به بالا)</span>
+                <span className="font-bold text-blue-700">
                   {toPersianDigits(calc.cartonCount)} کارتن
                 </span>
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                <span className="text-[10px] text-slate-400 block mb-0.5">مقدار واقعی تحویلی</span>
-                <span className="font-extrabold text-slate-900">
+                <span className="text-xs text-slate-500 block mb-0.5">مقدار واقعی تحویلی</span>
+                <span className="font-bold text-slate-900">
                   {toPersianDigits(calc.deliverableArea)}
                 </span>
               </div>
 
               <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                <span className="text-[10px] text-slate-400 block mb-0.5">مازاد بر درخواست</span>
+                <span className="text-xs text-slate-500 block mb-0.5">مازاد بر درخواست</span>
                 <span className="font-bold text-slate-600">
                   +{toPersianDigits(calc.extraArea)}
                 </span>
@@ -216,12 +216,12 @@ export function OrderEntryModal({
             {/* Price Preview */}
             <div className="pt-2 border-t border-slate-200/70 flex items-baseline justify-between">
               <div>
-                <span className="text-[10px] text-slate-400 block">مبلغ کل ردیف (بر اساس متراژ تحویلی):</span>
-                <span className="text-[11px] text-slate-500">
+                <span className="text-xs text-slate-500 block">مبلغ کل ردیف (بر اساس متراژ تحویلی):</span>
+                <span className="text-xs text-slate-600">
                   {toPersianDigits(calc.deliverableArea)} × {formatToman(product.finalCustomerPricePerSqm)}
                 </span>
               </div>
-              <span className="text-base font-black text-emerald-700">
+              <span className="text-base font-bold text-emerald-700">
                 {formatToman(calc.totalPrice)}
               </span>
             </div>
@@ -235,17 +235,17 @@ export function OrderEntryModal({
             </div>
           ) : calc.isExceedingStock ? (
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1.5">
-              <div className="flex items-center gap-2 font-black">
+              <div className="flex items-center gap-2 font-bold">
                 <AlertTriangleIcon size={16} className="text-rose-600 shrink-0" />
                 <span>موجودی کافی نیست!</span>
               </div>
-              <p className="text-[11px] text-rose-700 leading-relaxed">
+              <p className="text-xs text-rose-700 leading-relaxed">
                 {calc.errorMessage}
               </p>
               <button
                 type="button"
                 onClick={() => setRequestedArea(calc.maxDeliverableSqm)}
-                className="text-[11px] font-bold text-rose-900 underline cursor-pointer"
+                className="text-xs font-semibold text-rose-900 underline cursor-pointer"
               >
                 تنظیم سفارش بر روی حداکثر موجودی ({toPersianDigits(calc.maxDeliverableSqm)})
               </button>
@@ -265,11 +265,11 @@ export function OrderEntryModal({
               type="button"
               onClick={handleAddToCart}
               disabled={isOutOfStock || calc.isExceedingStock || calc.cartonCount <= 0 || isAdding}
-              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingCartIcon size={18} />
               <span>
-                افزودن به سبد خرید ({toPersianDigits(calc.cartonCount)} کارتن — {toPersianDigits(calc.deliverableArea)})
+                افزودن به سبد خرید ({toPersianDigits(calc.cartonCount)} کارتن ({toPersianDigits(calc.deliverableArea)}))
               </span>
             </button>
           </div>

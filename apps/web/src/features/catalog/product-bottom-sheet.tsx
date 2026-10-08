@@ -102,10 +102,10 @@ export function ProductBottomSheet({
               {/* Header */}
               <HeroUIModal.Header className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between shrink-0">
                 <div className="min-w-0 pe-2">
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">
                     {product.category}
                   </span>
-                  <HeroUIModal.Heading className="text-sm font-black text-slate-900 mt-1 truncate">
+                  <HeroUIModal.Heading className="text-base font-bold text-slate-900 mt-1 truncate">
                     {product.name}
                   </HeroUIModal.Heading>
                 </div>
@@ -126,16 +126,24 @@ export function ProductBottomSheet({
               {/* 1. Main Hero Preview */}
               <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs group">
                 <img
-                  src={currentHeroUrl}
+                  src={currentHeroUrl || '/assets/images/tile-sample-1.jpg'}
                   alt={product.name}
                   className="w-full h-full object-cover transition-all duration-300"
+                  onError={(e) => {
+                    const target = e.currentTarget
+                    if (!target.src.includes('tile-sample-1.jpg') && !target.src.includes('placeholder.svg')) {
+                      target.src = '/assets/images/tile-sample-1.jpg'
+                    } else if (!target.src.includes('placeholder.svg')) {
+                      target.src = '/assets/images/placeholder.svg'
+                    }
+                  }}
                 />
 
                 {/* Lightbox Trigger on Hero Preview */}
                 <button
                   type="button"
                   onClick={() => setZoomImageUrl(currentHeroUrl)}
-                  className="absolute bottom-2.5 end-2.5 px-2.5 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-[11px] font-bold flex items-center gap-1.5 shadow-md cursor-pointer transition-transform active:scale-95"
+                  className="absolute bottom-2.5 end-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-xs font-semibold flex items-center gap-1.5 shadow-md cursor-pointer transition-transform active:scale-95"
                 >
                   <ZoomInIcon size={14} />
                   <span>بزرگ‌نمایی و زوم</span>
@@ -144,21 +152,21 @@ export function ProductBottomSheet({
                 {/* Stock Status Badge */}
                 <div className="absolute top-2.5 start-2.5 flex items-center gap-1.5">
                   {isOutOfStock ? (
-                    <span className="px-2 py-0.5 rounded-lg bg-rose-600 text-white text-[10px] font-black shadow-xs">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-rose-600 text-white text-xs font-semibold shadow-xs">
                       ناموجود در انبار
                     </span>
                   ) : isLowStock ? (
-                    <span className="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-black shadow-xs">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-500 text-white text-xs font-semibold shadow-xs">
                       موجودی محدود ({toPersianDigits(product.inventorySqm)})
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-lg bg-emerald-600 text-white text-[10px] font-black shadow-xs">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold shadow-xs">
                       موجود در انبار
                     </span>
                   )}
 
                   {currentMediaItem?.isSampleWork && (
-                    <span className="px-2 py-0.5 rounded-lg bg-blue-600 text-white text-[10px] font-bold shadow-xs">
+                    <span className="px-2.5 py-0.5 rounded-lg bg-blue-600 text-white text-xs font-semibold shadow-xs">
                       نمونه‌کار اجرایی
                     </span>
                   )}
@@ -167,7 +175,7 @@ export function ProductBottomSheet({
 
               {/* 2. Item-Card-Group Strip: Interactive Thumbnail Cards (Pure Photos) */}
               <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-[11px] text-slate-500 px-0.5">
+                <div className="flex items-center justify-between text-xs text-slate-500 px-0.5">
                   <span className="font-bold text-slate-700">تصاویر و نمونه‌کارها</span>
                 </div>
 
@@ -189,9 +197,17 @@ export function ProductBottomSheet({
                         }`}
                       >
                         <img
-                          src={item.url}
+                          src={item.url || '/assets/images/tile-sample-1.jpg'}
                           alt=""
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250"
+                          onError={(e) => {
+                            const target = e.currentTarget
+                            if (!target.src.includes('tile-sample-1.jpg') && !target.src.includes('placeholder.svg')) {
+                              target.src = '/assets/images/tile-sample-1.jpg'
+                            } else if (!target.src.includes('placeholder.svg')) {
+                              target.src = '/assets/images/placeholder.svg'
+                            }
+                          }}
                         />
                       </button>
                     )
@@ -203,13 +219,27 @@ export function ProductBottomSheet({
             {/* Price & Selection Action Strip */}
             <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3">
               <div>
-                <span className="text-[10px] text-slate-500 font-medium block">
-                  قیمت همکاری:
+                <span className="text-xs text-slate-500 font-medium block mb-0.5">
+                  {product.discountPercent ? 'قیمت با تخفیف طرح:' : 'قیمت همکاری:'}
                 </span>
-                <span className="text-base font-black text-slate-900">
-                  {formatToman(product.finalCustomerPricePerSqm)}
-                </span>
-                <span className="text-[10px] text-slate-500 font-medium ms-1">/ هر متر مربع</span>
+                {product.discountPercent ? (
+                  <div className="flex items-center gap-2">
+                    <span className="text-base font-bold text-rose-600">
+                      {formatToman(product.finalCustomerPricePerSqm)}
+                    </span>
+                    <span className="text-xs text-slate-400 line-through">
+                      {formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
+                      {toPersianDigits(product.discountPercent)}٪ تخفیف
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-base font-bold text-slate-900">
+                    {formatToman(product.finalCustomerPricePerSqm)}
+                  </span>
+                )}
+                <span className="text-xs text-slate-500 font-medium ms-1">/ هر متر مربع</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -241,7 +271,7 @@ export function ProductBottomSheet({
                   <button
                     type="button"
                     onClick={() => onOrderDirect(product)}
-                    className="px-4 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 active:scale-95"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 active:scale-95"
                   >
                     <span>ثبت سفارش</span>
                   </button>
@@ -251,7 +281,7 @@ export function ProductBottomSheet({
 
             {/* Structured Specifications with Solar Icons */}
             <div className="space-y-2">
-              <h3 className="text-xs font-black text-slate-900 flex items-center gap-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
                 <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
                   <SolarLayersIcon size={14} />
                 </span>
@@ -265,8 +295,8 @@ export function ProductBottomSheet({
                     <SolarRulerIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">ابعاد</span>
-                    <span className="font-extrabold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">ابعاد</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
                     </span>
                   </div>
@@ -278,8 +308,8 @@ export function ProductBottomSheet({
                     <SolarBoxIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">متراژ در کارتن</span>
-                    <span className="font-extrabold text-blue-700 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ در کارتن</span>
+                    <span className="font-bold text-blue-700 text-sm leading-normal truncate block">
                       {toPersianDigits(product.sqmPerCarton)}
                     </span>
                   </div>
@@ -291,8 +321,8 @@ export function ProductBottomSheet({
                     <SolarTagIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">شناسه کالا (SKU)</span>
-                    <span className="font-mono font-bold text-slate-800 text-xs leading-none truncate block" dir="ltr">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">شناسه کالا (SKU)</span>
+                    <span className="font-mono font-bold text-slate-800 text-sm leading-normal truncate block" dir="ltr">
                       {product.sku}
                     </span>
                   </div>
@@ -304,8 +334,8 @@ export function ProductBottomSheet({
                     <SolarLayersIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">تعداد در کارتن</span>
-                    <span className="font-extrabold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">تعداد در کارتن</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {toPersianDigits(product.piecesPerCarton)} برگ
                     </span>
                   </div>
@@ -317,8 +347,8 @@ export function ProductBottomSheet({
                     <SolarShopIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">برند سازنده</span>
-                    <span className="font-bold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">برند سازنده</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {product.brand}
                     </span>
                   </div>
@@ -330,8 +360,8 @@ export function ProductBottomSheet({
                     <SolarShieldCheckIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">درجه و لعاب</span>
-                    <span className="font-bold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">درجه و لعاب</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {product.grade} · {product.finish}
                     </span>
                   </div>
@@ -343,8 +373,8 @@ export function ProductBottomSheet({
                     <SolarPaletteIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">رنگ</span>
-                    <span className="font-bold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">رنگ</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {product.color}
                     </span>
                   </div>
@@ -356,8 +386,8 @@ export function ProductBottomSheet({
                     <SolarScaleIcon size={16} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-[10px] text-slate-400 font-medium block leading-none mb-1">وزن کارتن</span>
-                    <span className="font-bold text-slate-900 text-xs leading-none truncate block">
+                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">وزن کارتن</span>
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
                       {toPersianDigits(product.cartonWeightKg)} کیلوگرم
                     </span>
                   </div>
@@ -368,7 +398,7 @@ export function ProductBottomSheet({
             {/* Optional Rich Description */}
             {(product.richDescription || product.description) && (
               <div className="p-3 bg-slate-50/60 rounded-xl border border-slate-200/60 space-y-1">
-                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wide block">
+                <span className="text-xs font-semibold text-slate-500 block mb-1">
                   توضیحات
                 </span>
                 <p className="text-xs text-slate-700 leading-relaxed">
@@ -380,11 +410,11 @@ export function ProductBottomSheet({
             {/* Tags */}
             {product.tags.length > 0 && (
               <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                <span className="text-[10px] text-slate-400 font-medium">ویژگی‌ها:</span>
+                <span className="text-xs text-slate-500 font-medium">ویژگی‌ها:</span>
                 {product.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold"
+                    className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-semibold"
                   >
                     #{tag}
                   </span>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { INITIAL_PLANS, MOCK_CUSTOMERS, type Plan, type B2BCustomer } from '../../lib/mock-data/plans'
+import { api } from '../../lib/api-client'
+import { INITIAL_PLANS, type Plan, type B2BCustomer } from '../../lib/mock-data/plans'
 import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
 
 const STORAGE_KEY = 'persianpart_plans_v1'
@@ -17,88 +18,215 @@ function getInitialPlans(): Plan[] {
   return []
 }
 
-let currentPlans: Plan[] = getInitialPlans()
-const listeners = new Set<(plans: Plan[]) => void>()
+function mapApiPlanToPlan(p: any): Plan {
+  const firstUser = Array.isArray(p.users) && p.users.length > 0 ? p.users[0] : null
+  const customerName = firstUser
+    ? (firstUser.fullName || firstUser.companyName || firstUser.phone || 'کاربر')
+    : 'عمومی'
+  const customerId = firstUser ? String(firstUser.id) : ''
+  const isActive = p.status === 'active'
 
-function broadcast(nextPlans: Plan[]) {
-  currentPlans = nextPlans
+  const productIds = Array.isArray(p.products)
+    ? p.products.map((prod: any) =>
+        typeof prod === 'object' && prod !== null ? String(prod.id) : String(prod)
+      )
+    : []
+
+  return {
+    id: String(p.id),
+    title: p.title || `${customerName} عزیز، این طرح برای شماست`,
+    customerGreeting: p.dynamicTitle || p.title || `${customerName} عزیز، این طرح برای شماست`,
+    customerId,
+    customerName,
+    type: p.type || 'credit_terms',
+    discountPercent: p.discountPercent != null ? Number(p.discountPercent) : undefined,
+    discountAmount: p.discountAmount != null ? Number(p.discountAmount) : undefined,
+    isActive,
+    status: p.status || (isActive ? 'active' : 'expired'),
+    content: p.content || '',
+    productIds,
+    notes: p.content || '',
+    createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString('fa-IR') : 'امروز',
+  }
+}
+
+let currentPlans: Plan[] = getInitialPlans()
+let currentCustomers: B2BCustomer[] = []
+const listeners = new Set<() => void>()
+
+function broadcast() {
   if (typeof window !== 'undefined') {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextPlans))
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(currentPlans))
     } catch {
       // ignore
     }
   }
-  listeners.forEach((listener) => listener(currentPlans))
+  listeners.forEach((listener) => listener())
+}
+
+async function fetchFromBackend() {
+  try {
+    const [plansRes, usersRes] = await Promise.allSettled([
+      api.plan.list({}),
+      api.user.list({ limit: 100 }),
+    ])
+
+    if (plansRes.status === 'fulfilled' && plansRes.value?.items) {
+      const mapped = plansRes.value.items.map(mapApiPlanToPlan)
+      if (mapped.length > 0) {
+        currentPlans = mapped
+      }
+    }
+
+    if (usersRes.status === 'fulfilled' && Array.isArray(usersRes.value)) {
+      currentCustomers = usersRes.value.map((u: any) => ({
+        id: String(u.id),
+        name: u.fullName || u.phone || `کاربر #${u.id}`,
+        company: u.companyName || 'فروشگاه / همکار',
+        phone: u.phone || '',
+        tier: 'تجاری ممتاز' as const,
+      }))
+    }
+
+    broadcast()
+  } catch (err) {
+    console.error('Error fetching plans/users:', err)
+  }
 }
 
 export const plansStore = {
   getPlans: () => currentPlans,
-  getCustomers: () => [] as B2BCustomer[],
-  getProducts: () => [] as Product[],
+  getCustomers: () => currentCustomers,
+  getProducts: () => MOCK_PRODUCTS,
 
-  togglePlanStatus: (planId: string) => {
-    const next = currentPlans.map((p) =>
-      p.id === planId ? { ...p, isActive: !p.isActive } : p
+  refresh: () => fetchFromBackend(),
+
+  togglePlanStatus: async (planId: string) => {
+    const plan = currentPlans.find((p) => p.id === planId)
+    if (!plan) return
+
+    const nextActive = !plan.isActive
+    const nextStatus = nextActive ? 'active' : 'expired'
+
+    currentPlans = currentPlans.map((p) =>
+      p.id === planId ? { ...p, isActive: nextActive, status: nextStatus } : p
     )
-    broadcast(next)
+    broadcast()
+
+    if (!planId.startsWith('plan-')) {
+      try {
+        await api.plan.update({
+          id: Number(planId) || planId,
+          status: nextStatus,
+        })
+      } catch (err) {
+        console.error('Failed to sync toggle with API:', err)
+      }
+    }
   },
 
-  savePlan: (data: Omit<Plan, 'id' | 'createdAt'> & { id?: string }) => {
-    const customer = MOCK_CUSTOMERS.find((c) => c.id === data.customerId)
+  savePlan: async (data: Omit<Plan, 'id' | 'createdAt'> & { id?: string }) => {
+    const customer = currentCustomers.find((c) => c.id === data.customerId)
     const customerName = customer ? `${customer.name} (${customer.company})` : data.customerName
 
+    let backendId = data.id
+
+    try {
+      if (data.id && !data.id.startsWith('plan-')) {
+        await api.plan.update({
+          id: Number(data.id) || data.id,
+          title: data.title,
+          users: data.customerId ? [Number(data.customerId) || data.customerId] : undefined,
+          content: data.content || data.notes || '',
+          type: data.type || 'credit_terms',
+          discountPercent: data.discountPercent,
+          discountAmount: data.discountAmount,
+          status: data.status || (data.isActive ? 'active' : 'expired'),
+          products: data.productIds?.map(Number).filter(Boolean),
+        })
+      } else {
+        const created: any = await api.plan.create({
+          title: data.title,
+          users: data.customerId ? [Number(data.customerId) || data.customerId] : [2],
+          content: data.content || data.notes || 'طرح ویژه',
+          type: data.type || 'credit_terms',
+          discountPercent: data.discountPercent,
+          discountAmount: data.discountAmount,
+          status: data.status || (data.isActive ? 'active' : 'expired'),
+          products: data.productIds?.map(Number).filter(Boolean),
+        })
+        if (created?.id) {
+          backendId = String(created.id)
+        }
+      }
+    } catch (err) {
+      console.error('Failed to persist plan via API:', err)
+    }
+
     if (data.id) {
-      // Update existing
-      const next = currentPlans.map((p) =>
+      currentPlans = currentPlans.map((p) =>
         p.id === data.id
           ? {
               ...p,
               ...data,
               customerName,
+              status: data.status || (data.isActive ? 'active' : 'expired'),
             }
           : p
       )
-      broadcast(next)
     } else {
-      // Create new
       const newPlan: Plan = {
-        id: `plan-${Date.now()}`,
+        id: backendId || `plan-${Date.now()}`,
         title: data.title,
         customerGreeting: data.customerGreeting,
         customerId: data.customerId,
         customerName,
+        type: data.type || 'credit_terms',
+        discountPercent: data.discountPercent,
+        discountAmount: data.discountAmount,
         isActive: data.isActive,
+        status: data.status || (data.isActive ? 'active' : 'expired'),
+        content: data.content || '',
         productIds: data.productIds,
         notes: data.notes,
         createdAt: 'امروز',
       }
-      broadcast([newPlan, ...currentPlans])
+      currentPlans = [newPlan, ...currentPlans]
     }
+
+    broadcast()
   },
 
   deletePlan: (planId: string) => {
-    const next = currentPlans.filter((p) => p.id !== planId)
-    broadcast(next)
+    currentPlans = currentPlans.filter((p) => p.id !== planId)
+    broadcast()
   },
 
   resetToDefault: () => {
-    broadcast(INITIAL_PLANS)
+    currentPlans = INITIAL_PLANS
+    broadcast()
+    fetchFromBackend()
   },
 }
 
 export function usePlans() {
   const [plans, setPlans] = useState<Plan[]>(plansStore.getPlans())
+  const [customers, setCustomers] = useState<B2BCustomer[]>(plansStore.getCustomers())
+  const [allProducts] = useState<Product[]>(plansStore.getProducts())
 
   useEffect(() => {
-    listeners.add(setPlans)
+    const handleUpdate = () => {
+      setPlans([...plansStore.getPlans()])
+      setCustomers([...plansStore.getCustomers()])
+    }
+    listeners.add(handleUpdate)
+    handleUpdate()
+    plansStore.refresh()
     return () => {
-      listeners.delete(setPlans)
+      listeners.delete(handleUpdate)
     }
   }, [])
-
-  const customers = MOCK_CUSTOMERS
-  const allProducts = MOCK_PRODUCTS
 
   const getProductById = (id: string): Product | undefined => {
     return allProducts.find((p) => p.id === id)
@@ -112,6 +240,7 @@ export function usePlans() {
     plans,
     customers,
     allProducts,
+    refresh: plansStore.refresh,
     togglePlanStatus: plansStore.togglePlanStatus,
     savePlan: plansStore.savePlan,
     deletePlan: plansStore.deletePlan,

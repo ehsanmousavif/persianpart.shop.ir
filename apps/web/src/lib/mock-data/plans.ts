@@ -12,7 +12,12 @@ export interface Plan {
   customerGreeting: string
   customerId: string
   customerName: string
+  type?: 'credit_terms' | 'product_discount'
+  discountPercent?: number
+  discountAmount?: number
   isActive: boolean
+  status?: 'active' | 'expired' | 'draft'
+  content?: string
   productIds: string[]
   notes?: string
   createdAt: string

@@ -113,17 +113,17 @@ export function ProfileView() {
       {/* User Header Card */}
       <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center text-base font-black shadow-xs shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-slate-900 to-slate-700 text-white flex items-center justify-center text-base font-bold shadow-xs shrink-0">
             {user.name.slice(0, 1)}
           </div>
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="text-sm font-black text-slate-900">{user.name}</h2>
-              <span className="px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold">
+              <h2 className="text-base font-bold text-slate-900">{user.name}</h2>
+              <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
                 همکار B2B
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1">
+            <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
               <StoreIcon size={12} className="text-slate-400 shrink-0" />
               <span className="truncate max-w-[200px]">{user.storeName}</span>
             </p>
@@ -152,11 +152,11 @@ export function ProfileView() {
               <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
                 <PencilIcon size={14} />
               </span>
-              <h3 className="text-xs sm:text-sm font-extrabold text-slate-900">
+              <h3 className="text-sm font-bold text-slate-900">
                 ویرایش اطلاعات حساب کاربری
               </h3>
             </div>
-            <span className="text-[10px] font-bold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
               حالت ویرایش
             </span>
           </div>
@@ -164,7 +164,7 @@ export function ProfileView() {
           <div className="space-y-3.5">
             {/* Representative Name */}
             <div className="space-y-1 text-start">
-              <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                 <UserIcon size={13} className="text-slate-400" />
                 <span>نام نماینده / مدیر خرید</span>
                 <span className="text-rose-500">*</span>
@@ -180,7 +180,7 @@ export function ProfileView() {
 
             {/* Store Name */}
             <div className="space-y-1 text-start">
-              <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                 <StoreIcon size={13} className="text-slate-400" />
                 <span>عنوان فروشگاه / شرکت حقوقی</span>
                 <span className="text-rose-500">*</span>
@@ -197,11 +197,11 @@ export function ProfileView() {
             {/* Phone Number - Strictly Non-Editable */}
             <div className="space-y-1 text-start">
               <div className="flex items-center justify-between">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <PhoneIcon size={13} className="text-slate-400" />
                   <span>شماره تلفن همراه</span>
                 </label>
-                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded flex items-center gap-1">
+                <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
                   <LockIcon size={10} className="text-slate-400" />
                   <span>غیرقابل تغییر</span>
                 </span>
@@ -210,20 +210,20 @@ export function ProfileView() {
                 <span className="text-xs font-bold tracking-wider" dir="ltr">
                   {toPersianDigits(user.phone)}
                 </span>
-                <span className="flex items-center gap-1 text-[10px] font-medium text-slate-500 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200/60 shadow-2xs">
+                <span className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200/60 shadow-2xs">
                   <LockIcon size={11} className="text-slate-400" />
                   <span>شناسه هویتی ثابت</span>
                 </span>
               </div>
-              <p className="text-[10px] text-slate-500 leading-relaxed pt-0.5">
+              <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
                 شماره همراه شناسه یکتای حساب شماست و امکان ویرایش یا تغییر آن وجود ندارد.
               </p>
             </div>
 
             {/* Economic / National Code */}
             <div className="space-y-1 text-start">
-              <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                <ShieldCheckIcon size={13} className="text-slate-400" />
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                <ShieldCheckIcon size={14} className="text-slate-400" />
                 <span>شناسه ملی / کد اقتصادی</span>
               </label>
               <input
@@ -239,8 +239,8 @@ export function ProfileView() {
             {/* Province & City */}
             <div className="grid grid-cols-2 gap-2.5 text-start">
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <MapPinIcon size={13} className="text-slate-400" />
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <MapPinIcon size={14} className="text-slate-400" />
                   <span>استان</span>
                 </label>
                 <input
@@ -252,8 +252,8 @@ export function ProfileView() {
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                  <MapPinIcon size={13} className="text-slate-400" />
+                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <MapPinIcon size={14} className="text-slate-400" />
                   <span>شهر</span>
                 </label>
                 <input
@@ -268,8 +268,8 @@ export function ProfileView() {
 
             {/* Delivery Warehouse Address */}
             <div className="space-y-1 text-start">
-              <label className="text-[11px] font-bold text-slate-700 flex items-center gap-1">
-                <MapPinIcon size={13} className="text-slate-400" />
+              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                <MapPinIcon size={14} className="text-slate-400" />
                 <span>نشانی دقیق انبار بارگیری و تخلیه بار</span>
               </label>
               <textarea
@@ -307,7 +307,7 @@ export function ProfileView() {
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <UserIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <span className="text-[10px] font-bold text-slate-400 block">نام نماینده / مدیر خرید</span>
+              <span className="text-xs font-semibold text-slate-500 block">نام نماینده / مدیر خرید</span>
               <span className="text-xs sm:text-sm font-bold text-slate-800">{user.name}</span>
             </div>
           </div>
@@ -315,7 +315,7 @@ export function ProfileView() {
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <StoreIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <span className="text-[10px] font-bold text-slate-400 block">عنوان فروشگاه / شرکت حقوقی</span>
+              <span className="text-xs font-semibold text-slate-500 block">عنوان فروشگاه / شرکت حقوقی</span>
               <span className="text-xs sm:text-sm font-bold text-slate-800">{user.storeName}</span>
             </div>
           </div>
@@ -324,9 +324,9 @@ export function ProfileView() {
             <PhoneIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-slate-400 block">شماره تلفن همراه</span>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded-md flex items-center gap-1">
-                  <LockIcon size={10} className="text-emerald-600" />
+                <span className="text-xs font-semibold text-slate-500 block">شماره تلفن همراه</span>
+                <span className="text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-md flex items-center gap-1">
+                  <LockIcon size={11} className="text-emerald-600" />
                   <span>احراز شده (ثابت)</span>
                 </span>
               </div>
@@ -339,7 +339,7 @@ export function ProfileView() {
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <ShieldCheckIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <span className="text-[10px] font-bold text-slate-400 block">شناسه ملی / کد اقتصادی</span>
+              <span className="text-xs font-semibold text-slate-500 block">شناسه ملی / کد اقتصادی</span>
               <span className="text-xs sm:text-sm font-bold text-slate-800 mt-0.5 block">
                 {toPersianDigits(user.economicCode || 'ثبت نشده')}
               </span>
@@ -349,11 +349,11 @@ export function ProfileView() {
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <MapPinIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <span className="text-[10px] font-bold text-slate-400 block">نشانی انبار تحویل و بارگیری</span>
+              <span className="text-xs font-semibold text-slate-500 block">نشانی انبار تحویل و بارگیری</span>
               <span className="text-xs sm:text-sm font-bold text-slate-800 leading-relaxed block mt-0.5">
                 {user.address}
               </span>
-              <span className="text-[11px] text-slate-500 font-medium block mt-1">
+              <span className="text-xs text-slate-500 font-medium block mt-1">
                 استان {user.province}، شهر {user.city}
               </span>
             </div>
@@ -361,7 +361,7 @@ export function ProfileView() {
 
           {/* Quick Edit CTA Footer inside View Card */}
           <div className="p-3 bg-slate-50/80 flex items-center justify-between">
-            <span className="text-[11px] text-slate-500">برای تغییر مشخصات یا نشانی بارگیری:</span>
+            <span className="text-xs text-slate-500">برای تغییر مشخصات یا نشانی بارگیری:</span>
             <button
               type="button"
               onClick={handleStartEdit}
@@ -386,7 +386,7 @@ export function ProfileView() {
                 <LogOutIcon size={24} />
               </div>
               <div>
-                <HeroUIModal.Heading className="text-base font-black text-slate-900">
+                <HeroUIModal.Heading className="text-base font-bold text-slate-900">
                   خروج از حساب کاربری
                 </HeroUIModal.Heading>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">

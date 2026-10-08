@@ -65,17 +65,17 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
             <BoxIcon size={18} />
           </div>
           <div>
-            <h3 className="text-xs font-black text-slate-900">
+            <h3 className="text-sm font-bold text-slate-900">
               محاسبه‌گر متراژ و کارتن تحویلی
             </h3>
-            <span className="text-[10px] text-slate-500 font-medium">
+            <span className="text-xs text-slate-500 font-medium">
               فروش صرفاً بر اساس کارتن کامل کارخانه
             </span>
           </div>
         </div>
         <div className="text-end">
-          <span className="text-[10px] text-slate-400 font-medium block">هر کارتن:</span>
-          <span className="text-xs font-black text-slate-900">
+          <span className="text-xs text-slate-500 font-medium block">هر کارتن:</span>
+          <span className="text-sm font-bold text-slate-900">
             {toPersianDigits(product.areaPerCarton)}
           </span>
         </div>
@@ -96,7 +96,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
               value={requestedArea || ''}
               onChange={(e) => handleAreaChange(e.target.value)}
               placeholder="مثال: ۳۵"
-              className="w-full h-11 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-black text-base text-start transition-all outline-hidden bg-white"
+              className="w-full h-11 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-base text-start transition-all outline-hidden bg-white"
             />
           </div>
 
@@ -110,7 +110,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
             >
               <PlusIcon size={15} />
             </button>
-            <span className="px-2 text-xs font-black text-slate-800 select-none">
+            <span className="px-2 text-xs font-bold text-slate-800 select-none">
               {toPersianDigits(calc.cartonCount)} ک
             </span>
             <button
@@ -126,13 +126,13 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
 
         {/* Quick Presets for Mobile */}
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
-          <span className="text-[10px] text-slate-400 font-medium">افزودن سریع:</span>
+          <span className="text-xs text-slate-500 font-medium">افزودن سریع:</span>
           {[10, 25, 50, 100].map((preset) => (
             <button
               key={preset}
               type="button"
               onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
-              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 hover:border-blue-400 text-[11px] font-bold text-slate-600 transition-all cursor-pointer active:scale-95 shadow-xs"
+              className="px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 hover:border-blue-400 text-xs font-semibold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
             >
               +{toPersianDigits(preset)}
             </button>
@@ -143,29 +143,29 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
       {/* Result Cards Breakdown (Slides metric style) */}
       <div className="grid grid-cols-2 gap-2 pt-1">
         <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[10px] text-slate-400 font-medium block">تعداد کارتن</span>
-          <span className="text-sm font-black text-blue-700">
+          <span className="text-xs text-slate-500 font-medium block leading-tight mb-0.5">تعداد کارتن</span>
+          <span className="text-sm font-bold text-blue-700">
             {toPersianDigits(calc.cartonCount)} کارتن
           </span>
         </div>
 
         <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[10px] text-slate-400 font-medium block">متراژ تحویلی</span>
-          <span className="text-sm font-black text-slate-900">
+          <span className="text-xs text-slate-500 font-medium block leading-tight mb-0.5">متراژ تحویلی</span>
+          <span className="text-sm font-bold text-slate-900">
             {toPersianDigits(calc.deliverableArea)}
           </span>
         </div>
 
         <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[10px] text-slate-400 font-medium block">مازاد پرت کارتن</span>
-          <span className="text-sm font-black text-slate-700">
+          <span className="text-xs text-slate-500 font-medium block leading-tight mb-0.5">مازاد پرت کارتن</span>
+          <span className="text-sm font-bold text-slate-700">
             {toPersianDigits(calc.extraArea)}
           </span>
         </div>
 
         <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-          <span className="text-[10px] text-slate-400 font-medium block">مبلغ کل برآورد</span>
-          <span className="text-sm font-black text-emerald-700 truncate block">
+          <span className="text-xs text-slate-500 font-medium block leading-tight mb-0.5">مبلغ کل برآورد</span>
+          <span className="text-sm font-bold text-emerald-700 truncate block">
             {formatToman(calc.totalPrice)}
           </span>
         </div>
@@ -188,7 +188,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
           <button
             type="button"
             onClick={() => setRequestedArea(Math.round(product.stockCartons * product.areaPerCarton * 100) / 100)}
-            className="text-[11px] font-bold text-amber-900 underline cursor-pointer"
+            className="text-xs font-bold text-amber-900 underline cursor-pointer"
           >
             تنظیم به سقف انبار
           </button>
@@ -207,7 +207,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
         type="button"
         onClick={handleAddToCart}
         disabled={isOutOfStock || isExceedingStock || calc.cartonCount <= 0 || isAdding}
-        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-black text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <ShoppingCartIcon size={18} />
         <span>افزودن به سبد خرید ({toPersianDigits(calc.cartonCount)} کارتن)</span>

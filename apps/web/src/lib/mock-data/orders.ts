@@ -1,10 +1,15 @@
 export type OrderStatus =
   | 'pending'
+  | 'checking'
   | 'approved'
   | 'preparing'
-  | 'ready'
+  | 'shipping'
   | 'completed'
+  | 'cancelled_by_customer'
+  | 'cancelled_by_admin'
   | 'cancelled'
+  | 'processing'
+  | 'ready'
 
 export interface OrderItem {
   productId: string
@@ -40,6 +45,7 @@ export interface Order {
   deliveryAddress: string
   deliveryMethod: string
   notes?: string
+  cancellationDeadline?: string
   items: OrderItem[]
   subtotal: number
   discountAmount: number
@@ -52,12 +58,17 @@ export const ORDER_STATUS_MAP: Record<
   OrderStatus,
   { label: string; color: 'warning' | 'primary' | 'secondary' | 'success' | 'danger' | 'default' }
 > = {
-  pending: { label: 'در انتظار بررسی', color: 'warning' },
-  approved: { label: 'تأیید شده', color: 'secondary' },
-  preparing: { label: 'در حال آماده‌سازی', color: 'primary' },
-  ready: { label: 'آماده تحویل', color: 'primary' },
-  completed: { label: 'تکمیل شده', color: 'success' },
+  pending: { label: 'در انتظار تأیید اولیه', color: 'warning' },
+  checking: { label: 'در حال بررسی واحد بازرگانی', color: 'secondary' },
+  approved: { label: 'تأیید شده بازرگانی', color: 'secondary' },
+  preparing: { label: 'در حال آماده‌سازی و بارگیری', color: 'primary' },
+  shipping: { label: 'در حال ارسال و بارنامه', color: 'primary' },
+  completed: { label: 'تکمیل شده و تحویل نهایی', color: 'success' },
+  cancelled_by_customer: { label: 'لغو شده توسط خریدار', color: 'danger' },
+  cancelled_by_admin: { label: 'لغو شده توسط مدیریت / بازرگانی', color: 'danger' },
   cancelled: { label: 'لغو شده', color: 'danger' },
+  processing: { label: 'در حال آماده‌سازی', color: 'primary' },
+  ready: { label: 'آماده تحویل و بارنامه', color: 'primary' },
 }
 
 export const MOCK_ORDERS: Order[] = []

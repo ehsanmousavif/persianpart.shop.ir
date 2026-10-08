@@ -18,10 +18,10 @@ export function AppHeader() {
             <LayersIcon size={18} className="text-white" />
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="font-extrabold text-base tracking-tight text-slate-900">
+            <span className="font-bold text-base text-slate-900">
               پرشین‌پارت
             </span>
-            <span className="text-[10px] font-black px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200/80">
+            <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200/80">
               B2B
             </span>
           </div>

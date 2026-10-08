@@ -9,8 +9,8 @@ export const Route = createRootRoute({
 
 function RootComponent() {
   return (
-    <div className="min-h-screen bg-slate-200/80 flex justify-center selection:bg-blue-600 selection:text-white" dir="rtl">
-      <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-2xl relative border-x border-slate-300/70">
+    <div className="min-h-screen bg-slate-200/60 flex justify-center selection:bg-blue-600 selection:text-white" dir="rtl">
+      <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-xl relative border-x border-slate-200/90">
         <AppHeader />
 
         {/* Main App Content Area */}
