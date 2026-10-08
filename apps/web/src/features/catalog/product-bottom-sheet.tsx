@@ -24,6 +24,7 @@ export interface ProductBottomSheetProps {
   isSelected?: boolean
   onClose: () => void
   onToggleSelect?: () => void
+  onOrderDirect?: (product: Product) => void
 }
 
 interface GalleryMediaItem {
@@ -39,6 +40,7 @@ export function ProductBottomSheet({
   isSelected = false,
   onClose,
   onToggleSelect,
+  onOrderDirect,
 }: ProductBottomSheetProps) {
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null)
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
@@ -210,29 +212,41 @@ export function ProductBottomSheet({
                 <span className="text-[10px] text-slate-500 font-medium ms-1">/ هر متر مربع</span>
               </div>
 
-              {onToggleSelect && !isOutOfStock && (
-                <button
-                  type="button"
-                  onClick={onToggleSelect}
-                  className={`px-3.5 py-2 rounded-xl text-xs font-black flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 ${
-                    isSelected
-                      ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                      : 'bg-slate-900 hover:bg-slate-800 text-white'
-                  }`}
-                >
-                  {isSelected ? (
-                    <>
-                      <CheckIcon size={14} className="stroke-[3]" />
-                      <span>انتخاب‌شده</span>
-                    </>
-                  ) : (
-                    <>
-                      <PlusIcon size={14} className="stroke-[3]" />
-                      <span>انتخاب کالا</span>
-                    </>
-                  )}
-                </button>
-              )}
+              <div className="flex items-center gap-2">
+                {onToggleSelect && !isOutOfStock && (
+                  <button
+                    type="button"
+                    onClick={onToggleSelect}
+                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 ${
+                      isSelected
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    {isSelected ? (
+                      <>
+                        <CheckIcon size={14} className="stroke-[3] text-emerald-600" />
+                        <span>انتخاب‌شده</span>
+                      </>
+                    ) : (
+                      <>
+                        <PlusIcon size={14} className="stroke-[3]" />
+                        <span>افزودن به لیست</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {onOrderDirect && !isOutOfStock && (
+                  <button
+                    type="button"
+                    onClick={() => onOrderDirect(product)}
+                    className="px-4 py-2 rounded-xl text-xs font-black bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 active:scale-95"
+                  >
+                    <span>ثبت سفارش</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Structured Specifications with Solar Icons */}

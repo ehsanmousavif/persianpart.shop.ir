@@ -1,0 +1,151 @@
+import type { CollectionConfig } from 'payload'
+
+export const Plans: CollectionConfig = {
+  slug: 'plans',
+  labels: {
+    singular: 'طرح اختصاصی',
+    plural: 'طرح‌ها و بسته‌ها',
+  },
+  admin: {
+    useAsTitle: 'title',
+    defaultColumns: ['title', 'status', 'users', 'createdAt'],
+    group: 'مدیریت فروش و مشتریان',
+    description: 'مدیریت طرح‌ها، تخفیف‌ها و پیام‌های خوش‌آمدگویی اختصاصی برای کاربران و مشتریان منتخب.',
+  },
+  access: {
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
+  },
+  hooks: {
+    beforeValidate: [
+      async ({ data, req }) => {
+        if (!data) return data
+
+        // 1. Dynamic title generation if title is blank
+        if (!data.title || data.title.trim() === '') {
+          let targetName = 'همکار'
+          if (Array.isArray(data.users) && data.users.length > 0) {
+            const firstUserId =
+              typeof data.users[0] === 'object' && data.users[0] !== null
+                ? (data.users[0] as any).id
+                : data.users[0]
+
+            try {
+              const userDoc = await req.payload.findByID({
+                collection: 'users',
+                id: firstUserId,
+                depth: 0,
+              })
+              if (userDoc && (userDoc as any).fullName) {
+                targetName = (userDoc as any).fullName
+              }
+            } catch {
+              // fallback
+            }
+          }
+
+          data.title = `${targetName} عزیز، این طرح برای شماست`
+        }
+
+        return data
+      },
+    ],
+    afterRead: [
+      ({ doc, context }) => {
+        // 2. Dynamic title resolution based on context.name or context.user
+        const contextName =
+          (context as any)?.name ||
+          (context as any)?.user?.fullName ||
+          (context as any)?.user?.companyName
+
+        if (contextName) {
+          doc.dynamicTitle = `${contextName} عزیز، این طرح برای شماست`
+          if (doc.title && doc.title.includes('{name}')) {
+            doc.title = doc.title.replace(/\{name\}/g, contextName)
+          }
+        } else {
+          doc.dynamicTitle = doc.title
+        }
+
+        return doc
+      },
+    ],
+  },
+  fields: [
+    {
+      name: 'title',
+      type: 'text',
+      label: 'عنوان طرح (اسم)',
+      admin: {
+        description:
+          'در صورت خالی بودن، به صورت خودکار به شکل «[نام کاربر] عزیز، این طرح برای شماست» تولید می‌شود. همچنین می‌توانید از {name} در متن استفاده کنید.',
+      },
+    },
+    {
+      name: 'users',
+      type: 'relationship',
+      relationTo: 'users',
+      hasMany: true,
+      required: true,
+      label: 'کاربران هدف (لیست Userها)',
+      admin: {
+        description: 'مشخص کنید این طرح به کدام کاربر یا کاربران اختصاص داده می‌شود.',
+      },
+    },
+    {
+      name: 'content',
+      type: 'textarea',
+      required: true,
+      label: 'متن پیام / توضیحات طرح (Textarea)',
+      admin: {
+        description: 'متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.',
+      },
+    },
+    {
+      name: 'status',
+      type: 'select',
+      required: true,
+      defaultValue: 'active',
+      label: 'وضعیت طرح (Status)',
+      options: [
+        {
+          label: 'در حال اجرا (فعال)',
+          value: 'active',
+        },
+        {
+          label: 'منقضی شده',
+          value: 'expired',
+        },
+        {
+          label: 'پیش‌نویس',
+          value: 'draft',
+        },
+      ],
+      admin: {
+        description: 'وضعیت اجرای طرح: در حال اجرا، منقضی شده یا پیش‌نویس.',
+      },
+    },
+    {
+      name: 'products',
+      type: 'relationship',
+      relationTo: 'products',
+      hasMany: true,
+      label: 'محصولات پیشنهادی طرح (اختیاری)',
+      admin: {
+        description: 'کالاهای منتخب برای این طرح تجاری.',
+      },
+    },
+    {
+      name: 'expiresAt',
+      type: 'date',
+      label: 'تاریخ و مهلت انقضا (اختیاری)',
+      admin: {
+        date: {
+          pickerAppearance: 'dayAndTime',
+        },
+      },
+    },
+  ],
+}

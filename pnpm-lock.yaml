@@ -68,15 +68,6 @@ importers:
 
   apps/cms:
     dependencies:
-      '@orpc/client':
-        specifier: 2.0.0-beta.42
-        version: 2.0.0-beta.42
-      '@orpc/contract':
-        specifier: 2.0.0-beta.42
-        version: 2.0.0-beta.42
-      '@orpc/server':
-        specifier: 2.0.0-beta.42
-        version: 2.0.0-beta.42
       '@payloadcms/db-postgres':
         specifier: ^3.90.2
         version: 3.90.2(@libsql/client@0.14.0)(payload@3.90.2(graphql@16.14.2)(typescript@6.0.3))
@@ -101,9 +92,6 @@ importers:
       dotenv:
         specifier: ^16.4.7
         version: 16.6.1
-      graphql:
-        specifier: ^16.8.1
-        version: 16.14.2
       next:
         specifier: 16.3.8
         version: 16.3.8(@babel/core@7.29.7)(@types/node@24.19.1)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4)

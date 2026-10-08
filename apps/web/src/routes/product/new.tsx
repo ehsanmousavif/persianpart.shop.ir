@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Slider, NumberField, I18nProvider } from '@heroui/react'
-import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
+import { useCatalog } from '../../features/catalog/catalog-store'
+import type { Product } from '../../lib/mock-data/products'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
@@ -34,6 +35,7 @@ export const Route = createFileRoute('/product/new')({
 function ProductNewConfigurationPage() {
   const searchParams = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
+  const { allProducts } = useCatalog()
 
   // Modal state for Pre-Invoice
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
@@ -41,7 +43,10 @@ function ProductNewConfigurationPage() {
   // Selected product IDs parsed from query params with localStorage fallback
   const [selectedIds, setSelectedIds] = useState<string[]>(() => {
     if (searchParams.selected) {
-      const parsed = searchParams.selected.split(',').filter(Boolean)
+      const parsed = searchParams.selected
+        .split(',')
+        .map((s) => s.replace(/["']/g, '').trim())
+        .filter(Boolean)
       try {
         localStorage.setItem('persianpart_selected_products', JSON.stringify(parsed))
       } catch {
@@ -51,42 +56,50 @@ function ProductNewConfigurationPage() {
     }
     try {
       const saved = localStorage.getItem('persianpart_selected_products')
-      if (saved) return JSON.parse(saved)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          return parsed.map((s: any) => String(s).replace(/["']/g, '').trim()).filter(Boolean)
+        }
+      }
     } catch {
       // Ignore localStorage errors
     }
     return []
   })
 
-  // Selected products resolved from mock database
+  // Selected products resolved from live catalog database
   const selectedProducts = useMemo(() => {
     return selectedIds
-      .map((id) => MOCK_PRODUCTS.find((p) => p.id === id))
+      .map((id) => {
+        const cleanId = String(id).replace(/["']/g, '').trim()
+        return allProducts.find(
+          (p) =>
+            String(p.id) === cleanId ||
+            p.sku === cleanId ||
+            p.slug === cleanId
+        )
+      })
       .filter((p): p is Product => p !== undefined)
-  }, [selectedIds])
+  }, [selectedIds, allProducts])
 
   // Quantities state mapping productId -> area in sqm
-  const [quantities, setQuantities] = useState<Record<string, number>>(() => {
-    const initial: Record<string, number> = {}
-    const ids = searchParams.selected
-      ? searchParams.selected.split(',').filter(Boolean)
-      : (() => {
-          try {
-            const saved = localStorage.getItem('persianpart_selected_products')
-            return saved ? (JSON.parse(saved) as string[]) : []
-          } catch {
-            return []
-          }
-        })()
+  const [quantities, setQuantities] = useState<Record<string, number>>({})
 
-    ids.forEach((id: string) => {
-      const prod = MOCK_PRODUCTS.find((p) => p.id === id)
-      if (prod) {
-        initial[id] = Math.min(prod.inventorySqm, Math.max(prod.sqmPerCarton, 10))
-      }
-    })
-    return initial
-  })
+  // Automatically initialize quantities when products are resolved
+  useEffect(() => {
+    if (selectedProducts.length > 0) {
+      setQuantities((prev) => {
+        const next = { ...prev }
+        selectedProducts.forEach((prod) => {
+          if (!next[prod.id]) {
+            next[prod.id] = Math.max(prod.sqmPerCarton || 1, 10)
+          }
+        })
+        return next
+      })
+    }
+  }, [selectedProducts])
 
   const handleAreaChange = (productId: string, val: number, inventorySqm: number) => {
     const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10

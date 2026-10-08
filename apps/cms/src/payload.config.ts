@@ -14,6 +14,7 @@ import { Brands } from './collections/Brands'
 import { Tags } from './collections/Tags'
 import { Products } from './collections/Products'
 import { Orders } from './collections/Orders'
+import { Plans } from './collections/Plans'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -27,8 +28,11 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Admins, Users, Media, Categories, Brands, Tags, Products, Orders],
+  collections: [Admins, Users, Media, Categories, Brands, Tags, Products, Orders, Plans],
   editor: lexicalEditor(),
+  graphQL: {
+    disable: true,
+  },
   secret: process.env.PAYLOAD_SECRET || 'persianpart-dev-secret-key-32-chars-long!!',
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -38,6 +42,7 @@ export default buildConfig({
         pool: {
           connectionString: databaseUri,
         },
+        push: false,
       })
     : sqliteAdapter({
         client: {

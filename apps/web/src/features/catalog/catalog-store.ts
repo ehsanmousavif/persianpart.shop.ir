@@ -49,30 +49,35 @@ export function useCatalog() {
               const width = item.width || 60
               const height = item.height || 120
               const dimStr = `${width}×${height}`
+              const brandName = typeof item.brand === 'object' && item.brand !== null ? item.brand.name : (item.brandName || 'پرشین پارت')
+              const categoryName = typeof item.category === 'object' && item.category !== null ? item.category.name : (item.categoryName || 'عمومی')
+              const price = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
+              const coverUrl = item.cover?.url || (typeof item.cover === 'string' ? item.cover : '/assets/images/tile-sample-1.jpg')
+
               return {
-                id: item.id,
-                slug: item.slug,
+                id: String(item.id),
+                slug: item.slug || `product-${item.id}`,
                 name: item.name,
                 sku: item.sku,
                 dimensions: { width, height },
                 dimension: dimStr,
-                brand: item.brandName || 'پرشین پارت',
-                color: item.color || 'سفید',
-                finish: (item.finish as any) || 'پولیش',
-                grade: (item.grade as any) || 'درجه ۱',
-                category: (item.categoryName as any) || 'پرسلان کف',
-                finalCustomerPricePerSqm: item.finalCustomerPricePerSqm,
-                pricePerM2: item.finalCustomerPricePerSqm,
-                sqmPerCarton: item.sqmPerCarton,
-                areaPerCarton: item.sqmPerCarton,
-                piecesPerCarton: item.piecesPerCarton,
-                tilesPerCarton: item.piecesPerCarton,
+                brand: brandName,
+                color: item.color || 'استاندارد',
+                finish: (item.finish as any) || 'فابریک',
+                grade: (item.grade as any) || 'اصلی (Genuine)',
+                category: categoryName,
+                finalCustomerPricePerSqm: price,
+                pricePerM2: price,
+                sqmPerCarton: item.sqmPerCarton || 1,
+                areaPerCarton: item.sqmPerCarton || 1,
+                piecesPerCarton: item.piecesPerCarton || 1,
+                tilesPerCarton: item.piecesPerCarton || 1,
                 cartonWeightKg: 28,
                 inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
                 stockCartons:
                   item.availability === 'out_of_stock'
                     ? 0
-                    : Math.floor(500 / item.sqmPerCarton),
+                    : Math.floor(500 / (item.sqmPerCarton || 1)),
                 inStock: item.availability !== 'out_of_stock',
                 stockStatus:
                   item.availability === 'out_of_stock'
@@ -81,10 +86,10 @@ export function useCatalog() {
                       ? 'low_stock'
                       : 'in_stock',
                 description: item.richDescription || undefined,
-                applications: ['کف سالن', 'محیط تجاری'],
-                tags: item.tags || [],
-                images: item.cover ? [item.cover] : ['/assets/images/tile-sample-1.jpg'],
-                gallery: item.gallery || [],
+                applications: ['خودرو سواری', 'سفارش عمده'],
+                tags: Array.isArray(item.tags) ? item.tags.map((t: any) => typeof t === 'object' ? t.name : t) : [],
+                images: [coverUrl],
+                gallery: Array.isArray(item.gallery) ? item.gallery.map((g: any) => g.image?.url || g.image).filter(Boolean) : [],
               }
             })
             setProductsList(liveMapped)

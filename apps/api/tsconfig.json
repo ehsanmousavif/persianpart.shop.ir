@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@payload-config": [
+        "../cms/src/payload.config.ts"
       ]
     },
     "target": "ES2022"

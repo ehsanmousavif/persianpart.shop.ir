@@ -1,8 +1,8 @@
-import { useState } from 'react'
-import { createFileRoute, Link, useNavigate, notFound } from '@tanstack/react-router'
+import { useState, useEffect } from 'react'
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Modal as HeroUIModal } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
-import { ORDER_STATUS_MAP } from '../../lib/mock-data/orders'
+import { ORDER_STATUS_MAP, type Order, type OrderItem } from '../../lib/mock-data/orders'
 import { OrderTimeline } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -28,16 +28,59 @@ export const Route = createFileRoute('/orders/$id')({
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData()
   const navigate = useNavigate()
-  const { getOrderById, cancelOrder, reorderToCart } = useOrders()
+  const { getOrderById, fetchOrderById, cancelOrder, reorderToCart, orders } = useOrders()
   const [showCancelModal, setShowCancelModal] = useState(false)
+  const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
+  const [isLoading, setIsLoading] = useState(!order)
 
-  const order = getOrderById(orderId)
+  useEffect(() => {
+    let isMounted = true
+    const cached = getOrderById(orderId)
+    if (cached) {
+      setOrder(cached)
+      setIsLoading(false)
+      return
+    }
 
-  if (!order) {
-    throw notFound()
+    setIsLoading(true)
+    fetchOrderById(orderId).then((res) => {
+      if (isMounted) {
+        setOrder(res)
+        setIsLoading(false)
+      }
+    })
+
+    return () => {
+      isMounted = false
+    }
+  }, [orderId, orders])
+
+  if (isLoading) {
+    return (
+      <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
+        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
+        <p className="text-xs font-bold text-slate-500">در حال دریافت اطلاعات سفارش از سرور...</p>
+      </div>
+    )
   }
 
-  const statusConfig = ORDER_STATUS_MAP[order.status]
+  if (!order) {
+    return (
+      <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
+        <h2 className="text-sm font-black text-slate-800">سفارش مورد نظر یافت نشد</h2>
+        <p className="text-xs text-slate-500">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
+        <Link
+          to="/orders"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800"
+        >
+          <ArrowRightIcon size={14} />
+          <span>مشاهده همه سفارش‌ها</span>
+        </Link>
+      </div>
+    )
+  }
+
+  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || { label: order.statusLabel || 'در انتظار بررسی', color: 'warning' as const }
   const isCancellable = order.status === 'pending' || order.status === 'approved'
 
   const handleCancel = () => {
@@ -128,7 +171,7 @@ function OrderDetailPage() {
         </h3>
 
         <div className="divide-y divide-slate-100">
-          {order.items.map((item, idx) => (
+          {order.items.map((item: OrderItem, idx: number) => (
             <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Link

@@ -1,3 +1,3 @@
-export { createApiClient, contract } from '@persianpart/cms/client'
-export type { ApiClient } from '@persianpart/cms/client'
-export type { AppRouter } from './routers'
+export { createApiClient, contract } from './client'
+export type { ApiClient } from './client'
+export type AppRouter = import('./client').ApiClient

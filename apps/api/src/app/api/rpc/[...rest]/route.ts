@@ -1,27 +1,13 @@
-const CMS_ORIGIN = process.env.CMS_URL || 'http://localhost:5148'
+import { handler } from '@/rpc/handler'
+import { createContext } from '@/rpc/context'
 
 async function handle(request: Request) {
-  const url = new URL(request.url)
-  const targetUrl = new URL(url.pathname + url.search, CMS_ORIGIN)
+  const { matched, response } = await handler.handle(request, {
+    prefix: '/api/rpc',
+    context: async () => createContext(request),
+  })
 
-  const headers = new Headers(request.headers)
-  headers.set('host', targetUrl.host)
-
-  try {
-    const res = await fetch(targetUrl.toString(), {
-      method: request.method,
-      headers,
-      body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.arrayBuffer() : undefined,
-    })
-
-    return res
-  } catch (error) {
-    console.error('[API Proxy Error]:', error)
-    return new Response(JSON.stringify({ error: 'Gateway error - CMS offline or unreachable' }), {
-      status: 502,
-      headers: { 'Content-Type': 'application/json' },
-    })
-  }
+  return matched ? response : new Response('Not found', { status: 404 })
 }
 
 export const GET = handle
@@ -30,4 +16,3 @@ export const PUT = handle
 export const PATCH = handle
 export const DELETE = handle
 export const OPTIONS = handle
-

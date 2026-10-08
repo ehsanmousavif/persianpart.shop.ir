@@ -76,6 +76,7 @@ export interface Config {
     tags: Tag;
     products: Product;
     orders: Order;
+    plans: Plan;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -91,6 +92,7 @@ export interface Config {
     tags: TagsSelect<false> | TagsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    plans: PlansSelect<false> | PlansSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -190,20 +192,27 @@ export interface Admin {
   collection: 'admins';
 }
 /**
+ * مشتریان سامانه توسط ادمین در این بخش تعریف می‌شوند. ورود به سایت منحصراً برای شماره‌های فعال در این لیست مجاز است.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
   id: number;
   /**
-   * شماره موبایل معتبر (مثال: 09121234567)
+   * این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و مشتری امکان ویرایش آن را ندارد.
    */
   phone: string;
   fullName: string;
+  companyName?: string | null;
   nationalCode?: string | null;
+  economicCode?: string | null;
   customerType: 'regular' | 'mechanic' | 'store_partner' | 'wholesaler';
   status: 'active' | 'pending' | 'suspended';
-  companyName?: string | null;
+  creditLimit?: number | null;
+  province?: string | null;
+  city?: string | null;
+  address?: string | null;
   addresses?:
     | {
         title: string;
@@ -214,6 +223,7 @@ export interface User {
         id?: string | null;
       }[]
     | null;
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
   email?: string | null;
@@ -387,6 +397,38 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * مدیریت طرح‌ها، تخفیف‌ها و پیام‌های خوش‌آمدگویی اختصاصی برای کاربران و مشتریان منتخب.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans".
+ */
+export interface Plan {
+  id: number;
+  /**
+   * در صورت خالی بودن، به صورت خودکار به شکل «[نام کاربر] عزیز، این طرح برای شماست» تولید می‌شود. همچنین می‌توانید از {name} در متن استفاده کنید.
+   */
+  title?: string | null;
+  /**
+   * مشخص کنید این طرح به کدام کاربر یا کاربران اختصاص داده می‌شود.
+   */
+  users: (number | User)[];
+  /**
+   * متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.
+   */
+  content: string;
+  /**
+   * وضعیت اجرای طرح: در حال اجرا، منقضی شده یا پیش‌نویس.
+   */
+  status: 'active' | 'expired' | 'draft';
+  /**
+   * کالاهای منتخب برای این طرح تجاری.
+   */
+  products?: (number | Product)[] | null;
+  expiresAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -441,6 +483,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: number | Order;
+      } | null)
+    | ({
+        relationTo: 'plans';
+        value: number | Plan;
       } | null);
   globalSlug?: string | null;
   user:
@@ -527,10 +573,15 @@ export interface AdminsSelect<T extends boolean = true> {
 export interface UsersSelect<T extends boolean = true> {
   phone?: T;
   fullName?: T;
+  companyName?: T;
   nationalCode?: T;
+  economicCode?: T;
   customerType?: T;
   status?: T;
-  companyName?: T;
+  creditLimit?: T;
+  province?: T;
+  city?: T;
+  address?: T;
   addresses?:
     | T
     | {
@@ -541,6 +592,7 @@ export interface UsersSelect<T extends boolean = true> {
         addressDetail?: T;
         id?: T;
       };
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -678,6 +730,20 @@ export interface OrdersSelect<T extends boolean = true> {
         status?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "plans_select".
+ */
+export interface PlansSelect<T extends boolean = true> {
+  title?: T;
+  users?: T;
+  content?: T;
+  status?: T;
+  products?: T;
+  expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

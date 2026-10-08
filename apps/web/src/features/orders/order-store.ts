@@ -35,11 +35,120 @@ function broadcast(orders: Order[]) {
   listeners.forEach((listener) => listener(currentOrders))
 }
 
+import { api } from '../../lib/api-client'
+
+export function mapDocToOrder(doc: any): Order {
+  const now = new Date(doc.createdAt || Date.now())
+  const persianDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`
+  const normalizedStatus = doc.status === 'processing' ? 'preparing' : (doc.status || 'pending')
+
+  const statusLabels: Record<string, string> = {
+    pending: 'در انتظار بررسی',
+    approved: 'تأیید شده',
+    processing: 'در حال آماده‌سازی',
+    preparing: 'در حال آماده‌سازی',
+    ready: 'آماده تحویل',
+    completed: 'تکمیل شده',
+    cancelled: 'لغو شده',
+  }
+
+  const items: OrderItem[] = (doc.items || []).map((i: any) => {
+    const prod = typeof i.product === 'object' && i.product !== null ? i.product : null
+    const width = prod?.width || 60
+    const height = prod?.height || 120
+    const coverUrl = prod?.cover?.url || (typeof prod?.cover === 'string' ? prod.cover : '/assets/images/tile-sample-1.jpg')
+    return {
+      productId: String(prod?.id || i.product || ''),
+      productName: prod?.name || 'قطعه',
+      productSlug: prod?.slug || '',
+      productSku: prod?.sku || '',
+      productImage: coverUrl,
+      dimension: `${width}×${height}`,
+      requestedArea: i.requestedArea || 1,
+      cartonCount: i.cartonCount || 1,
+      deliverableArea: i.deliverableArea || 1,
+      unitPrice: i.unitPrice || 0,
+      totalPrice: i.totalPrice || 0,
+    }
+  })
+
+  const rawTimeline = Array.isArray(doc.timeline) && doc.timeline.length > 0 ? doc.timeline : [
+    {
+      title: 'ثبت سفارش',
+      description: 'سفارش توسط خریدار در سامانه ثبت گردید.',
+      timestamp: doc.createdAt || new Date().toISOString(),
+      status: 'completed',
+    },
+  ]
+
+  const timeline = rawTimeline.map((t: any, idx: number) => ({
+    id: t.id || `tl-${idx}`,
+    title: t.title || 'رویداد',
+    description: t.description || '',
+    timestamp: t.timestamp ? new Date(t.timestamp).toLocaleDateString('fa-IR') : persianDate,
+    status: (t.status === 'completed' || t.status === 'approved' || idx === 0) ? ('completed' as const) : ('pending' as const),
+  }))
+
+  const userObj = typeof doc.user === 'object' && doc.user !== null ? doc.user : null
+
+  return {
+    id: String(doc.id),
+    orderNumber: doc.orderNumber || `PP-${doc.id}`,
+    date: persianDate,
+    status: normalizedStatus as any,
+    statusLabel: statusLabels[doc.status] || 'در انتظار بررسی',
+    storeName: userObj?.companyName || 'بازرگانی دهقان (پرشین پارت)',
+    customerName: userObj?.fullName || 'خریدار محترم',
+    customerPhone: userObj?.phone || '',
+    deliveryAddress: doc.deliveryAddress || userObj?.address || 'انبار مرکزی بازرگانی دهقان',
+    deliveryMethod: 'باربری بین‌شهری / تیپاکس',
+    notes: doc.notes || '',
+    items,
+    subtotal: doc.subtotal || 0,
+    discountAmount: doc.discountAmount || 0,
+    taxAmount: doc.taxAmount || 0,
+    finalTotal: doc.finalTotal || doc.subtotal || 0,
+    timeline,
+  }
+}
+
 export const orderStore = {
   getOrders: () => currentOrders,
   getOrderById: (id: string) => currentOrders.find((o) => o.id === id || o.orderNumber === id),
 
+  fetchOrderById: async (id: string): Promise<Order | null> => {
+    const existing = currentOrders.find((o) => o.id === id || o.orderNumber === id)
+    if (existing) return existing
+
+    try {
+      const doc: any = await api.order.getById({ id })
+      if (doc && doc.id) {
+        const order = mapDocToOrder(doc)
+        const updated = [order, ...currentOrders.filter((o) => o.id !== order.id)]
+        broadcast(updated)
+        return order
+      }
+    } catch (err) {
+      console.warn('fetchOrderById error:', err)
+    }
+    return null
+  },
+
+  syncFromApi: async () => {
+    try {
+      const res = await api.order.list()
+      if (res.items && res.items.length > 0) {
+        const liveMapped: Order[] = res.items.map(mapDocToOrder)
+        broadcast(liveMapped)
+      }
+    } catch {
+      // Keep existing orders if API fails
+    }
+  },
+
   createOrder: (payload: {
+    id?: string
+    orderNumber?: string
     items: OrderItem[]
     subtotal: number
     discountAmount: number
@@ -49,8 +158,8 @@ export const orderStore = {
     notes?: string
   }): Order => {
     const randomNum = Math.floor(1000 + Math.random() * 9000)
-    const newId = `ord-${randomNum}`
-    const orderNumber = `PP-1403-${randomNum}`
+    const newId = payload.id || `ord-${randomNum}`
+    const orderNumber = payload.orderNumber || `PP-1403-${randomNum}`
     const now = new Date()
     const persianDate = `۱۴۰۳/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} - ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
 
@@ -168,6 +277,7 @@ export function useOrders() {
   const [orders, setOrders] = useState<Order[]>(orderStore.getOrders())
 
   useEffect(() => {
+    orderStore.syncFromApi()
     listeners.add(setOrders)
     return () => {
       listeners.delete(setOrders)
@@ -177,6 +287,7 @@ export function useOrders() {
   return {
     orders,
     getOrderById: orderStore.getOrderById,
+    fetchOrderById: orderStore.fetchOrderById,
     createOrder: orderStore.createOrder,
     cancelOrder: orderStore.cancelOrder,
     reorderToCart: orderStore.reorderToCart,

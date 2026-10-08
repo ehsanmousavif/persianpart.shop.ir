@@ -4,8 +4,8 @@ import type { AppRouter, ApiClient } from '@persianpart/api'
 // In development & production, fallback to current origin or CMS port 5148
 const defaultBaseUrl =
   typeof window !== 'undefined'
-    ? (import.meta.env.PROD ? window.location.origin : 'http://localhost:5148')
-    : 'http://localhost:5148'
+    ? (import.meta.env.PROD ? window.location.origin : 'http://localhost:5149')
+    : 'http://localhost:5149'
 
 export const api = createApiClient({
   baseURL: import.meta.env.VITE_API_URL || defaultBaseUrl,

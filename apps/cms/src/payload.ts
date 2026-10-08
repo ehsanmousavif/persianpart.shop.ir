@@ -1,4 +1,4 @@
-import config from '@payload-config'
+import config from './payload.config'
 import { getPayload as getPayloadLocal, type Payload } from 'payload'
 
 let cachedPayload: Payload | null = null
@@ -26,7 +26,7 @@ export interface CrudOperations<T = any> {
   delete: (args: { id: string | number }) => Promise<T>
 }
 
-type CollectionSlugs = 'orders' | 'products' | 'categories' | 'brands' | 'tags' | 'users' | 'admins' | 'media'
+type CollectionSlugs = 'orders' | 'products' | 'categories' | 'brands' | 'tags' | 'users' | 'admins' | 'media' | 'plans'
 
 export const payload = {
   get client(): Promise<Payload> {

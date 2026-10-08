@@ -5,6 +5,7 @@ import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { HoldConfirmButton } from '../../components/ui/hold-confirm-button'
 import { orderStore } from '../orders/order-store'
+import { api } from '../../lib/api-client'
 import type { OrderItem } from '../../lib/mock-data/orders'
 import {
   XIcon,
@@ -95,7 +96,7 @@ export function PreInvoiceModal({
     }
   }, [invoiceItems])
 
-  const handleFinalConfirm = () => {
+  const handleFinalConfirm = async () => {
     const orderItems: OrderItem[] = invoiceItems.map((item) => ({
       productId: item.product.id,
       productName: item.product.name,
@@ -110,7 +111,27 @@ export function PreInvoiceModal({
       totalPrice: item.totalPrice,
     }))
 
+    let createdId = ''
+    let createdOrderNumber = ''
+    try {
+      const res: any = await api.order.submit({
+        items: invoiceItems.map((item) => ({
+          productId: isNaN(Number(item.product.id)) ? item.product.id : Number(item.product.id),
+          requestedArea: item.requestedArea,
+        })),
+        notes: 'ثبت سفارش از کاتالوگ آنلاین',
+      })
+      if (res?.id) {
+        createdId = String(res.id)
+        createdOrderNumber = res.orderNumber
+      }
+    } catch (err) {
+      console.warn('Backend order submission fallback:', err)
+    }
+
     const newOrder = orderStore.createOrder({
+      id: createdId || undefined,
+      orderNumber: createdOrderNumber || undefined,
       items: orderItems,
       subtotal: invoiceTotals.totalPrice,
       discountAmount: 0,

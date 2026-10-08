@@ -18,6 +18,7 @@ export const contract = {
 
   auth: {
     requestOtp: oc
+      .errors({ FORBIDDEN: {}, BAD_REQUEST: {}, NOT_FOUND: {} })
       .input(
         z.object({
           phone: z.string().optional(),
@@ -32,6 +33,7 @@ export const contract = {
       ),
 
     verifyOtp: oc
+      .errors({ FORBIDDEN: {}, BAD_REQUEST: {}, NOT_FOUND: {}, UNAUTHORIZED: {} })
       .input(
         z.object({
           phone: z.string().optional(),
@@ -61,6 +63,7 @@ export const contract = {
 
     customer: {
       requestOtp: oc
+        .errors({ FORBIDDEN: {}, BAD_REQUEST: {}, NOT_FOUND: {} })
         .input(
           z.object({
             mobile: z.string().optional(),
@@ -69,6 +72,7 @@ export const contract = {
         )
         .output(z.any()),
       verifyOtp: oc
+        .errors({ FORBIDDEN: {}, BAD_REQUEST: {}, NOT_FOUND: {}, UNAUTHORIZED: {} })
         .input(
           z.object({
             mobile: z.string().optional(),
@@ -234,6 +238,40 @@ export const contract = {
           totalPrice: z.number(),
         })
       ),
+
+    shippingMethods: oc.output(z.any()),
+
+    cartProducts: oc
+      .input(z.array(z.union([z.string(), z.number()])))
+      .output(z.any()),
+
+    addressList: oc
+      .errors({ UNAUTHORIZED: {} })
+      .output(z.any()),
+
+    mutateAddress: oc
+      .errors({ UNAUTHORIZED: {} })
+      .input(
+        z.object({
+          id: z.string().optional(),
+          title: z.string().optional(),
+          province: z.string().optional(),
+          city: z.string().optional(),
+          postalCode: z.string().optional(),
+          addressDetail: z.string().optional(),
+        })
+      )
+      .output(z.any()),
+
+    createOrder: oc
+      .errors({ UNAUTHORIZED: {} })
+      .input(z.any())
+      .output(z.any()),
+
+    verifyPayment: oc
+      .errors({ BAD_REQUEST: {} })
+      .input(z.any())
+      .output(z.any()),
   },
 
   order: {
@@ -395,6 +433,8 @@ export const contract = {
         z.object({
           contactName: z.string().optional(),
           storeName: z.string().optional(),
+          nationalCode: z.string().optional(),
+          economicCode: z.string().optional(),
           province: z.string().optional(),
           city: z.string().optional(),
           address: z.string().optional(),
@@ -407,12 +447,17 @@ export const contract = {
     profile: oc.errors({ UNAUTHORIZED: {} }).output(z.any()),
 
     update: oc
-      .errors({ UNAUTHORIZED: {} })
+      .errors({ UNAUTHORIZED: {}, FORBIDDEN: {}, BAD_REQUEST: {} })
       .input(
         z.object({
           fullName: z.string().optional(),
+          companyName: z.string().optional(),
           nationalCode: z.string().optional(),
+          economicCode: z.string().optional(),
+          province: z.string().optional(),
+          city: z.string().optional(),
           address: z.string().optional(),
+          addresses: z.any().optional(),
         })
       )
       .output(z.any()),
@@ -462,7 +507,58 @@ export const contract = {
         .output(z.any()),
     },
   },
+
+  plan: {
+    list: oc
+      .input(
+        z
+          .object({
+            status: z.enum(['active', 'expired', 'draft']).optional(),
+            userId: z.union([z.number(), z.string()]).optional(),
+            page: z.number().optional(),
+            limit: z.number().optional(),
+          })
+          .optional()
+      )
+      .output(
+        z.object({
+          items: z.array(z.any()),
+          total: z.number(),
+        })
+      ),
+
+    getById: oc
+      .errors({ NOT_FOUND: {} })
+      .input(z.object({ id: z.union([z.number(), z.string()]) }))
+      .output(z.any()),
+
+    create: oc
+      .input(
+        z.object({
+          title: z.string().optional(),
+          users: z.array(z.union([z.number(), z.string()])).min(1, 'حداقل یک کاربر باید انتخاب شود'),
+          content: z.string().min(1, 'متن پیام الزامی است'),
+          status: z.enum(['active', 'expired', 'draft']).default('active'),
+          products: z.array(z.union([z.number(), z.string()])).optional(),
+          expiresAt: z.string().optional(),
+        })
+      )
+      .output(z.any()),
+
+    update: oc
+      .input(
+        z.object({
+          id: z.union([z.number(), z.string()]),
+          title: z.string().optional(),
+          users: z.array(z.union([z.number(), z.string()])).optional(),
+          content: z.string().optional(),
+          status: z.enum(['active', 'expired', 'draft']).optional(),
+          products: z.array(z.union([z.number(), z.string()])).optional(),
+          expiresAt: z.string().optional(),
+        })
+      )
+      .output(z.any()),
+  },
 }
 
 export type AppContract = typeof contract
-

@@ -1,4 +1,4 @@
-import { base } from '@/rpc/base'
+import { base } from '../rpc/base'
 
 const preview = base.system.csvImport.preview.handler(async ({ input }) => {
   return {

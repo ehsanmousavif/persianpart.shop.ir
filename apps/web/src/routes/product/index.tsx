@@ -52,11 +52,19 @@ function ProductCatalogPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(() => {
     if (searchParams.selected) {
-      return searchParams.selected.split(',').filter(Boolean)
+      return searchParams.selected
+        .split(',')
+        .map((s) => s.replace(/["']/g, '').trim())
+        .filter(Boolean)
     }
     try {
       const saved = localStorage.getItem('persianpart_selected_products')
-      if (saved) return JSON.parse(saved)
+      if (saved) {
+        const parsed = JSON.parse(saved)
+        if (Array.isArray(parsed)) {
+          return parsed.map((s: any) => String(s).replace(/["']/g, '').trim()).filter(Boolean)
+        }
+      }
     } catch {
       // Ignore localStorage errors
     }
@@ -302,7 +310,6 @@ function ProductCatalogPage() {
       )}
 
       {/* Prominent Floating Action Bar (FAB) - Positioned Safely ABOVE MobileBottomNav */}
-      {/* Ultra-Minimal FAB: Zero Text, Only Selected Count & Icon */}
       {selectedProductIds.length > 0 && (
         <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-22 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
           <Link
@@ -310,12 +317,13 @@ function ProductCatalogPage() {
             search={{
               selected: selectedProductIds.join(','),
             }}
-            aria-label={`مشاهده و تعیین متراژ ${toPersianDigits(selectedProductIds.length)} محصول انتخاب شده`}
-            className="h-12 px-4 rounded-full bg-slate-950/95 backdrop-blur-md text-white flex items-center gap-2.5 shadow-2xl border border-slate-800 ring-1 ring-white/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-slate-900"
+            aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedProductIds.length)} محصول انتخاب شده`}
+            className="h-12 px-5 rounded-full bg-slate-950/95 backdrop-blur-md text-white flex items-center gap-3 shadow-2xl border border-slate-800 ring-1 ring-white/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-slate-900"
           >
             <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               {toPersianDigits(selectedProductIds.length)}
             </span>
+            <span className="text-xs font-black">تعیین متراژ و ثبت سفارش</span>
             <ArrowLeftIcon size={16} className="text-slate-200" />
           </Link>
         </div>
@@ -328,6 +336,15 @@ function ProductCatalogPage() {
         isSelected={activeBottomSheetProduct ? selectedProductIds.includes(activeBottomSheetProduct.id) : false}
         onClose={handleCloseBottomSheet}
         onToggleSelect={activeBottomSheetProduct ? () => handleToggleSelect(activeBottomSheetProduct) : undefined}
+        onOrderDirect={(product) => {
+          handleCloseBottomSheet()
+          navigate({
+            to: '/product/new',
+            search: {
+              selected: product.id,
+            },
+          })
+        }}
       />
     </div>
   )

@@ -1,4 +1,4 @@
-import { getPayloadClient } from '@/payload'
+import { getPayloadClient } from '@persianpart/cms/payload'
 
 export interface UserContext {
   id: string | number
