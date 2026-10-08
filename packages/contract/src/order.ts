@@ -7,7 +7,7 @@ import {
   StandardErrorDataSchema,
   createPaginatedResponseSchema,
 } from './common'
-import { CartItemInputSchema, ValidatedCartItemSchema } from './pricing'
+import { CartItemInputSchema, ValidatedCartItemSchema, pricingContract } from './pricing'
 
 export const OrderStatusSchema = z.enum([
   'pending_review',
@@ -254,4 +254,8 @@ export const orderContract = {
       NOT_FOUND: { data: StandardErrorDataSchema },
       INVALID_STATUS_TRANSITION: { data: StandardErrorDataSchema },
     }),
+
+  // Unified cart validation & pricing quote sub-contract
+  pricing: pricingContract,
 }
+

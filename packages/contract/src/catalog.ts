@@ -82,6 +82,12 @@ export const CartonCalculationOutputSchema = z.object({
 
 export type CartonCalculationOutput = z.infer<typeof CartonCalculationOutputSchema>
 
+import { partsContract } from './parts'
+import { categoryContract } from './category'
+import { brandContract } from './brand'
+import { tagContract } from './tag'
+import { productContract } from './product'
+
 export const catalogContract = {
   list: oc
     .meta(openapi({ method: 'GET', path: '/catalog', summary: 'کاتالوگ محصولات با قیمت اختصاصی مشتری جاری' }))
@@ -108,4 +114,12 @@ export const catalogContract = {
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
+
+  // Unified domain sub-contracts
+  parts: partsContract,
+  categories: categoryContract,
+  brands: brandContract,
+  tags: tagContract,
+  manage: productContract,
 }
+

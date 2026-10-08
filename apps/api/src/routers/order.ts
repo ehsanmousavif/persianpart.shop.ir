@@ -12,6 +12,7 @@ import {
   submitOrder,
   updateOrderStatus,
 } from '../services/order'
+import { pricingRouter } from './pricing'
 
 const implementer = implement(orderContract).$context<Context>()
 
@@ -229,4 +230,8 @@ export const orderRouter = implementer.router({
       throw errors.NOT_FOUND({ data: { message: msg } })
     }
   }),
+
+  // Sub-router for pricing quote & cart validation
+  pricing: pricingRouter,
 })
+

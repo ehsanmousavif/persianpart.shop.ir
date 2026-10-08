@@ -9,6 +9,11 @@ import {
   calculateCustomerPrice,
   calculatePackaging,
 } from '../services/pricing'
+import { partsRouter } from './parts'
+import { categoryRouter } from './category'
+import { brandRouter } from './brand'
+import { tagRouter } from './tag'
+import { productRouter } from './product'
 
 const implementer = implement(catalogContract).$context<Context>()
 
@@ -239,4 +244,12 @@ export const catalogRouter = implementer.router({
       lineTotal,
     }
   }),
+
+  // Sub-routers within unified catalog domain
+  parts: partsRouter,
+  categories: categoryRouter,
+  brands: brandRouter,
+  tags: tagRouter,
+  manage: productRouter,
 })
+

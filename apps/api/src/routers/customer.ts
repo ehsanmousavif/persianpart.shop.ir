@@ -3,6 +3,7 @@ import { customerContract } from '@persianpart/contract'
 import type { Context } from '../context'
 import { pool } from '../db'
 import { logAuditEvent } from '../services/audit'
+import { customerTypeRouter } from './customer-type'
 
 const implementer = implement(customerContract).$context<Context>()
 
@@ -403,4 +404,8 @@ export const customerRouter = implementer.router({
       updatedAt: new Date(r.updated_at).toISOString(),
     }
   }),
+
+  // Sub-router for customer types & pricing tiers
+  types: customerTypeRouter,
 })
+

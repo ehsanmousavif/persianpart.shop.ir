@@ -1,7 +1,14 @@
-import { createApiClient } from '@persianpart/api'
+import { createApiClient } from '@persianpart/api/client'
+import type { AppRouter, ApiClient } from '@persianpart/api'
+
+// In production, fallback to current origin (for reverse proxy /api/rpc) or configured VITE_API_URL
+const defaultBaseUrl =
+  typeof window !== 'undefined'
+    ? (import.meta.env.PROD ? window.location.origin : 'http://localhost:5149')
+    : 'http://localhost:5149'
 
 export const api = createApiClient({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5149',
+  baseURL: import.meta.env.VITE_API_URL || defaultBaseUrl,
   getToken: () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('persianpart_token')
@@ -10,7 +17,7 @@ export const api = createApiClient({
   },
 })
 
-export type { AppRouter } from '@persianpart/api'
+export type { AppRouter, ApiClient }
 export { appContract } from '@persianpart/contract'
 export type {
   AppContract,

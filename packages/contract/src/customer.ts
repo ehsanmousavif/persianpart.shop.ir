@@ -8,7 +8,7 @@ import {
   StandardErrorDataSchema,
   createPaginatedResponseSchema,
 } from './common'
-import { CustomerTypeSchema } from './customer-type'
+import { CustomerTypeSchema, customerTypeContract } from './customer-type'
 
 /**
  * Customer profile visible to the customer themselves.
@@ -165,4 +165,8 @@ export const customerContract = {
       FORBIDDEN: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
+
+  // Unified customer types & pricing tiers sub-contract
+  types: customerTypeContract,
 }
+

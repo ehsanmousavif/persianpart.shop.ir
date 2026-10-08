@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
-import { MOCK_PRODUCTS } from '../../lib/mock-data/products'
+import { useState, useMemo, useEffect } from 'react'
+import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
+import { api } from '../../lib/api-client'
 
 export type SortOption = 'default' | 'cheapest' | 'expensive' | 'newest' | 'oldest'
 
@@ -33,6 +34,71 @@ const DEFAULT_FILTERS: FilterState = {
 
 export function useCatalog() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [productsList, setProductsList] = useState<Product[]>(MOCK_PRODUCTS)
+  const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
+
+  // Fetch from live backend API on mount, with graceful offline fallback
+  useEffect(() => {
+    let isMounted = true
+    api.catalog
+      .list({ page: 1, limit: 100 })
+      .then((res) => {
+        if (isMounted && res.items && res.items.length > 0) {
+          const liveMapped: Product[] = res.items.map((item) => {
+            const width = item.width || 60
+            const height = item.height || 120
+            const dimStr = `${width}×${height}`
+            return {
+              id: item.id,
+              slug: item.slug,
+              name: item.name,
+              sku: item.sku,
+              dimensions: { width, height },
+              dimension: dimStr,
+              brand: item.brandName || 'پرشین پارت',
+              color: item.color || 'سفید',
+              finish: (item.finish as any) || 'پولیش',
+              grade: (item.grade as any) || 'درجه ۱',
+              category: (item.categoryName as any) || 'پرسلان کف',
+              finalCustomerPricePerSqm: item.finalCustomerPricePerSqm,
+              pricePerM2: item.finalCustomerPricePerSqm,
+              sqmPerCarton: item.sqmPerCarton,
+              areaPerCarton: item.sqmPerCarton,
+              piecesPerCarton: item.piecesPerCarton,
+              tilesPerCarton: item.piecesPerCarton,
+              cartonWeightKg: 28,
+              inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
+              stockCartons:
+                item.availability === 'out_of_stock'
+                  ? 0
+                  : Math.floor(500 / item.sqmPerCarton),
+              inStock: item.availability !== 'out_of_stock',
+              stockStatus:
+                item.availability === 'out_of_stock'
+                  ? 'out_of_stock'
+                  : item.availability === 'limited'
+                    ? 'low_stock'
+                    : 'in_stock',
+              description: item.richDescription || undefined,
+              applications: ['کف سالن', 'محیط تجاری'],
+              tags: item.tags || [],
+              images: item.cover ? [item.cover] : ['/assets/images/tile-sample-1.jpg'],
+              gallery: item.gallery || [],
+            }
+          })
+          setProductsList(liveMapped)
+          setIsLiveConnected(true)
+        }
+      })
+      .catch(() => {
+        // Graceful offline degradation keeps MOCK_PRODUCTS without crashing
+        setIsLiveConnected(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const activeFilterCount = useMemo(() => {
     let count = 0
@@ -50,7 +116,7 @@ export function useCatalog() {
   }, [filters])
 
   const filteredProducts = useMemo(() => {
-    const list = MOCK_PRODUCTS.filter((product) => {
+    const list = productsList.filter((product) => {
       // Search query (matches name, SKU, brand, color, dimensions, tags)
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase().trim()
@@ -65,7 +131,7 @@ export function useCatalog() {
         }
       }
 
-      // Dimensions (Strict single dimension match: each product belongs to one dimension)
+      // Dimensions (Strict single dimension match)
       if (
         filters.selectedDimension &&
         product.dimension !== filters.selectedDimension
@@ -114,44 +180,47 @@ export function useCatalog() {
       }
 
       // Category
-      if (filters.selectedCategory && product.category !== filters.selectedCategory) {
+      if (
+        filters.selectedCategory &&
+        product.category !== filters.selectedCategory
+      ) {
         return false
       }
 
-      // In stock
-      if (filters.onlyInStock && (!product.inStock || product.stockStatus === 'out_of_stock')) {
+      // Only in stock
+      if (filters.onlyInStock && !product.inStock) {
         return false
       }
 
       return true
     })
 
-    // Sorting: ارزان‌ترین، گران‌ترین، جدیدترین، قدیمی‌ترین
-    if (filters.sortBy === 'cheapest') {
-      return [...list].sort((a, b) => a.finalCustomerPricePerSqm - b.finalCustomerPricePerSqm)
-    } else if (filters.sortBy === 'expensive') {
-      return [...list].sort((a, b) => b.finalCustomerPricePerSqm - a.finalCustomerPricePerSqm)
-    } else if (filters.sortBy === 'newest') {
-      return [...list].sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-        return dateB - dateA
-      })
-    } else if (filters.sortBy === 'oldest') {
-      return [...list].sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0
-        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0
-        return dateA - dateB
-      })
+    // Sorting
+    switch (filters.sortBy) {
+      case 'cheapest':
+        return [...list].sort(
+          (a, b) => a.finalCustomerPricePerSqm - b.finalCustomerPricePerSqm
+        )
+      case 'expensive':
+        return [...list].sort(
+          (a, b) => b.finalCustomerPricePerSqm - a.finalCustomerPricePerSqm
+        )
+      case 'newest':
+        return [...list].reverse()
+      default:
+        return list
     }
+  }, [filters, productsList])
 
-    return list
-  }, [filters])
-
-  const resetFilters = () => setFilters({ ...DEFAULT_FILTERS, viewMode: filters.viewMode })
+  const resetFilters = () => {
+    setFilters(DEFAULT_FILTERS)
+  }
 
   const setFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
-    setFilters((prev) => ({ ...prev, [key]: value }))
+    setFilters((prev) => ({
+      ...prev,
+      [key]: value,
+    }))
   }
 
   const toggleArrayFilter = (
@@ -175,9 +244,10 @@ export function useCatalog() {
 
   return {
     products: filteredProducts,
-    allProducts: MOCK_PRODUCTS,
+    allProducts: productsList,
     filters,
     activeFilterCount,
+    isLiveConnected,
     setFilter,
     toggleArrayFilter,
     resetFilters,

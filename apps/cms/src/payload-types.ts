@@ -108,22 +108,34 @@ export interface Config {
   };
 }
 export interface UserAuthOperations {
-  forgotPassword: {
-    email: string;
-    password: string;
-  };
-  login: {
-    email: string;
-    password: string;
-  };
+  forgotPassword:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
+  login:
+    | {
+        email: string;
+        password: string;
+      }
+    | {
+        password: string;
+        username: string;
+      };
   registerFirstUser: {
-    email: string;
     password: string;
+    username: string;
+    email?: string;
   };
-  unlock: {
-    email: string;
-    password: string;
-  };
+  unlock:
+    | {
+        email: string;
+      }
+    | {
+        username: string;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -131,11 +143,29 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  name?: string | null;
-  role?: ('admin' | 'editor') | null;
+  /**
+   * شماره موبایل معتبر (مثال: 09121234567)
+   */
+  phone: string;
+  fullName: string;
+  nationalCode?: string | null;
+  customerType: 'regular' | 'mechanic' | 'store_partner' | 'wholesaler';
+  status: 'active' | 'pending' | 'suspended';
+  companyName?: string | null;
+  addresses?:
+    | {
+        title: string;
+        province: string;
+        city: string;
+        postalCode?: string | null;
+        addressDetail: string;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
+  email?: string | null;
+  username: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -360,11 +390,26 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
-  name?: T;
-  role?: T;
+  phone?: T;
+  fullName?: T;
+  nationalCode?: T;
+  customerType?: T;
+  status?: T;
+  companyName?: T;
+  addresses?:
+    | T
+    | {
+        title?: T;
+        province?: T;
+        city?: T;
+        postalCode?: T;
+        addressDetail?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
