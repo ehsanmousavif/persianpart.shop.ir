@@ -52,6 +52,7 @@ function mapApiPlanToPlan(p: any): Plan {
 
 let currentPlans: Plan[] = getInitialPlans()
 let currentCustomers: B2BCustomer[] = []
+let isLoadingPlans = false
 const listeners = new Set<() => void>()
 
 function broadcast() {
@@ -67,6 +68,8 @@ function broadcast() {
 
 async function fetchFromBackend() {
   try {
+    isLoadingPlans = true
+    broadcast()
     const [plansRes, usersRes] = await Promise.allSettled([
       api.plan.list({}),
       api.user.list({ limit: 100 }),
@@ -92,6 +95,9 @@ async function fetchFromBackend() {
     broadcast()
   } catch (err) {
     console.error('Error fetching plans/users:', err)
+  } finally {
+    isLoadingPlans = false
+    broadcast()
   }
 }
 
@@ -99,6 +105,7 @@ export const plansStore = {
   getPlans: () => currentPlans,
   getCustomers: () => currentCustomers,
   getProducts: () => MOCK_PRODUCTS,
+  isLoading: () => isLoadingPlans,
 
   refresh: () => fetchFromBackend(),
 
@@ -214,11 +221,13 @@ export function usePlans() {
   const [plans, setPlans] = useState<Plan[]>(plansStore.getPlans())
   const [customers, setCustomers] = useState<B2BCustomer[]>(plansStore.getCustomers())
   const [allProducts] = useState<Product[]>(plansStore.getProducts())
+  const [isLoading, setIsLoading] = useState<boolean>(plansStore.isLoading())
 
   useEffect(() => {
     const handleUpdate = () => {
       setPlans([...plansStore.getPlans()])
       setCustomers([...plansStore.getCustomers()])
+      setIsLoading(plansStore.isLoading())
     }
     listeners.add(handleUpdate)
     handleUpdate()
@@ -240,6 +249,7 @@ export function usePlans() {
     plans,
     customers,
     allProducts,
+    isLoading,
     refresh: plansStore.refresh,
     togglePlanStatus: plansStore.togglePlanStatus,
     savePlan: plansStore.savePlan,

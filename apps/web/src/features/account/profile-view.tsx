@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { Modal as HeroUIModal } from '@heroui/react'
+import {
+  Modal as HeroUIModal,
+  Fieldset,
+  FieldGroup,
+  TextField,
+  Label,
+  Input,
+  TextArea,
+} from '@heroui/react'
 import { useAuth } from '../auth/auth-store'
 import { toPersianDigits } from '../../lib/utils/currency'
 import { toast } from '../../components/feedback/toast'
@@ -146,160 +154,159 @@ export function ProfileView() {
 
       {/* Main Profile Content: Edit Form vs View Mode */}
       {isEditing ? (
-        <form onSubmit={handleSaveProfile} className="bg-white border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <div className="flex items-center gap-2">
-              <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                <PencilIcon size={14} />
-              </span>
-              <h3 className="text-sm font-bold text-slate-900">
-                ویرایش اطلاعات حساب کاربری
-              </h3>
-            </div>
-            <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-              حالت ویرایش
-            </span>
-          </div>
-
-          <div className="space-y-3.5">
-            {/* Representative Name */}
-            <div className="space-y-1 text-start">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                <UserIcon size={13} className="text-slate-400" />
-                <span>نام نماینده / مدیر خرید</span>
-                <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                placeholder="مثال: آرش دهقان"
-              />
-            </div>
-
-            {/* Store Name */}
-            <div className="space-y-1 text-start">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                <StoreIcon size={13} className="text-slate-400" />
-                <span>عنوان فروشگاه / شرکت حقوقی</span>
-                <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={formData.storeName}
-                onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
-                className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                placeholder="مثال: پخش بازرگانی پرشین پارت"
-              />
-            </div>
-
-            {/* Phone Number - Strictly Non-Editable */}
-            <div className="space-y-1 text-start">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                  <PhoneIcon size={13} className="text-slate-400" />
-                  <span>شماره تلفن همراه</span>
-                </label>
-                <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
-                  <LockIcon size={10} className="text-slate-400" />
-                  <span>غیرقابل تغییر</span>
+        <form onSubmit={handleSaveProfile} className="bg-white border border-blue-200/80 rounded-2xl p-4 sm:p-5 shadow-sm">
+          <Fieldset className="space-y-4">
+            <Fieldset.Legend className="w-full">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100 w-full">
+                <div className="flex items-center gap-2">
+                  <span className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <PencilIcon size={14} />
+                  </span>
+                  <span className="text-sm font-bold text-slate-900">
+                    ویرایش اطلاعات حساب کاربری
+                  </span>
+                </div>
+                <span className="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                  حالت ویرایش
                 </span>
               </div>
-              <div className="flex items-center justify-between px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-slate-600 select-none">
-                <span className="text-xs font-bold tracking-wider" dir="ltr">
-                  {toPersianDigits(user.phone)}
-                </span>
-                <span className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200/60 shadow-2xs">
-                  <LockIcon size={11} className="text-slate-400" />
-                  <span>شناسه هویتی ثابت</span>
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
-                شماره همراه شناسه یکتای حساب شماست و امکان ویرایش یا تغییر آن وجود ندارد.
-              </p>
-            </div>
+            </Fieldset.Legend>
 
-            {/* Economic / National Code */}
-            <div className="space-y-1 text-start">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                <ShieldCheckIcon size={14} className="text-slate-400" />
-                <span>شناسه ملی / کد اقتصادی</span>
-              </label>
-              <input
-                type="text"
-                dir="ltr"
-                value={formData.economicCode}
-                onChange={(e) => setFormData((prev) => ({ ...prev, economicCode: e.target.value }))}
-                className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-start"
-                placeholder="مثال: 411589324156"
-              />
-            </div>
-
-            {/* Province & City */}
-            <div className="grid grid-cols-2 gap-2.5 text-start">
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                  <MapPinIcon size={14} className="text-slate-400" />
-                  <span>استان</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.province}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+            <FieldGroup className="space-y-3.5">
+              {/* Representative Name */}
+              <TextField name="name" isRequired className="space-y-1 text-start">
+                <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <UserIcon size={13} className="text-slate-400" />
+                  <span>نام نماینده / مدیر خرید</span>
+                  <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  value={formData.name}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  placeholder="تهران"
+                  placeholder="مثال: آرش دهقان"
                 />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                  <MapPinIcon size={14} className="text-slate-400" />
-                  <span>شهر</span>
-                </label>
-                <input
-                  type="text"
-                  value={formData.city}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+              </TextField>
+
+              {/* Store Name */}
+              <TextField name="storeName" isRequired className="space-y-1 text-start">
+                <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <StoreIcon size={13} className="text-slate-400" />
+                  <span>عنوان فروشگاه / شرکت حقوقی</span>
+                  <span className="text-rose-500">*</span>
+                </Label>
+                <Input
+                  value={formData.storeName}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
                   className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  placeholder="تهران"
+                  placeholder="مثال: پخش بازرگانی پرشین پارت"
                 />
+              </TextField>
+
+              {/* Phone Number - Strictly Non-Editable */}
+              <div className="space-y-1 text-start">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                    <PhoneIcon size={13} className="text-slate-400" />
+                    <span>شماره تلفن همراه</span>
+                  </label>
+                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
+                    <LockIcon size={10} className="text-slate-400" />
+                    <span>غیرقابل تغییر</span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-slate-600 select-none">
+                  <span className="text-xs font-bold tracking-wider" dir="ltr">
+                    {toPersianDigits(user.phone)}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200/60 shadow-2xs">
+                    <LockIcon size={11} className="text-slate-400" />
+                    <span>شناسه هویتی ثابت</span>
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
+                  شماره همراه شناسه یکتای حساب شماست و امکان ویرایش یا تغییر آن وجود ندارد.
+                </p>
               </div>
-            </div>
 
-            {/* Delivery Warehouse Address */}
-            <div className="space-y-1 text-start">
-              <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
-                <MapPinIcon size={14} className="text-slate-400" />
-                <span>نشانی دقیق انبار بارگیری و تخلیه بار</span>
-              </label>
-              <textarea
-                rows={3}
-                value={formData.address}
-                onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                className="w-full px-3 py-2 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all leading-relaxed"
-                placeholder="نشانی کامل انبار یا محل تخلیه بار..."
-              />
-            </div>
-          </div>
+              {/* Economic / National Code */}
+              <TextField name="economicCode" className="space-y-1 text-start">
+                <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <ShieldCheckIcon size={14} className="text-slate-400" />
+                  <span>شناسه ملی / کد اقتصادی</span>
+                </Label>
+                <Input
+                  dir="ltr"
+                  value={formData.economicCode}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, economicCode: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all text-start"
+                  placeholder="مثال: 411589324156"
+                />
+              </TextField>
 
-          {/* Form Actions */}
-          <div className="pt-2 flex items-center gap-2">
-            <button
-              type="submit"
-              className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
-            >
-              <CheckIcon size={15} />
-              <span>ذخیره تغییرات</span>
-            </button>
-            <button
-              type="button"
-              onClick={handleCancelEdit}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-            >
-              <XIcon size={15} />
-              <span>انصراف</span>
-            </button>
-          </div>
+              {/* Province & City */}
+              <div className="grid grid-cols-2 gap-2.5 text-start">
+                <TextField name="province" className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                    <MapPinIcon size={14} className="text-slate-400" />
+                    <span>استان</span>
+                  </Label>
+                  <Input
+                    value={formData.province}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    placeholder="تهران"
+                  />
+                </TextField>
+                <TextField name="city" className="space-y-1">
+                  <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                    <MapPinIcon size={14} className="text-slate-400" />
+                    <span>شهر</span>
+                  </Label>
+                  <Input
+                    value={formData.city}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
+                    className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
+                    placeholder="تهران"
+                  />
+                </TextField>
+              </div>
+
+              {/* Delivery Warehouse Address */}
+              <TextField name="address" className="space-y-1 text-start">
+                <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
+                  <MapPinIcon size={14} className="text-slate-400" />
+                  <span>نشانی دقیق انبار بارگیری و تخلیه بار</span>
+                </Label>
+                <TextArea
+                  rows={3}
+                  value={formData.address}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
+                  className="w-full px-3 py-2 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all leading-relaxed"
+                  placeholder="نشانی کامل انبار یا محل تخلیه بار..."
+                />
+              </TextField>
+            </FieldGroup>
+
+            {/* Form Actions */}
+            <Fieldset.Actions className="pt-2 flex items-center gap-2">
+              <button
+                type="submit"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
+              >
+                <CheckIcon size={15} />
+                <span>ذخیره تغییرات</span>
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelEdit}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+              >
+                <XIcon size={15} />
+                <span>انصراف</span>
+              </button>
+            </Fieldset.Actions>
+          </Fieldset>
         </form>
       ) : (
         /* View Mode Card */

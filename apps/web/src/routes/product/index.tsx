@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
+import { Pagination, ScrollShadow, TagGroup, Tag } from '@heroui/react'
 import { useCatalog } from '../../features/catalog/catalog-store'
 import { ProductCard } from '../../features/catalog/product-card'
 import { ProductBottomSheet } from '../../features/catalog/product-bottom-sheet'
@@ -7,6 +8,7 @@ import { FilterDrawer } from '../../features/catalog/filter-drawer'
 import type { Product } from '../../lib/mock-data/products'
 import { useCart } from '../../features/cart/cart-store'
 import { toPersianDigits } from '../../lib/utils/currency'
+import { ProductCardSkeleton } from '../../components/ui/skeleton'
 import {
   SearchIcon,
   FilterIcon,
@@ -46,8 +48,15 @@ function ProductCatalogPage() {
   const searchParams = Route.useSearch()
   const navigate = useNavigate({ from: Route.fullPath })
   const catalogHook = useCatalog()
-  const { products, allProducts, filters, setFilter, resetFilters, activeFilterCount } = catalogHook
+  const { products, allProducts, filters, setFilter, resetFilters, activeFilterCount, isLoading } = catalogHook
   const { isProductInCart } = useCart()
+
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 24
+
+  useEffect(() => {
+    setPage(1)
+  }, [filters])
 
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(() => {
@@ -134,6 +143,12 @@ function ProductCatalogPage() {
     return { pinnedProducts: pinned, unselectedProducts: unselected }
   }, [selectedProductIds, products, allProducts])
 
+  const totalPages = Math.max(1, Math.ceil(unselectedProducts.length / PAGE_SIZE))
+  const pagedProducts = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return unselectedProducts.slice(start, start + PAGE_SIZE)
+  }, [unselectedProducts, page])
+
   return (
     <div className="w-full px-3 py-3 space-y-3 text-start pb-32">
       {/* 1. Search Bar & Advanced Filters Trigger (Directly on Canvas Background) */}
@@ -181,37 +196,51 @@ function ProductCatalogPage() {
         </button>
       </div>
 
-      {/* 2. Dimensions Filter Strip (Replaces sorting row and sits directly on canvas background) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
-        <button
-          type="button"
-          onClick={() => setFilter('selectedDimension', null)}
-          className={`h-8 px-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
-            !filters.selectedDimension
-              ? 'bg-slate-900 border-slate-900 text-white'
-              : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-          }`}
+      {/* 2. Dimensions Filter Strip (with ScrollShadow and HeroUI TagGroup) */}
+      <ScrollShadow orientation="horizontal" className="w-full overflow-x-auto pb-1 pt-0.5 scrollbar-none">
+        <TagGroup
+          aria-label="فیلتر ابعاد کاشی و سرامیک"
+          selectionMode="single"
+          selectedKeys={filters.selectedDimension ? [filters.selectedDimension] : ['all']}
+          onSelectionChange={(keys) => {
+            const selected = Array.from(keys)[0] as string | undefined
+            if (!selected || selected === 'all') {
+              setFilter('selectedDimension', null)
+            } else {
+              setFilter('selectedDimension', selected)
+            }
+          }}
         >
-          همه ابعاد
-        </button>
-        {CATALOG_DIMENSIONS.map((dim) => {
-          const isSelected = filters.selectedDimension === dim
-          return (
-            <button
-              key={dim}
-              type="button"
-              onClick={() => setFilter('selectedDimension', isSelected ? null : dim)}
+          <TagGroup.List className="flex items-center gap-1.5 min-w-max">
+            <Tag
+              id="all"
               className={`h-8 px-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
-                isSelected
+                !filters.selectedDimension
                   ? 'bg-slate-900 border-slate-900 text-white'
                   : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              {toPersianDigits(dim)}
-            </button>
-          )
-        })}
-      </div>
+              همه ابعاد
+            </Tag>
+            {CATALOG_DIMENSIONS.map((dim) => {
+              const isSelected = filters.selectedDimension === dim
+              return (
+                <Tag
+                  key={dim}
+                  id={dim}
+                  className={`h-8 px-3 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
+                    isSelected
+                      ? 'bg-slate-900 border-slate-900 text-white'
+                      : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  }`}
+                >
+                  {toPersianDigits(dim)}
+                </Tag>
+              )
+            })}
+          </TagGroup.List>
+        </TagGroup>
+      </ScrollShadow>
 
       {/* Filter Drawer Component */}
       <FilterDrawer
@@ -235,7 +264,13 @@ function ProductCatalogPage() {
       </div>
 
       {/* Product Items Display: Compact Vertical List */}
-      {products.length === 0 ? (
+      {isLoading ? (
+        <div className="flex flex-col gap-2">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <ProductCardSkeleton key={idx} />
+          ))}
+        </div>
+      ) : products.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center my-4 space-y-2.5 shadow-xs">
           <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
             <BoxIcon size={24} />
@@ -291,8 +326,8 @@ function ProductCatalogPage() {
             </div>
           )}
 
-          {/* 2. Unselected Products (sorted and filtered) */}
-          {unselectedProducts.map((product) => {
+          {/* 2. Unselected Products (paginated 24 per page) */}
+          {pagedProducts.map((product) => {
             const inCart = isProductInCart(product.id)
 
             return (
@@ -306,6 +341,44 @@ function ProductCatalogPage() {
               />
             )
           })}
+
+          {/* HeroUI Pagination (24 items per page) */}
+          {totalPages > 1 && (
+            <div className="pt-4 pb-2 flex justify-center">
+              <Pagination>
+                <Pagination.Content>
+                  <Pagination.Item>
+                    <Pagination.Previous
+                      isDisabled={page === 1}
+                      onPress={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      <Pagination.PreviousIcon />
+                      <span>قبلی</span>
+                    </Pagination.Previous>
+                  </Pagination.Item>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <Pagination.Item key={p}>
+                      <Pagination.Link
+                        isActive={p === page}
+                        onPress={() => setPage(p)}
+                      >
+                        {toPersianDigits(p)}
+                      </Pagination.Link>
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Item>
+                    <Pagination.Next
+                      isDisabled={page === totalPages}
+                      onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      <span>بعدی</span>
+                      <Pagination.NextIcon />
+                    </Pagination.Next>
+                  </Pagination.Item>
+                </Pagination.Content>
+              </Pagination>
+            </div>
+          )}
         </div>
       )}
 

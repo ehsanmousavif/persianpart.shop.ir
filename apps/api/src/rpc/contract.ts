@@ -359,6 +359,7 @@ export const contract = {
       .output(z.any()),
 
     cancel: oc
+      .errors({ BAD_REQUEST: {}, NOT_FOUND: {} })
       .input(
         z.object({
           id: z.union([z.string(), z.number()]),

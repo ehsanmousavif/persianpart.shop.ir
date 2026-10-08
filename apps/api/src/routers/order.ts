@@ -170,14 +170,14 @@ const getById = base.order.getById.handler(async ({ input, errors }) => {
   return res.docs[0]
 })
 
-const cancel = base.order.cancel.handler(async ({ input }) => {
+const cancel = base.order.cancel.handler(async ({ input, errors }) => {
   const orderDoc = await payload.crud.orders.findByID({
     id: input.id,
     depth: 0,
   })
 
   if (!orderDoc) {
-    throw new Error('سفارش مورد نظر یافت نشد.')
+    throw errors.NOT_FOUND()
   }
 
   if (
@@ -193,7 +193,9 @@ const cancel = base.order.cancel.handler(async ({ input }) => {
     : new Date(orderDoc.createdAt).getTime() + 10 * 60 * 1000
 
   if (Date.now() > deadline) {
-    throw new Error('مهلت ۱۰ دقیقه‌ای لغو سفارش به پایان رسیده است و امکان لغو وجود ندارد.')
+    throw errors.BAD_REQUEST({
+      message: 'مهلت ۱۰ دقیقه‌ای لغو سفارش به پایان رسیده است و امکان لغو وجود ندارد.',
+    })
   }
 
   return await payload.crud.orders.update({

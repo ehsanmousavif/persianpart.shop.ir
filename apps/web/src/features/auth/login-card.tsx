@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
+import { InputOTP } from '@heroui/react'
 import { useAuth } from './auth-store'
 import { toast } from '../../components/feedback/toast'
 import { PhoneIcon, ArrowLeftIcon, RefreshCwIcon, AlertCircleIcon, ShieldCheckIcon } from '../../components/ui/icons'
@@ -65,7 +66,22 @@ export function LoginCard() {
     try {
       await verifyOtp(code)
       toast.success('ورود موفقیت‌آمیز', 'خوش‌آمدید به سامانه سفارش‌گذاری پرشین‌پارت')
-      navigate({ to: '/products' })
+      
+      const search = new URLSearchParams(window.location.search)
+      const redirectUrl = search.get('redirect')
+      if (redirectUrl && !redirectUrl.includes('/login')) {
+        try {
+          const url = new URL(redirectUrl, window.location.origin)
+          navigate({
+            to: url.pathname as any,
+            search: Object.fromEntries(url.searchParams.entries()) as any,
+          })
+        } catch {
+          navigate({ to: '/product' })
+        }
+      } else {
+        navigate({ to: '/product' })
+      }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'کد تایید وارد شده نادرست یا منقضی است.'
       setErrorMessage(msg)
@@ -165,21 +181,27 @@ export function LoginCard() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 text-start">
-              کد تأیید ۵ رقمی
+            <label className="block text-xs font-bold text-slate-700 mb-2.5 text-start">
+              کد تأیید ۵ رقمی:
             </label>
-            <input
-              type="text"
-              inputMode="numeric"
-              maxLength={5}
-              value={otpCode}
-              onChange={(e) => setOtpCode(e.target.value.replace(/[^0-9]/g, ''))}
-              placeholder="• • • • •"
-              dir="ltr"
-              autoFocus
-              className="w-full h-14 text-center text-2xl font-bold tracking-[0.5em] rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 transition-all outline-hidden"
-              disabled={isLoading}
-            />
+            <div className="flex justify-center py-1" dir="ltr">
+              <InputOTP
+                maxLength={5}
+                value={otpCode}
+                onChange={setOtpCode}
+                onComplete={(code) => handleVerifyOtp(code)}
+                isDisabled={isLoading}
+                autoFocus
+              >
+                <InputOTP.Group className="gap-2 sm:gap-2.5 justify-center">
+                  <InputOTP.Slot index={0} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={1} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={2} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={3} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={4} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                </InputOTP.Group>
+              </InputOTP>
+            </div>
           </div>
 
           {/* Timer and Resend */}

@@ -12,7 +12,6 @@ import {
   ClockIcon,
   PencilIcon,
   FileTextIcon,
-  BoxIcon,
   LayersIcon,
 } from '../../components/ui/icons'
 
@@ -81,18 +80,29 @@ export function PreInvoiceModal({
   const invoiceTotals = useMemo(() => {
     let totalCartons = 0
     let totalDeliverableArea = 0
-    let totalPrice = 0
+    let subtotal = 0
+    let discountAmount = 0
 
     invoiceItems.forEach((item) => {
       totalCartons += item.cartonCount
       totalDeliverableArea += item.deliverableArea
-      totalPrice += item.totalPrice
+      
+      const originalRate = item.product.originalPricePerSqm || item.product.finalCustomerPricePerSqm
+      const itemSubtotal = originalRate * item.deliverableArea
+      subtotal += itemSubtotal
+      if (itemSubtotal > item.totalPrice) {
+        discountAmount += (itemSubtotal - item.totalPrice)
+      }
     })
+
+    const finalPayable = Math.max(0, subtotal - discountAmount)
 
     return {
       totalCartons,
       totalDeliverableArea: Math.round(totalDeliverableArea * 100) / 100,
-      totalPrice,
+      subtotal,
+      discountAmount,
+      finalPayable,
     }
   }, [invoiceItems])
 
@@ -133,10 +143,10 @@ export function PreInvoiceModal({
       id: createdId || undefined,
       orderNumber: createdOrderNumber || undefined,
       items: orderItems,
-      subtotal: invoiceTotals.totalPrice,
-      discountAmount: 0,
-      taxAmount: Math.round(invoiceTotals.totalPrice * 0.1),
-      finalTotal: Math.round(invoiceTotals.totalPrice * 1.1),
+      subtotal: invoiceTotals.subtotal,
+      discountAmount: invoiceTotals.discountAmount,
+      taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
+      finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
       deliveryAddress: 'تهران، انبار مرکزی بازرگانی دهقان',
       notes: 'ثبت سفارش کاتالوگ آنلاین',
     })
@@ -278,24 +288,28 @@ export function PreInvoiceModal({
                 </div>
               </div>
 
-              {/* Total Financial Summary Card */}
-              <div className="p-3.5 bg-slate-900 text-white rounded-2xl shadow-md space-y-2">
-                <div className="flex items-center justify-between text-xs text-slate-300">
-                  <span className="flex items-center gap-1.5">
-                    <BoxIcon size={14} className="text-emerald-400" />
-                    <span>مجموع کارتن‌ها:</span>
-                  </span>
-                  <span className="font-bold text-white text-sm">
-                    {toPersianDigits(invoiceTotals.totalCartons)} کارتن ({toPersianDigits(invoiceTotals.totalDeliverableArea)})
+              {/* Financial Summary without dark box */}
+              <div className="pt-3 border-t border-slate-200/90 space-y-2 text-xs">
+                <div className="flex items-center justify-between text-slate-600">
+                  <span>مجموع مبلغ اقلام:</span>
+                  <span className="font-bold text-slate-800 text-xs sm:text-sm">
+                    {formatToman(invoiceTotals.subtotal)}
                   </span>
                 </div>
 
-                <div className="h-px bg-slate-800" />
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">تخفیف:</span>
+                  <span className={`font-bold text-xs sm:text-sm ${invoiceTotals.discountAmount > 0 ? 'text-emerald-700' : 'text-slate-500'}`}>
+                    {invoiceTotals.discountAmount > 0 ? `- ${formatToman(invoiceTotals.discountAmount)}` : '۰ تومان'}
+                  </span>
+                </div>
 
-                <div className="flex items-center justify-between text-sm">
-                  <span className="font-bold text-slate-200">جمع کل قابل پرداخت:</span>
-                  <span className="text-base sm:text-lg font-bold text-emerald-400">
-                    {formatToman(invoiceTotals.totalPrice)}
+                <div className="h-px bg-slate-200 my-1" />
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-slate-900">قیمت کل:</span>
+                  <span className="text-base sm:text-lg font-bold text-slate-900">
+                    {formatToman(invoiceTotals.finalPayable)}
                   </span>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import { Link, useRouterState } from '@tanstack/react-router'
 import { useAuth } from '../../features/auth/auth-store'
-import { UserIcon, LayersIcon } from '../ui/icons'
+import { UserIcon } from '../ui/icons'
 
 export function AppHeader() {
   const { user, isAuthenticated } = useAuth()
@@ -14,16 +14,9 @@ export function AppHeader() {
       <div className="w-full px-3.5 h-14 flex items-center justify-between gap-2">
         {/* Brand Logo */}
         <Link to="/product" className="flex items-center gap-2 group cursor-pointer shrink-0 active:scale-98 transition-transform">
-          <div className="w-8.5 h-8.5 rounded-xl bg-slate-900 text-white flex items-center justify-center shadow-xs group-hover:bg-slate-800 transition-colors">
-            <LayersIcon size={18} className="text-white" />
-          </div>
+          
           <div className="flex items-center gap-1.5">
-            <span className="font-bold text-base text-slate-900">
-              پرشین‌پارت
-            </span>
-            <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-200/80">
-              B2B
-            </span>
+           <img src="/assets/images/logo.jpg" alt="پرشین‌پارت" className="w-8 h-8" />            
           </div>
         </Link>
 

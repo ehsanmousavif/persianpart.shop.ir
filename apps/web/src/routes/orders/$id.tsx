@@ -32,8 +32,6 @@ function OrderDetailPage() {
     getOrderById,
     fetchOrderById,
     cancelOrder,
-    staffCancelOrder,
-    updateOrderStatus,
     reorderToCart,
     orders,
   } = useOrders()
@@ -41,7 +39,6 @@ function OrderDetailPage() {
   const [cancelReason, setCancelReason] = useState('تغییر در متراژ یا اقلام سفارش')
   const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
   const [isLoading, setIsLoading] = useState(!order)
-  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
 
   // 10-Minute Countdown Timer calculation
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
@@ -167,77 +164,11 @@ function OrderDetailPage() {
         <span className="text-slate-900 font-bold" dir="ltr">{order.orderNumber}</span>
       </nav>
 
-      {/* Admin / Sub-Admin Operational Status Toolbar */}
-      <div className="bg-slate-900 text-white rounded-3xl p-4 sm:p-5 shadow-lg border border-slate-800 space-y-3">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-800">
-          <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-xs font-bold text-slate-200">کنترل عملیاتی موقعیت سفارش (پنل ادمین / ساب‌ادمین):</span>
-          </div>
-          <span className="text-[11px] text-slate-400">
-            تغییر موقعیت مستقیم در CMS و ثبت آنی در گاه‌شمار
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-slate-300 font-medium">تغییر موقعیت به:</span>
-          {[
-            { val: 'pending', label: 'در انتظار تأیید اولیه' },
-            { val: 'checking', label: 'در حال بررسی واحد بازرگانی' },
-            { val: 'approved', label: 'تأیید بازرگانی' },
-            { val: 'preparing', label: 'در حال آماده‌سازی' },
-            { val: 'shipping', label: 'در حال ارسال' },
-            { val: 'completed', label: 'تحویل نهایی' },
-          ].map((st) => (
-            <button
-              key={st.val}
-              type="button"
-              disabled={isUpdatingStatus || order.status === st.val}
-              onClick={async () => {
-                setIsUpdatingStatus(true)
-                await updateOrderStatus(order.id, st.val)
-                const fresh = await fetchOrderById(order.id)
-                if (fresh) setOrder(fresh)
-                setIsUpdatingStatus(false)
-                toast.success('موقعیت سفارش به‌روز شد', `موقعیت سفارش به «${st.label}» تغییر یافت.`)
-              }}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                order.status === st.val
-                  ? 'bg-blue-600 text-white ring-2 ring-blue-400 shadow-xs'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700 hover:text-white'
-              }`}
-            >
-              {st.label}
-            </button>
-          ))}
-
-          {!isCancelled && (
-            <button
-              type="button"
-              disabled={isUpdatingStatus}
-              onClick={async () => {
-                if (confirm(`آیا از لغو سفارش توسط مدیریت اطمینان دارید؟ موجودی به انبار بازگردانی می‌شود.`)) {
-                  setIsUpdatingStatus(true)
-                  await staffCancelOrder(order.id, 'لغو اداری توسط مدیریت بازرگانی')
-                  const fresh = await fetchOrderById(order.id)
-                  if (fresh) setOrder(fresh)
-                  setIsUpdatingStatus(false)
-                  toast.warning('سفارش لغو شد', 'سفارش توسط مدیریت لغو و موجودی به انبار بازگردانی گردید.')
-                }
-              }}
-              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-rose-950/80 text-rose-300 border border-rose-800/80 hover:bg-rose-900 transition-all cursor-pointer"
-            >
-              لغو توسط مدیریت
-            </button>
-          )}
-        </div>
-      </div>
-
       {/* Main Order Header Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 font-mono" dir="ltr">
+            <h1 className="text-xl font-bold text-slate-900 font-mono" dir="ltr">
               {order.orderNumber}
             </h1>
             <Badge variant={statusConfig.color} size="md">
@@ -283,10 +214,10 @@ function OrderDetailPage() {
           <button
             type="button"
             onClick={handleReorder}
-            className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
+            className="py-2.5  whitespace-nowrap px-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
-            <span>سفارش مجدد این اقلام</span>
+            <span className="w-full">سفارش مجدد این اقلام</span>
           </button>
         </div>
       </div>

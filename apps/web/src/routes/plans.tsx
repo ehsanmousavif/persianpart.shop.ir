@@ -1,7 +1,9 @@
 import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { ScrollShadow } from '@heroui/react'
 import { usePlans } from '../features/plans/plans-store'
 import { PlanCard } from '../features/plans/plan-card'
+import { PlanCardSkeleton } from '../components/ui/skeleton'
 import { ClipboardListIcon, RefreshCwIcon, ArrowLeftIcon, SparklesIcon } from '../components/ui/icons'
 import { toPersianDigits } from '../lib/utils/currency'
 
@@ -10,7 +12,7 @@ export const Route = createFileRoute('/plans')({
 })
 
 function CustomerPlansPage() {
-  const { plans, allProducts, refresh } = usePlans()
+  const { plans, allProducts, refresh, isLoading } = usePlans()
   const [filterMode, setFilterMode] = useState<'all' | 'active'>('all')
 
   const filteredPlans = plans.filter((p) => {
@@ -43,12 +45,12 @@ function CustomerPlansPage() {
       </div>
 
       {/* Control Bar: Filter Tabs */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-2.5 shadow-xs flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-2 shadow-xs">
+        <ScrollShadow orientation="horizontal" className="w-full flex items-center gap-1.5 no-scrollbar">
           <button
             type="button"
             onClick={() => setFilterMode('all')}
-            className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               filterMode === 'all'
                 ? 'bg-slate-900 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -59,7 +61,7 @@ function CustomerPlansPage() {
           <button
             type="button"
             onClick={() => setFilterMode('active')}
-            className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               filterMode === 'active'
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -67,11 +69,16 @@ function CustomerPlansPage() {
           >
             طرح‌های در حال اجرا ({toPersianDigits(plans.filter((p) => p.status === 'active' || p.isActive).length)})
           </button>
-        </div>
+        </ScrollShadow>
       </div>
 
       {/* Plans List */}
-      {filteredPlans.length === 0 ? (
+      {isLoading && plans.length === 0 ? (
+        <div className="space-y-3.5">
+          <PlanCardSkeleton />
+          <PlanCardSkeleton />
+        </div>
+      ) : filteredPlans.length === 0 ? (
         <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-3 shadow-xs">
           <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto border border-blue-100">
             <SparklesIcon size={26} />

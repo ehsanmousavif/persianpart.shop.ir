@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { Pagination, ScrollShadow } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus } from '../../lib/mock-data/orders'
-import { OrderMiniStepper } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { toast } from '../../components/feedback/toast'
@@ -10,7 +10,6 @@ import {
   PackageIcon,
   RefreshCwIcon,
   ArrowLeftIcon,
-  ClockIcon,
 } from '../../components/ui/icons'
 
 export const Route = createFileRoute('/orders/')({
@@ -21,11 +20,28 @@ function OrdersListPage() {
   const navigate = useNavigate()
   const { orders, reorderToCart } = useOrders()
   const [selectedStatusTab, setSelectedStatusTab] = useState<'all' | OrderStatus>('all')
+  const [page, setPage] = useState(1)
+  const PAGE_SIZE = 12
+
+  useEffect(() => {
+    setPage(1)
+  }, [selectedStatusTab])
+
+  const isCancelledStatus = (s: string) =>
+    s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
 
   const filteredOrders =
     selectedStatusTab === 'all'
       ? orders
+      : selectedStatusTab === 'cancelled'
+      ? orders.filter((o) => isCancelledStatus(o.status))
       : orders.filter((o) => o.status === selectedStatusTab)
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE))
+  const pagedOrders = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE
+    return filteredOrders.slice(start, start + PAGE_SIZE)
+  }, [filteredOrders, page])
 
   const handleReorder = (orderId: string) => {
     const res = reorderToCart(orderId)
@@ -41,8 +57,11 @@ function OrdersListPage() {
 
   const TABS = [
     { key: 'all', label: 'همه سفارش‌ها' },
-    { key: 'pending', label: 'در انتظار بررسی' },
+    { key: 'pending', label: 'در انتظار تأیید اولیه' },
+    { key: 'checking', label: 'در حال بررسی بازرگانی' },
+    { key: 'approved', label: 'تأیید شده' },
     { key: 'preparing', label: 'در حال آماده‌سازی' },
+    { key: 'shipping', label: 'در حال ارسال' },
     { key: 'completed', label: 'تکمیل شده' },
     { key: 'cancelled', label: 'لغو شده' },
   ] as const
@@ -60,38 +79,42 @@ function OrdersListPage() {
         </p>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-        {TABS.map((tab) => {
-          const isSelected = selectedStatusTab === tab.key
-          const count =
-            tab.key === 'all'
-              ? orders.length
-              : orders.filter((o) => o.status === tab.key).length
+      {/* Filter Tabs (with ScrollShadow) */}
+      <ScrollShadow orientation="horizontal" className="w-full overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-1.5 min-w-max">
+          {TABS.map((tab) => {
+            const isSelected = selectedStatusTab === tab.key
+            const count =
+              tab.key === 'all'
+                ? orders.length
+                : tab.key === 'cancelled'
+                ? orders.filter((o) => isCancelledStatus(o.status)).length
+                : orders.filter((o) => o.status === tab.key).length
 
-          return (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setSelectedStatusTab(tab.key)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 ${
-                isSelected
-                  ? 'bg-slate-900 text-white shadow-xs'
-                  : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
-              }`}
-            >
-              <span>{tab.label}</span>
-              <span
-                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                  isSelected ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => setSelectedStatusTab(tab.key as any)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 ${
+                  isSelected
+                    ? 'bg-slate-900 text-white shadow-xs'
+                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200/80'
                 }`}
               >
-                {toPersianDigits(count)}
-              </span>
-            </button>
-          )
-        })}
-      </div>
+                <span>{tab.label}</span>
+                <span
+                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    isSelected ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-600'
+                  }`}
+                >
+                  {toPersianDigits(count)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </ScrollShadow>
 
       {/* Orders List */}
       {filteredOrders.length === 0 ? (
@@ -108,7 +131,7 @@ function OrdersListPage() {
         </div>
       ) : (
         <div className="space-y-2.5">
-          {filteredOrders.map((order) => {
+          {pagedOrders.map((order) => {
             const statusConfig = ORDER_STATUS_MAP[order.status]
             const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
             const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
@@ -129,10 +152,9 @@ function OrdersListPage() {
                     </Badge>
                   </div>
 
-                  <div className="flex items-center gap-1 text-xs text-slate-400">
-                    <ClockIcon size={12} />
-                    <span>{order.date}</span>
-                  </div>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {order.date}
+                  </span>
                 </div>
 
                 {/* Items Thumbnails & Specs */}
@@ -161,11 +183,6 @@ function OrdersListPage() {
                     </div>
                   </div>
 
-                  {/* Order Timeline Progress / Position */}
-                  {order.timeline && order.timeline.length > 0 && (
-                    <OrderMiniStepper steps={order.timeline} />
-                  )}
-
                   {/* Financials & Action Buttons */}
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     <div>
@@ -179,7 +196,7 @@ function OrdersListPage() {
                       <button
                         type="button"
                         onClick={() => handleReorder(order.id)}
-                        className="h-8 px-2.5 rounded-xl border border-slate-200/90 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95"
+                        className="h-8 px-2.5 rounded-xl border border-slate-200/90 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
                         title="سفارش مجدد اقلام"
                       >
                         <RefreshCwIcon size={13} />
@@ -189,7 +206,7 @@ function OrdersListPage() {
                       <Link
                         to="/orders/$id"
                         params={{ id: order.id }}
-                        className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95"
+                        className="h-8 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all flex items-center gap-1 shadow-xs cursor-pointer active:scale-95 shrink-0"
                       >
                         <span>پیگیری</span>
                         <ArrowLeftIcon size={13} />
@@ -200,6 +217,44 @@ function OrdersListPage() {
               </div>
             )
           })}
+
+          {/* HeroUI Pagination (12 items per page) */}
+          {totalPages > 1 && (
+            <div className="pt-4 pb-2 flex justify-center">
+              <Pagination>
+                <Pagination.Content>
+                  <Pagination.Item>
+                    <Pagination.Previous
+                      isDisabled={page === 1}
+                      onPress={() => setPage((p) => Math.max(1, p - 1))}
+                    >
+                      <Pagination.PreviousIcon />
+                      <span>قبلی</span>
+                    </Pagination.Previous>
+                  </Pagination.Item>
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <Pagination.Item key={p}>
+                      <Pagination.Link
+                        isActive={p === page}
+                        onPress={() => setPage(p)}
+                      >
+                        {toPersianDigits(p)}
+                      </Pagination.Link>
+                    </Pagination.Item>
+                  ))}
+                  <Pagination.Item>
+                    <Pagination.Next
+                      isDisabled={page === totalPages}
+                      onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
+                    >
+                      <span>بعدی</span>
+                      <Pagination.NextIcon />
+                    </Pagination.Next>
+                  </Pagination.Item>
+                </Pagination.Content>
+              </Pagination>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -37,6 +37,7 @@ export function useCatalog() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
   const [productsList, setProductsList] = useState<Product[]>([])
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   // Fetch from live backend API on mount
   useEffect(() => {
@@ -131,6 +132,11 @@ export function useCatalog() {
         if (isMounted) {
           setProductsList([])
           setIsLiveConnected(false)
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false)
         }
       })
 
@@ -285,6 +291,7 @@ export function useCatalog() {
     products: filteredProducts,
     allProducts: productsList,
     filters,
+    isLoading,
     activeFilterCount,
     isLiveConnected,
     setFilter,
