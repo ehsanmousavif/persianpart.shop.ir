@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
+import type { Product } from '../../lib/mock-data/products'
 import { api } from '../../lib/api-client'
 
 export type SortOption = 'default' | 'cheapest' | 'expensive' | 'newest' | 'oldest'
@@ -34,65 +34,71 @@ const DEFAULT_FILTERS: FilterState = {
 
 export function useCatalog() {
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
-  const [productsList, setProductsList] = useState<Product[]>(MOCK_PRODUCTS)
+  const [productsList, setProductsList] = useState<Product[]>([])
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
 
-  // Fetch from live backend API on mount, with graceful offline fallback
+  // Fetch from live backend API on mount
   useEffect(() => {
     let isMounted = true
     api.catalog
       .list({ page: 1, limit: 100 })
       .then((res) => {
-        if (isMounted && res.items && res.items.length > 0) {
-          const liveMapped: Product[] = res.items.map((item) => {
-            const width = item.width || 60
-            const height = item.height || 120
-            const dimStr = `${width}×${height}`
-            return {
-              id: item.id,
-              slug: item.slug,
-              name: item.name,
-              sku: item.sku,
-              dimensions: { width, height },
-              dimension: dimStr,
-              brand: item.brandName || 'پرشین پارت',
-              color: item.color || 'سفید',
-              finish: (item.finish as any) || 'پولیش',
-              grade: (item.grade as any) || 'درجه ۱',
-              category: (item.categoryName as any) || 'پرسلان کف',
-              finalCustomerPricePerSqm: item.finalCustomerPricePerSqm,
-              pricePerM2: item.finalCustomerPricePerSqm,
-              sqmPerCarton: item.sqmPerCarton,
-              areaPerCarton: item.sqmPerCarton,
-              piecesPerCarton: item.piecesPerCarton,
-              tilesPerCarton: item.piecesPerCarton,
-              cartonWeightKg: 28,
-              inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
-              stockCartons:
-                item.availability === 'out_of_stock'
-                  ? 0
-                  : Math.floor(500 / item.sqmPerCarton),
-              inStock: item.availability !== 'out_of_stock',
-              stockStatus:
-                item.availability === 'out_of_stock'
-                  ? 'out_of_stock'
-                  : item.availability === 'limited'
-                    ? 'low_stock'
-                    : 'in_stock',
-              description: item.richDescription || undefined,
-              applications: ['کف سالن', 'محیط تجاری'],
-              tags: item.tags || [],
-              images: item.cover ? [item.cover] : ['/assets/images/tile-sample-1.jpg'],
-              gallery: item.gallery || [],
-            }
-          })
-          setProductsList(liveMapped)
+        if (isMounted) {
+          if (res.items && res.items.length > 0) {
+            const liveMapped: Product[] = res.items.map((item: any) => {
+              const width = item.width || 60
+              const height = item.height || 120
+              const dimStr = `${width}×${height}`
+              return {
+                id: item.id,
+                slug: item.slug,
+                name: item.name,
+                sku: item.sku,
+                dimensions: { width, height },
+                dimension: dimStr,
+                brand: item.brandName || 'پرشین پارت',
+                color: item.color || 'سفید',
+                finish: (item.finish as any) || 'پولیش',
+                grade: (item.grade as any) || 'درجه ۱',
+                category: (item.categoryName as any) || 'پرسلان کف',
+                finalCustomerPricePerSqm: item.finalCustomerPricePerSqm,
+                pricePerM2: item.finalCustomerPricePerSqm,
+                sqmPerCarton: item.sqmPerCarton,
+                areaPerCarton: item.sqmPerCarton,
+                piecesPerCarton: item.piecesPerCarton,
+                tilesPerCarton: item.piecesPerCarton,
+                cartonWeightKg: 28,
+                inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
+                stockCartons:
+                  item.availability === 'out_of_stock'
+                    ? 0
+                    : Math.floor(500 / item.sqmPerCarton),
+                inStock: item.availability !== 'out_of_stock',
+                stockStatus:
+                  item.availability === 'out_of_stock'
+                    ? 'out_of_stock'
+                    : item.availability === 'limited'
+                      ? 'low_stock'
+                      : 'in_stock',
+                description: item.richDescription || undefined,
+                applications: ['کف سالن', 'محیط تجاری'],
+                tags: item.tags || [],
+                images: item.cover ? [item.cover] : ['/assets/images/tile-sample-1.jpg'],
+                gallery: item.gallery || [],
+              }
+            })
+            setProductsList(liveMapped)
+          } else {
+            setProductsList([])
+          }
           setIsLiveConnected(true)
         }
       })
       .catch(() => {
-        // Graceful offline degradation keeps MOCK_PRODUCTS without crashing
-        setIsLiveConnected(false)
+        if (isMounted) {
+          setProductsList([])
+          setIsLiveConnected(false)
+        }
       })
 
     return () => {

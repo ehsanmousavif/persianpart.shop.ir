@@ -31,46 +31,11 @@ interface CartState {
 
 const STORAGE_KEY = 'persianpart_cart_v2'
 
-const INITIAL_CART_ITEMS: CartItem[] = [
-  {
-    productId: 'prod-9',
-    name: 'پرسلان ماربل سفید کالیبره ۳۰×۹۰',
-    slug: 'white-marble-30x90',
-    sku: 'PP-WMR-3090-POL',
-    dimension: '30×90',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80',
-    unitPrice: 500000,
-    sqmPerCarton: 7.2,
-    areaPerCarton: 7.2,
-    requestedArea: 35.0,
-    cartonCount: 5,
-    deliverableArea: 36.0,
-    totalPrice: 18000000,
-    stockCartons: 10,
-    inventorySqm: 72.0,
-  },
-  {
-    productId: 'prod-1',
-    name: 'پرسلان کلکته گلد سوپر پولیش',
-    slug: 'calacatta-gold-60120-polish',
-    sku: 'PP-CAL-6012-POL',
-    dimension: '60×120',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=300&q=80',
-    unitPrice: 540000,
-    sqmPerCarton: 1.44,
-    areaPerCarton: 1.44,
-    requestedArea: 20.0,
-    cartonCount: 14,
-    deliverableArea: 20.16,
-    totalPrice: 10886400,
-    stockCartons: 320,
-    inventorySqm: 460.8,
-  },
-]
+const INITIAL_CART_ITEMS: CartItem[] = []
 
 function getInitialState(): CartState {
   if (typeof window === 'undefined') {
-    return { items: INITIAL_CART_ITEMS, demoMode: 'normal' }
+    return { items: [], demoMode: 'normal' }
   }
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -80,7 +45,7 @@ function getInitialState(): CartState {
   } catch {
     // fallback
   }
-  return { items: INITIAL_CART_ITEMS, demoMode: 'normal' }
+  return { items: [], demoMode: 'normal' }
 }
 
 let currentState: CartState = getInitialState()

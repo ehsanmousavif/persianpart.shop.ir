@@ -7,10 +7,10 @@ import { toPersianDigits } from '../../lib/utils/currency'
 
 export function LoginCard() {
   const navigate = useNavigate()
-  const { sendOtp, verifyOtp, loginAsDemoUser } = useAuth()
+  const { sendOtp, verifyOtp } = useAuth()
 
   const [step, setStep] = useState<'phone' | 'otp'>('phone')
-  const [phone, setPhone] = useState('09123456789')
+  const [phone, setPhone] = useState('')
   const [otpCode, setOtpCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
@@ -27,7 +27,7 @@ export function LoginCard() {
     return () => clearInterval(timer)
   }, [step, countdown])
 
-  const handleSendPhone = (e?: React.FormEvent) => {
+  const handleSendPhone = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     setErrorMessage(null)
 
@@ -37,17 +37,22 @@ export function LoginCard() {
     }
 
     setIsLoading(true)
-    setTimeout(() => {
-      setIsLoading(false)
-      sendOtp(phone)
+    try {
+      await sendOtp(phone)
       setStep('otp')
       setCountdown(120)
       setOtpCode('')
-      toast.info('کد تأیید ارسال شد', `کد تستی: ۱۲۳۴۵ برای شماره ${toPersianDigits(phone)}`)
-    }, 600)
+      toast.info('کد تأیید ارسال شد', `پیامک حاوی کد تأیید برای شماره ${toPersianDigits(phone)} ارسال شد.`)
+    } catch (err: any) {
+      const msg = err.message || 'خطا در ارسال کد اعتبارسنجی'
+      setErrorMessage(msg)
+      toast.error('خطای ارتباط با سرور', msg)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const handleVerifyOtp = (codeToVerify?: string) => {
+  const handleVerifyOtp = async (codeToVerify?: string) => {
     const code = codeToVerify || otpCode
     setErrorMessage(null)
 
@@ -57,19 +62,17 @@ export function LoginCard() {
     }
 
     setIsLoading(true)
-    setTimeout(() => {
-      try {
-        verifyOtp(code)
-        setIsLoading(false)
-        toast.success('ورود موفقیت‌آمیز', 'خوش‌آمدید به سامانه سفارش‌گذاری پرشین‌پارت')
-        navigate({ to: '/products' })
-      } catch (err: unknown) {
-        setIsLoading(false)
-        const msg = err instanceof Error ? err.message : 'خطا در اعتبارسنجی'
-        setErrorMessage(msg)
-        toast.error('خطای ورود', msg)
-      }
-    }, 700)
+    try {
+      await verifyOtp(code)
+      toast.success('ورود موفقیت‌آمیز', 'خوش‌آمدید به سامانه سفارش‌گذاری پرشین‌پارت')
+      navigate({ to: '/products' })
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'کد تایید وارد شده نادرست یا منقضی است.'
+      setErrorMessage(msg)
+      toast.error('خطای ورود', msg)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const formatTimer = (seconds: number) => {
@@ -139,21 +142,6 @@ export function LoginCard() {
               </>
             )}
           </button>
-
-          {/* Quick Demo Bypass */}
-          <div className="pt-3 border-t border-slate-100">
-            <button
-              type="button"
-              onClick={() => {
-                loginAsDemoUser()
-                toast.success('ورود سریع تستی', 'با اکانت پیش‌فرض وارد شدید.')
-                navigate({ to: '/products' })
-              }}
-              className="w-full py-2 px-3 rounded-xl border border-dashed border-slate-300 hover:border-slate-400 bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all cursor-pointer active:scale-98"
-            >
-              🚀 ورود مستقیم با حساب کاربری دمو (مهندس دهقان)
-            </button>
-          </div>
         </form>
       ) : (
         <div className="space-y-4">
@@ -224,45 +212,6 @@ export function LoginCard() {
               <span>تأیید و ورود به سامانه</span>
             )}
           </button>
-
-          {/* Test State Simulator triggers */}
-          <div className="pt-4 border-t border-slate-100">
-            <span className="text-[11px] font-bold text-slate-500 block mb-2 text-start">
-              تست سناریوهای OTP (مخصوص دمو):
-            </span>
-            <div className="grid grid-cols-3 gap-1.5">
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpCode('12345')
-                  handleVerifyOtp('12345')
-                }}
-                className="py-1.5 px-2 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-[11px] font-bold transition-colors cursor-pointer"
-              >
-                ✓ کد صحیح
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpCode('00000')
-                  handleVerifyOtp('00000')
-                }}
-                className="py-1.5 px-2 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-800 border border-rose-200 text-[11px] font-bold transition-colors cursor-pointer"
-              >
-                ✕ کد اشتباه
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setOtpCode('99999')
-                  handleVerifyOtp('99999')
-                }}
-                className="py-1.5 px-2 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 text-[11px] font-bold transition-colors cursor-pointer"
-              >
-                ⏱ منقضی‌شده
-              </button>
-            </div>
-          </div>
         </div>
       )}
     </div>

@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { useCart, type CartDemoMode } from '../features/cart/cart-store'
+import { useCart } from '../features/cart/cart-store'
 import { CartItemRow } from '../features/cart/cart-item-row'
-import { useOrders } from '../features/orders/order-store'
+import { api } from '../lib/api-client'
 import { useAuth } from '../features/auth/auth-store'
 import { formatToman, toPersianDigits } from '../lib/utils/currency'
 import { toast } from '../components/feedback/toast'
@@ -26,7 +26,6 @@ function CartPage() {
   const navigate = useNavigate()
   const {
     items,
-    demoMode,
     itemCount,
     totalCartons,
     totalArea,
@@ -37,17 +36,15 @@ function CartPage() {
     hasBlockingIssues,
     clearCart,
     resetCart,
-    setDemoMode,
   } = useCart()
 
-  const { createOrder } = useOrders()
   const { user, isAuthenticated } = useAuth()
 
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
   const [deliveryNotes, setDeliveryNotes] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleCheckoutSubmit = () => {
+  const handleCheckoutSubmit = async () => {
     if (!isAuthenticated || !user) {
       toast.warning('نیاز به ورود', 'لطفاً ابتدا وارد حساب کاربری شوید.')
       navigate({ to: '/login' })
@@ -55,44 +52,34 @@ function CartPage() {
     }
 
     if (items.length === 0 || hasBlockingIssues) {
-      toast.error('خطای ثبت سفارش', 'امکان ثبت سفارش با اقلام ناموجود وجود ندارد.')
+      toast.error('خطای ثبت سفارش', 'امکان ثبت سفارش با اقلام ناموجود یا سبد خالی وجود ندارد.')
       return
     }
 
     setIsSubmitting(true)
-    setTimeout(() => {
-      const orderItems = items.map((i) => ({
-        productId: i.productId,
-        productName: i.name,
-        productSlug: i.slug,
-        productSku: i.sku,
-        productImage: i.image,
-        dimension: i.dimension,
-        unitPrice: i.unitPrice,
-        requestedArea: i.requestedArea,
-        cartonCount: i.cartonCount,
-        deliverableArea: i.deliverableArea,
-        totalPrice: i.totalPrice,
-      }))
+    try {
+      const orderPayload = {
+        items: items.map((i) => ({
+          productId: i.productId,
+          requestedArea: i.requestedArea || i.deliverableArea || 1,
+        })),
+        notes: deliveryNotes || undefined,
+      }
 
-      const newOrder = createOrder({
-        items: orderItems,
-        subtotal,
-        discountAmount,
-        taxAmount,
-        finalTotal,
-        deliveryAddress: user.address,
-        notes: deliveryNotes,
-      })
+      const newOrder = await api.order.submit(orderPayload)
 
-      setIsSubmitting(false)
+      clearCart()
       setIsCheckoutModalOpen(false)
       toast.success(
-        'سفارش با موفقیت ثبت گردید',
-        `شماره پیگیری: ${newOrder.orderNumber} در سامانه ثبت شد.`
+        'سفارش با موفقیت در سامانه ثبت گردید',
+        `شماره پیگیری: ${newOrder.orderNumber}`
       )
       navigate({ to: '/orders/$id', params: { id: newOrder.id } })
-    }, 700)
+    } catch (err: any) {
+      toast.error('خطا در ثبت سفارش', err.message || 'مشکلی در ارتباط با سرور رخ داد.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -119,48 +106,6 @@ function CartPage() {
             <span>خالی کردن</span>
           </button>
         )}
-      </div>
-
-      {/* Demo Scenario Switcher */}
-      <div className="p-2.5 bg-slate-900 text-white rounded-2xl shadow-xs space-y-1.5">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-            <span>شبیه‌ساز سناریوهای بازار:</span>
-          </span>
-          <button
-            type="button"
-            onClick={resetCart}
-            className="text-[10px] text-slate-300 hover:text-white underline cursor-pointer"
-          >
-            ریست سبد
-          </button>
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {(
-            [
-              { key: 'normal', label: '✓ عادی' },
-              { key: 'low_stock', label: '⚠ کمبود انبار' },
-              { key: 'out_of_stock', label: '✕ ناموجود' },
-              { key: 'price_changed', label: '↑ تغییر نرخ' },
-              { key: 'empty', label: '∅ خالی' },
-            ] as { key: CartDemoMode; label: string }[]
-          ).map((btn) => (
-            <button
-              key={btn.key}
-              type="button"
-              onClick={() => setDemoMode(btn.key)}
-              className={`px-2.5 py-1 rounded-lg text-[10px] font-bold transition-all cursor-pointer active:scale-95 ${
-                demoMode === btn.key
-                  ? 'bg-blue-600 text-white shadow-xs'
-                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
-              }`}
-            >
-              {btn.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Main Cart Content */}

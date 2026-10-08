@@ -3,8 +3,8 @@ import type { CollectionConfig } from 'payload'
 export const Admins: CollectionConfig = {
   slug: 'admins',
   labels: {
-    singular: 'مدیر سیستم',
-    plural: 'مدیران سیستم',
+    singular: "Great Admin",
+    plural: "Great Admins",
   },
   admin: {
     useAsTitle: 'email',

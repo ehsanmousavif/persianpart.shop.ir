@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react'
-import { MOCK_ORDERS, type Order, type OrderItem } from '../../lib/mock-data/orders'
+import { type Order, type OrderItem } from '../../lib/mock-data/orders'
 import { cartStore } from '../cart/cart-store'
-import { MOCK_PRODUCTS } from '../../lib/mock-data/products'
+
 
 const STORAGE_KEY = 'persianpart_orders'
 
 function getInitialState(): Order[] {
   if (typeof window === 'undefined') {
-    return MOCK_ORDERS
+    return []
   }
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
@@ -17,7 +17,7 @@ function getInitialState(): Order[] {
   } catch {
     // fallback
   }
-  return MOCK_ORDERS
+  return []
 }
 
 let currentOrders: Order[] = getInitialState()
@@ -143,19 +143,21 @@ export const orderStore = {
 
     const warnings: string[] = []
 
-    // Populate cart with current product specs
+    // Populate cart with order items
     order.items.forEach((item) => {
-      const liveProduct = MOCK_PRODUCTS.find((p) => p.id === item.productId)
-      if (liveProduct) {
-        if (!liveProduct.inStock) {
-          warnings.push(`محصول «${liveProduct.name}» در حال حاضر در انبار ناموجود است.`)
-        } else if (liveProduct.pricePerM2 !== item.unitPrice) {
-          warnings.push(
-            `قیمت محصول «${liveProduct.name}» تغییر کرده است (قبلی: ${item.unitPrice.toLocaleString('fa-IR')} → جدید: ${liveProduct.pricePerM2.toLocaleString('fa-IR')})`
-          )
-        }
-        cartStore.addItem(liveProduct, item.requestedArea)
+      const productObj: any = {
+        id: item.productId,
+        name: item.productName,
+        slug: item.productSlug,
+        sku: item.productSku,
+        dimension: item.dimension,
+        images: [item.productImage],
+        finalCustomerPricePerSqm: item.unitPrice,
+        sqmPerCarton: item.deliverableArea / (item.cartonCount || 1),
+        stockCartons: 999,
+        inventorySqm: 999,
       }
+      cartStore.addItem(productObj, item.requestedArea)
     })
 
     return { success: true, warnings }

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { api } from '../../lib/api-client'
 
 export interface UserProfile {
   id: string
@@ -13,19 +14,6 @@ export interface UserProfile {
   availableCredit: number
 }
 
-export const DEFAULT_USER: UserProfile = {
-  id: 'usr-101',
-  name: 'آرش دهقان',
-  storeName: 'پخش بازرگانی پرشین پارت (تهران)',
-  phone: '۰۹۱۲۳۴۵۶۷۸۹',
-  province: 'تهران',
-  city: 'تهران',
-  address: 'بزرگراه فتح، خیابان هفدهم شهریور، کوچه آذر، پلاک ۱۴، انبار مرکزی',
-  economicCode: '411589324156',
-  creditLimit: 500000000,
-  availableCredit: 320000000,
-}
-
 interface AuthState {
   isAuthenticated: boolean
   user: UserProfile | null
@@ -33,21 +21,23 @@ interface AuthState {
 }
 
 const STORAGE_KEY = 'persianpart_auth'
+const TOKEN_KEY = 'persianpart_token'
 
 function getInitialState(): AuthState {
   if (typeof window === 'undefined') {
-    return { isAuthenticated: true, user: DEFAULT_USER, pendingPhone: null }
+    return { isAuthenticated: false, user: null, pendingPhone: null }
   }
   try {
+    const token = localStorage.getItem(TOKEN_KEY)
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) {
-      return JSON.parse(saved)
+    if (token && saved) {
+      const parsed = JSON.parse(saved)
+      return { isAuthenticated: true, user: parsed.user || null, pendingPhone: null }
     }
   } catch {
     // fallback
   }
-  // Default to authenticated for rich demo experience out of the box
-  return { isAuthenticated: true, user: DEFAULT_USER, pendingPhone: null }
+  return { isAuthenticated: false, user: null, pendingPhone: null }
 }
 
 let currentState: AuthState = getInitialState()
@@ -67,44 +57,83 @@ function broadcast(nextState: AuthState) {
 
 export const authStore = {
   getState: () => currentState,
-  sendOtp: (phone: string) => {
-    broadcast({ ...currentState, pendingPhone: phone })
-    return true
-  },
-  verifyOtp: (code: string) => {
-    // Mock validation: 12345 or any 5 digits is success unless 00000 (wrong) or 99999 (expired)
-    if (code === '00000') {
-      throw new Error('کد تایید وارد شده نادرست است.')
+
+  sendOtp: async (phone: string): Promise<boolean> => {
+    try {
+      await api.auth.requestOtp({ phone })
+      broadcast({ ...currentState, pendingPhone: phone })
+      return true
+    } catch (err: any) {
+      throw new Error(err.message || 'خطا در ارسال کد اعتبارسنجی')
     }
-    if (code === '99999') {
-      throw new Error('کد تایید منقضی شده است. لطفاً درخواست کد مجدد دهید.')
+  },
+
+  verifyOtp: async (code: string): Promise<boolean> => {
+    const mobile = currentState.pendingPhone
+    if (!mobile) {
+      throw new Error('شماره موبایل ثبت نشده است. لطفاً ابتدا شماره را وارد کنید.')
     }
-    broadcast({
-      isAuthenticated: true,
-      user: {
-        ...DEFAULT_USER,
-        phone: currentState.pendingPhone || DEFAULT_USER.phone,
-      },
-      pendingPhone: null,
-    })
-    return true
+
+    try {
+      const res = await api.auth.verifyOtp({ phone: mobile, code })
+      if (typeof window !== 'undefined') {
+        localStorage.setItem(TOKEN_KEY, res.token)
+      }
+
+      const userData = (res.user || (res as any).customer || {}) as any
+      const userProfile: UserProfile = {
+        id: String(userData.id || 'user-1'),
+        name: userData.fullName || userData.contactName || 'کاربر گرامی',
+        storeName: userData.storeName || 'فروشگاه قطعات',
+        phone: userData.phone || userData.mobile || mobile,
+        province: userData.province || 'تهران',
+        city: userData.city || 'تهران',
+        address: userData.address || '',
+        economicCode: '',
+        creditLimit: 0,
+        availableCredit: 0,
+      }
+
+      broadcast({
+        isAuthenticated: true,
+        user: userProfile,
+        pendingPhone: null,
+      })
+      return true
+    } catch (err: any) {
+      throw new Error(err.message || 'کد تایید وارد شده نادرست یا منقضی است.')
+    }
   },
-  loginAsDemoUser: () => {
-    broadcast({
-      isAuthenticated: true,
-      user: DEFAULT_USER,
-      pendingPhone: null,
-    })
-  },
+
   logout: () => {
+    try {
+      api.auth.logout()
+    } catch {
+      // Best effort
+    }
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(STORAGE_KEY)
+    }
     broadcast({
       isAuthenticated: false,
       user: null,
       pendingPhone: null,
     })
   },
-  updateProfile: (updated: Partial<UserProfile>) => {
+
+  updateProfile: async (updated: Partial<UserProfile>) => {
     if (!currentState.user) return
+
+    try {
+      await api.user.update({
+        fullName: updated.name,
+        address: updated.address,
+      })
+    } catch {
+      // Best effort update
+    }
+
     broadcast({
       ...currentState,
       user: { ...currentState.user, ...updated },
@@ -126,7 +155,6 @@ export function useAuth() {
     ...state,
     sendOtp: authStore.sendOtp,
     verifyOtp: authStore.verifyOtp,
-    loginAsDemoUser: authStore.loginAsDemoUser,
     logout: authStore.logout,
     updateProfile: authStore.updateProfile,
   }

@@ -5,15 +5,59 @@ import {
   EntityIdSchema,
   IranianMobileSchema,
   PaginationInputSchema,
+  SlugSchema,
   StandardErrorDataSchema,
   createPaginatedResponseSchema,
 } from './common'
-import { CustomerTypeSchema, customerTypeContract } from './customer-type'
 
-/**
- * Customer profile visible to the customer themselves.
- * Invariant: internalNotes is strictly excluded.
- */
+// ============================================================================
+// 1. Customer Types & Pricing Tiers Schemas
+// ============================================================================
+
+export const CustomerTypeSchema = z.object({
+  id: EntityIdSchema,
+  name: z.string().min(1, 'نام نوع مشتری الزامی است'),
+  slug: SlugSchema,
+  markupPercent: z
+    .number()
+    .min(-50, 'درصد سود نمی‌تواند کمتر از -۵۰ باشد')
+    .max(500, 'درصد سود نمی‌تواند بیشتر از ۵۰۰ باشد'),
+  isActive: z.boolean().default(true),
+  description: z.string().optional(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+})
+
+export type CustomerType = z.infer<typeof CustomerTypeSchema>
+
+export const CreateCustomerTypeInputSchema = z.object({
+  name: z.string().min(1, 'نام نوع مشتری الزامی است'),
+  slug: SlugSchema,
+  markupPercent: z
+    .number()
+    .min(-50, 'درصد سود نمی‌تواند کمتر از -۵۰ باشد')
+    .max(500, 'درصد سود نمی‌تواند بیشتر از ۵۰۰ باشد'),
+  description: z.string().optional(),
+  isActive: z.boolean().default(true),
+})
+
+export type CreateCustomerTypeInput = z.infer<typeof CreateCustomerTypeInputSchema>
+
+export const UpdateCustomerTypeInputSchema = z.object({
+  id: EntityIdSchema,
+  name: z.string().min(1).optional(),
+  slug: SlugSchema.optional(),
+  markupPercent: z.number().min(-50).max(500).optional(),
+  description: z.string().optional(),
+  isActive: z.boolean().optional(),
+})
+
+export type UpdateCustomerTypeInput = z.infer<typeof UpdateCustomerTypeInputSchema>
+
+// ============================================================================
+// 2. Customer Profile & Staff Customer Schemas
+// ============================================================================
+
 export const CustomerProfileSchema = z.object({
   id: EntityIdSchema,
   storeName: z.string().min(1, 'نام فروشگاه/کسب‌وکار الزامی است'),
@@ -35,10 +79,6 @@ export const CustomerProfileSchema = z.object({
 
 export type CustomerProfile = z.infer<typeof CustomerProfileSchema>
 
-/**
- * Detailed customer view for internal staff (Admin / Support).
- * Includes internal notes, full customer type, and active status.
- */
 export const CustomerStaffDetailSchema = CustomerProfileSchema.extend({
   isActive: z.boolean(),
   internalNotes: z.string().optional(),
@@ -96,8 +136,51 @@ export const CustomerFilterInputSchema = PaginationInputSchema.extend({
 
 export type CustomerFilterInput = z.infer<typeof CustomerFilterInputSchema>
 
+// ============================================================================
+// 3. Unified Customer & Customer Types Contract
+// ============================================================================
+
+export const customerTypeContract = {
+  list: oc
+    .meta(openapi({ method: 'GET', path: '/customer-types', summary: 'دریافت لیست انواع مشتری' }))
+    .output(z.array(CustomerTypeSchema)),
+
+  getById: oc
+    .meta(openapi({ method: 'GET', path: '/customer-types/{id}', summary: 'دریافت تکی نوع مشتری' }))
+    .input(z.object({ id: EntityIdSchema }))
+    .output(CustomerTypeSchema)
+    .errors({ NOT_FOUND: { data: StandardErrorDataSchema } }),
+
+  create: oc
+    .meta(openapi({ method: 'POST', path: '/customer-types', summary: 'ایجاد نوع مشتری جدید (فقط ادمین)' }))
+    .input(CreateCustomerTypeInputSchema)
+    .output(CustomerTypeSchema)
+    .errors({
+      CONFLICT: { data: StandardErrorDataSchema },
+      FORBIDDEN: { data: StandardErrorDataSchema },
+    }),
+
+  update: oc
+    .meta(openapi({ method: 'PUT', path: '/customer-types/{id}', summary: 'ویرایش نوع مشتری (فقط ادمین)' }))
+    .input(UpdateCustomerTypeInputSchema)
+    .output(CustomerTypeSchema)
+    .errors({
+      NOT_FOUND: { data: StandardErrorDataSchema },
+      CONFLICT: { data: StandardErrorDataSchema },
+      FORBIDDEN: { data: StandardErrorDataSchema },
+    }),
+
+  toggleActive: oc
+    .meta(openapi({ method: 'POST', path: '/customer-types/{id}/toggle-active', summary: 'فعال/غیرفعال‌سازی نوع مشتری' }))
+    .input(z.object({ id: EntityIdSchema }))
+    .output(CustomerTypeSchema)
+    .errors({
+      NOT_FOUND: { data: StandardErrorDataSchema },
+      FORBIDDEN: { data: StandardErrorDataSchema },
+    }),
+}
+
 export const customerContract = {
-  // Customer-facing self endpoints
   getProfile: oc
     .meta(openapi({ method: 'GET', path: '/customer/profile', summary: 'دریافت پروفایل مشتری جاری' }))
     .output(CustomerProfileSchema)
@@ -115,7 +198,6 @@ export const customerContract = {
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
 
-  // Internal staff endpoints
   staffList: oc
     .meta(openapi({ method: 'GET', path: '/staff/customers', summary: 'لیست پرسنلی مشتریان با فیلتر' }))
     .input(CustomerFilterInputSchema)
@@ -166,7 +248,5 @@ export const customerContract = {
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
 
-  // Unified customer types & pricing tiers sub-contract
   types: customerTypeContract,
 }
-

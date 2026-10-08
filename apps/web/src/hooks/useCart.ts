@@ -40,7 +40,7 @@ export function useCart() {
 
     setIsValidating(true)
     try {
-      const res = await api.pricing.validateCart({ items })
+      const res = await api.order.pricing.validateCart({ items })
       setValidation(res)
     } catch {
       setValidation(null)

@@ -66,7 +66,7 @@ export function useCsvPipeline() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await api.csvImport.preview({ filename, csvContent })
+      const res = await api.system.csvImport.preview({ filename, csvContent })
       setPreview(res)
       return res
     } catch (err: any) {
@@ -81,7 +81,7 @@ export function useCsvPipeline() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await api.csvImport.apply({ importRunId })
+      const res = await api.system.csvImport.apply({ importRunId })
       setPreview(null)
       fetchHistory()
       return res
@@ -95,7 +95,7 @@ export function useCsvPipeline() {
 
   const fetchHistory = useCallback(async () => {
     try {
-      const res = await api.csvImport.listRuns({})
+      const res = await api.system.csvImport.listRuns({})
       setHistory(res.items)
     } catch {
       // Ignored if not staff
@@ -126,7 +126,7 @@ export function useAuditEvents(filters?: { action?: any; entityType?: string; pa
   const fetchEvents = useCallback(async () => {
     setIsLoading(true)
     try {
-      const res = await api.audit.list(filters || {})
+      const res = await api.system.audit.list(filters || {})
       setEvents(res.items)
       setTotal(res.total)
     } catch {

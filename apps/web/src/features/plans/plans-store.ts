@@ -5,7 +5,7 @@ import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
 const STORAGE_KEY = 'persianpart_plans_v1'
 
 function getInitialPlans(): Plan[] {
-  if (typeof window === 'undefined') return INITIAL_PLANS
+  if (typeof window === 'undefined') return []
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
@@ -14,7 +14,7 @@ function getInitialPlans(): Plan[] {
   } catch {
     // fallback
   }
-  return INITIAL_PLANS
+  return []
 }
 
 let currentPlans: Plan[] = getInitialPlans()
@@ -34,8 +34,8 @@ function broadcast(nextPlans: Plan[]) {
 
 export const plansStore = {
   getPlans: () => currentPlans,
-  getCustomers: () => MOCK_CUSTOMERS,
-  getProducts: () => MOCK_PRODUCTS,
+  getCustomers: () => [] as B2BCustomer[],
+  getProducts: () => [] as Product[],
 
   togglePlanStatus: (planId: string) => {
     const next = currentPlans.map((p) =>

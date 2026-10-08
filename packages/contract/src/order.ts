@@ -7,7 +7,55 @@ import {
   StandardErrorDataSchema,
   createPaginatedResponseSchema,
 } from './common'
-import { CartItemInputSchema, ValidatedCartItemSchema, pricingContract } from './pricing'
+
+// ============================================================================
+// 1. Cart Validation & Pricing Quote Schemas
+// ============================================================================
+
+export const CartItemInputSchema = z.object({
+  productId: EntityIdSchema,
+  requestedSqm: z.number().positive('متراژ درخواستی باید بزرگتر از صفر باشد'),
+})
+
+export type CartItemInput = z.infer<typeof CartItemInputSchema>
+
+export const ValidateCartInputSchema = z.object({
+  items: z.array(CartItemInputSchema).min(1, 'سبد خرید نمی‌تواند خالی باشد'),
+})
+
+export type ValidateCartInput = z.infer<typeof ValidateCartInputSchema>
+
+export const ValidatedCartItemSchema = z.object({
+  productId: EntityIdSchema,
+  sku: z.string(),
+  productName: z.string(),
+  cover: z.string().optional().nullable(),
+  requestedSqm: z.number().positive(),
+  cartonCount: z.number().int().positive(),
+  sqmPerCarton: z.number().positive(),
+  actualSqm: z.number().positive(),
+  pricePerSqm: z.number().nonnegative(),
+  lineTotal: z.number().nonnegative(),
+  inStock: z.boolean(),
+  availableInventorySqm: z.number().nonnegative(),
+})
+
+export type ValidatedCartItem = z.infer<typeof ValidatedCartItemSchema>
+
+export const ValidateCartOutputSchema = z.object({
+  items: z.array(ValidatedCartItemSchema),
+  totalAmount: z.number().nonnegative(),
+  totalSqm: z.number().nonnegative(),
+  totalCartons: z.number().int().nonnegative(),
+  isValid: z.boolean(),
+  errorReasons: z.array(z.string()),
+})
+
+export type ValidateCartOutput = z.infer<typeof ValidateCartOutputSchema>
+
+// ============================================================================
+// 2. Order & Historical Snapshot Schemas
+// ============================================================================
 
 export const OrderStatusSchema = z.enum([
   'pending_review',
@@ -20,10 +68,6 @@ export const OrderStatusSchema = z.enum([
 
 export type OrderStatus = z.infer<typeof OrderStatusSchema>
 
-/**
- * Historical snapshot of an item in the order.
- * Invariant: Never depends on subsequent product or customerType updates.
- */
 export const OrderItemSnapshotSchema = z.object({
   id: EntityIdSchema,
   orderId: EntityIdSchema,
@@ -164,8 +208,21 @@ export const PrepareReorderOutputSchema = z.object({
 
 export type PrepareReorderOutput = z.infer<typeof PrepareReorderOutputSchema>
 
+// ============================================================================
+// 3. Unified Order & Pricing Contract
+// ============================================================================
+
+export const pricingContract = {
+  validateCart: oc
+    .meta(openapi({ method: 'POST', path: '/pricing/validate-cart', summary: 'اعتبارسنجی سبد خرید و محاسبه کارتن و قیمت نهایی' }))
+    .input(ValidateCartInputSchema)
+    .output(ValidateCartOutputSchema)
+    .errors({
+      UNAUTHORIZED: { data: StandardErrorDataSchema },
+    }),
+}
+
 export const orderContract = {
-  // Customer-facing endpoints
   submit: oc
     .meta(openapi({ method: 'POST', path: '/orders', summary: 'ثبت سفارش قطعی تراکنشی توسط مشتری' }))
     .input(SubmitOrderInputSchema)
@@ -213,7 +270,6 @@ export const orderContract = {
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
 
-  // Internal staff endpoints
   staffList: oc
     .meta(openapi({ method: 'GET', path: '/staff/orders', summary: 'لیست تمام سفارش‌های سیستم برای پرسنل' }))
     .input(StaffOrderFilterInputSchema)
@@ -255,7 +311,5 @@ export const orderContract = {
       INVALID_STATUS_TRANSITION: { data: StandardErrorDataSchema },
     }),
 
-  // Unified cart validation & pricing quote sub-contract
   pricing: pricingContract,
 }
-

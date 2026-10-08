@@ -1,30 +1,26 @@
-import { onError } from '@orpc/server'
-import { OpenAPIHandler } from '@orpc/openapi/fetch'
-import { CORSHandlerPlugin } from '@orpc/server/plugins'
-import { createContext } from '@/context'
-import { appRouter } from '@/routers'
-
-const handler = new OpenAPIHandler(appRouter, {
-  plugins: [
-    new CORSHandlerPlugin({
-      origin: '*',
-      exposeHeaders: ['Content-Disposition', 'Standard-Server'],
-    }),
-  ],
-  interceptors: [
-    onError((error) => {
-      console.error('[OpenAPI Server Error]:', error)
-    }),
-  ],
-})
+const CMS_ORIGIN = process.env.CMS_URL || 'http://localhost:5148'
 
 async function handle(request: Request) {
-  const { matched, response } = await handler.handle(request, {
-    prefix: '/api/openapi',
-    context: async () => createContext(request),
-  })
+  const url = new URL(request.url)
+  const targetUrl = new URL(url.pathname + url.search, CMS_ORIGIN)
 
-  return matched ? response : new Response('Not found', { status: 404 })
+  const headers = new Headers(request.headers)
+  headers.set('host', targetUrl.host)
+
+  try {
+    const res = await fetch(targetUrl.toString(), {
+      method: request.method,
+      headers,
+      body: request.method !== 'GET' && request.method !== 'HEAD' ? await request.arrayBuffer() : undefined,
+    })
+
+    return res
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'OpenAPI not configured or CMS offline' }), {
+      status: 502,
+      headers: { 'Content-Type': 'application/json' },
+    })
+  }
 }
 
 export const GET = handle
@@ -33,3 +29,4 @@ export const PUT = handle
 export const PATCH = handle
 export const DELETE = handle
 export const OPTIONS = handle
+
