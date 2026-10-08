@@ -1,0 +1,13 @@
+{
+  "name": "persianpart",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter @persianpart/web dev",
+    "dev:cms": "pnpm --filter @persianpart/cms dev",
+    "dev:api": "pnpm --filter @persianpart/api dev",
+    "build": "pnpm --filter @persianpart/web build",
+    "build:cms": "pnpm --filter @persianpart/cms build",
+    "build:api": "pnpm --filter @persianpart/api build"
+  },
+  "packageManager": "pnpm@11.18.0"
+}
