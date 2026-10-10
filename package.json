@@ -7,7 +7,10 @@
     "dev:api": "pnpm --filter @persianpart/api dev",
     "build": "pnpm --filter @persianpart/web build",
     "build:cms": "pnpm --filter @persianpart/cms build",
-    "build:api": "pnpm --filter @persianpart/api build"
+    "build:api": "pnpm --filter @persianpart/api build",
+    "migrate:cms": "pnpm --filter @persianpart/cms migrate",
+    "migrate:cms:status": "pnpm --filter @persianpart/cms migrate:status",
+    "dev:all":"pnpm --filter @persianpart/web dev & pnpm --filter @persianpart/cms dev & pnpm --filter @persianpart/api dev"
   },
   "packageManager": "pnpm@11.18.0"
 }

@@ -180,25 +180,26 @@ export function LoginCard() {
             </button>
           </div>
 
-          <div>
+          <div className="w-full">
             <label className="block text-xs font-bold text-slate-700 mb-2.5 text-start">
               کد تأیید ۵ رقمی:
             </label>
-            <div className="flex justify-center py-1" dir="ltr">
+            <div className="flex  w-full justify-center items-center py-1" dir="ltr">
               <InputOTP
                 maxLength={5}
                 value={otpCode}
                 onChange={setOtpCode}
                 onComplete={(code) => handleVerifyOtp(code)}
                 isDisabled={isLoading}
+                className="w-full max-w-[300px] "
                 autoFocus
               >
-                <InputOTP.Group className="gap-2 sm:gap-2.5 justify-center">
-                  <InputOTP.Slot index={0} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={1} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={2} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={3} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={4} className="w-11 h-13 sm:w-12 sm:h-14 text-xl font-bold rounded-xl border border-slate-300" />
+                <InputOTP.Group className="gap-2 sm:gap-2.5 flex justify-center">
+                  <InputOTP.Slot index={0} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={1} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={2} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={3} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={4} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
                 </InputOTP.Group>
               </InputOTP>
             </div>

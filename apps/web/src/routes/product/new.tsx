@@ -245,9 +245,12 @@ function ProductNewConfigurationPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
                     <img
-                      src={product.images[0]}
+                      src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
                       alt={product.name}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                      }}
                     />
                   </div>
 

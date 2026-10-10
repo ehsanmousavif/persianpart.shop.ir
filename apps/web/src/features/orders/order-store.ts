@@ -2,7 +2,11 @@ import { useState, useEffect } from 'react'
 import { type Order, type OrderItem, type TimelineStep } from '../../lib/mock-data/orders'
 import { cartStore } from '../cart/cart-store'
 import { api } from '../../lib/api-client'
-
+import {
+  formatPersianDate,
+  formatPersianDateTime,
+  formatPersianTimelineTs,
+} from '../../lib/utils/date'
 
 const STORAGE_KEY = 'persianpart_orders'
 
@@ -13,7 +17,19 @@ function getInitialState(): Order[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
-      return JSON.parse(saved)
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) {
+        return parsed.map((o) => {
+          // If stored order had Gregorian date (e.g. starting with 202), convert to Shamsi
+          if (o.date && (o.date.includes('2026') || o.date.includes('2025') || o.date.includes('2024') || o.date.startsWith('20'))) {
+            return {
+              ...o,
+              date: formatPersianDate(o.createdAt || o.date),
+            }
+          }
+          return o
+        })
+      }
     }
   } catch {
     // fallback
@@ -52,16 +68,7 @@ export function buildFullOrderTimeline(doc: any, persianDate: string): TimelineS
 
   const formatTs = (ts?: string) => {
     if (!ts) return undefined
-    try {
-      return new Date(ts).toLocaleDateString('fa-IR', {
-        month: 'numeric',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
-      })
-    } catch {
-      return persianDate
-    }
+    return formatPersianTimelineTs(ts, persianDate)
   }
 
   const isCancelled =
@@ -195,8 +202,8 @@ export function buildFullOrderTimeline(doc: any, persianDate: string): TimelineS
 }
 
 export function mapDocToOrder(doc: any): Order {
-  const now = new Date(doc.createdAt || Date.now())
-  const persianDate = `${now.getFullYear()}/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')}`
+  const createdAt = doc.createdAt || new Date().toISOString()
+  const persianDate = formatPersianDate(createdAt)
   const normalizedStatus = doc.status === 'processing' ? 'preparing' : (doc.status || 'pending')
 
   const statusLabels: Record<string, string> = {
@@ -241,6 +248,7 @@ export function mapDocToOrder(doc: any): Order {
     id: String(doc.id),
     orderNumber: doc.orderNumber || `PP-${doc.id}`,
     date: persianDate,
+    createdAt,
     status: normalizedStatus as any,
     statusLabel: statusLabels[doc.status] || 'در انتظار بررسی',
     storeName: userObj?.companyName || 'بازرگانی دهقان (پرشین پارت)',
@@ -306,14 +314,18 @@ export const orderStore = {
   }): Order => {
     const randomNum = Math.floor(1000 + Math.random() * 9000)
     const newId = payload.id || `ord-${randomNum}`
-    const orderNumber = payload.orderNumber || `PP-1403-${randomNum}`
+    const orderNumber = payload.orderNumber || `PP-1405-${randomNum}`
     const now = new Date()
-    const persianDate = `۱۴۰۳/${(now.getMonth() + 1).toString().padStart(2, '0')}/${now.getDate().toString().padStart(2, '0')} - ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`
+    const isoString = now.toISOString()
+    const persianDate = formatPersianDate(now)
+    const persianDateTime = formatPersianDateTime(now)
 
     const newOrder: Order = {
       id: newId,
       orderNumber,
       date: persianDate,
+      createdAt: isoString,
+      cancellationDeadline: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
       status: 'pending',
       statusLabel: 'در انتظار بررسی',
       storeName: 'بازرگانی دهقان (پرشین پارت تهران)',
@@ -332,7 +344,7 @@ export const orderStore = {
           id: 't-1',
           title: 'ثبت سفارش',
           description: 'سفارش توسط خریدار در سامانه ثبت گردید و در انتظار تأیید بازرگانی است.',
-          timestamp: persianDate,
+          timestamp: persianDateTime,
           status: 'completed',
         },
         {

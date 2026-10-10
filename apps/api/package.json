@@ -20,9 +20,9 @@
     }
   },
   "scripts": {
-    "dev": "cross-env PORT=5149 next dev -p 5149",
+    "dev": "cross-env PORT=5175 next dev -p 5175",
     "build": "next build",
-    "start": "cross-env PORT=5149 next start -p 5149",
+    "start": "cross-env PORT=5175 next start -p 5175",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

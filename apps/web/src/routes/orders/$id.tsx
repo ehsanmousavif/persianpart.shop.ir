@@ -6,6 +6,7 @@ import { ORDER_STATUS_MAP, type Order, type OrderItem } from '../../lib/mock-dat
 import { OrderTimeline } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
+import { formatPersianDate } from '../../lib/utils/date'
 import { toast } from '../../components/feedback/toast'
 import {
   ArrowRightIcon,
@@ -24,6 +25,15 @@ export const Route = createFileRoute('/orders/$id')({
   },
   component: OrderDetailPage,
 })
+
+function cleanOrderNumber(orderNumber: string): string {
+  if (!orderNumber) return ''
+  const stripped = orderNumber.replace(/^PP-/, '')
+  if (/^\d{10,}$/.test(stripped)) {
+    return stripped.slice(-6)
+  }
+  return stripped
+}
 
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData()
@@ -45,7 +55,9 @@ function OrderDetailPage() {
     if (!order) return 0
     const deadline = order.cancellationDeadline
       ? new Date(order.cancellationDeadline).getTime()
-      : new Date(order.date).getTime() + 10 * 60 * 1000
+      : order.createdAt
+      ? new Date(order.createdAt).getTime() + 10 * 60 * 1000
+      : Date.now()
     return Math.max(0, Math.floor((deadline - Date.now()) / 1000))
   })
 
@@ -75,7 +87,9 @@ function OrderDetailPage() {
     if (!order) return
     const deadline = order.cancellationDeadline
       ? new Date(order.cancellationDeadline).getTime()
-      : new Date(order.date).getTime() + 10 * 60 * 1000
+      : order.createdAt
+      ? new Date(order.createdAt).getTime() + 10 * 60 * 1000
+      : Date.now()
 
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
@@ -85,7 +99,7 @@ function OrderDetailPage() {
     updateTimer()
     const timer = setInterval(updateTimer, 1000)
     return () => clearInterval(timer)
-  }, [order?.cancellationDeadline, order?.date])
+  }, [order?.cancellationDeadline, order?.createdAt])
 
   const formatCountdown = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -135,7 +149,7 @@ function OrderDetailPage() {
   const handleCancel = async () => {
     await cancelOrder(order.id, cancelReason)
     setShowCancelModal(false)
-    toast.info('سفارش لغو شد', `سفارش ${order.orderNumber} لغو گردید و موجودی به انبار بازگردانی شد.`)
+    toast.info('سفارش لغو شد', `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} لغو گردید و موجودی به انبار بازگردانی شد.`)
     const fresh = await fetchOrderById(order.id)
     if (fresh) setOrder(fresh)
   }
@@ -161,16 +175,17 @@ function OrderDetailPage() {
           <span>سفارش‌های من</span>
         </Link>
         <span>/</span>
-        <span className="text-slate-900 font-bold" dir="ltr">{order.orderNumber}</span>
+        <span className="text-slate-900 font-bold">سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
       </nav>
 
       {/* Main Order Header Card */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-            <h1 className="text-xl font-bold text-slate-900 font-mono" dir="ltr">
-              {order.orderNumber}
-            </h1>
+          <div className="flex items-center gap-2.5 mb-2 flex-wrap">
+            <span className="px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-sm font-extrabold text-blue-900 flex items-center gap-1.5">
+              <span className="text-blue-500 text-xs font-semibold">سفارش</span>
+              <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+            </span>
             <Badge variant={statusConfig.color} size="md">
               {statusConfig.label}
             </Badge>
@@ -194,7 +209,7 @@ function OrderDetailPage() {
             )}
           </div>
           <p className="text-xs text-slate-500">
-            تاریخ ثبت سفارش: <strong className="text-slate-700">{order.date}</strong>
+            تاریخ ثبت سفارش: <strong className="text-slate-700">{formatPersianDate(order.createdAt || order.date)}</strong>
           </p>
         </div>
 
@@ -248,7 +263,14 @@ function OrderDetailPage() {
                   search={{ productname: item.productSlug }}
                   className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shrink-0 block"
                 >
-                  <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                  <img
+                    src={item.productImage || '/assets/images/tile-sample-1.jpg'}
+                    alt={item.productName}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                    }}
+                  />
                 </Link>
                 <div>
                   <Link
@@ -258,8 +280,8 @@ function OrderDetailPage() {
                   >
                     {item.productName}
                   </Link>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-1">
-                    <span className="font-mono" dir="ltr">{item.productSku}</span>
+                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                    <span>کد کالا: {toPersianDigits(item.productSku)}</span>
                     <span>•</span>
                     <span>{toPersianDigits(item.dimension)}</span>
                   </div>
@@ -365,7 +387,7 @@ function OrderDetailPage() {
                   لغو سفارش خریدار
                 </HeroUIModal.Heading>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                  آیا از لغو سفارش <strong dir="ltr">{order.orderNumber}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
+                  آیا از لغو سفارش <strong>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
                 <div className="mt-2.5 p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 text-start">
                   ✓ با لغو سفارش، کلیه اقلام بلافاصله به موجودی انبار بازگردانده خواهند شد.

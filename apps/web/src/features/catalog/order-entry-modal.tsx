@@ -110,9 +110,12 @@ export function OrderEntryModal({
           {/* Selected Product Summary Card */}
           <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
             <img
-              src={product.images[0]}
+              src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
               alt={product.name}
               className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0"
+              onError={(e) => {
+                e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+              }}
             />
             <div className="flex-1 min-w-0">
               <span className="text-xs font-semibold text-blue-600 block">
@@ -133,10 +136,10 @@ export function OrderEntryModal({
             </div>
           </div>
 
-          {/* Customer Input: requestedSqm ONLY */}
+          {/* Customer Input: requestedSqm ONLY (No carton selector, meter-based delivery) */}
           <div>
             <label htmlFor={inputId} className="block text-xs font-bold text-slate-800 mb-1.5">
-              متراژ مورد نیاز شما:
+              متراژ درخواستی (ارسال صرفاً بر اساس متر مربع):
             </label>
             <div className="relative">
               <input
@@ -149,30 +152,44 @@ export function OrderEntryModal({
                 placeholder="مثال: ۳۵"
                 className="w-full h-12 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-lg text-start transition-all outline-hidden bg-white"
               />
+              <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                متر مربع
+              </span>
             </div>
 
-            {/* Quick Add Presets */}
+            {/* Quick Add Presets in Meters only */}
             <div className="flex flex-wrap items-center gap-1.5 mt-2">
               <span className="text-xs text-slate-500 font-medium">افزودن سریع:</span>
-              {[10, 25, 50, 100].map((preset) => (
+              {[5, 10, 25, 50, 100].map((preset) => (
                 <button
                   key={preset}
                   type="button"
                   onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
                   className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
                 >
-                  +{toPersianDigits(preset)}
+                  +{toPersianDigits(preset)} متر
                 </button>
               ))}
-              <button
-                type="button"
-                onClick={() => setRequestedArea(product.sqmPerCarton)}
-                className="px-2.5 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 text-xs font-semibold transition-all cursor-pointer active:scale-95"
-              >
-                ۱ کارتن ({toPersianDigits(product.sqmPerCarton)})
-              </button>
             </div>
           </div>
+
+          {/* Round-Up Warning Alert */}
+          {!calc.isExactMultiple && calc.requestedArea > 0 && (
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1.5 shadow-xs animate-in fade-in">
+              <div className="flex items-center gap-2 font-bold text-amber-950">
+                <AlertTriangleIcon size={16} className="text-amber-600 shrink-0" />
+                <span>هشدار رُند شدن به بالا (بسته‌بندی کارخانه‌ای)</span>
+              </div>
+              <p className="text-xs leading-relaxed text-amber-900">
+                متراژ انتخابی شما ({toPersianDigits(calc.requestedArea)} متر) مضرب کاملی از بسته‌بندی کارخانه نیست.
+                جهت جلوگیری از آسیب به بار، مقدار به اندازه{' '}
+                <strong className="text-amber-950 font-black underline decoration-amber-400">
+                  {toPersianDigits(calc.extraArea)} متر مربع به بالا رُند شد
+                </strong>{' '}
+                و مجموعاً <strong>{toPersianDigits(calc.deliverableArea)} متر مربع</strong> ({toPersianDigits(calc.cartonCount)} کارتن پلمپ) به مبلغ کل {formatToman(calc.totalPrice)} محاسبه و ارسال خواهد شد.
+              </p>
+            </div>
+          )}
 
           {/* Carton Calculation Live Preview (Transparent Ceil Breakdown) */}
           <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">

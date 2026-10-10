@@ -71,7 +71,14 @@ export function CartItemRow({ item }: CartItemRowProps) {
           className="w-18 h-18 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/80 block hover:opacity-90 transition-opacity"
           title="مشاهده مشخصات کالا در کاتالوگ"
         >
-          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+          <img
+            src={item.image || '/assets/images/tile-sample-1.jpg'}
+            alt={item.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+            }}
+          />
         </Link>
 
         {/* Content and title */}

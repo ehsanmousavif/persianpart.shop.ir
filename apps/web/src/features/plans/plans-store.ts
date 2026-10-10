@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { api } from '../../lib/api-client'
 import { INITIAL_PLANS, type Plan, type B2BCustomer } from '../../lib/mock-data/plans'
 import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
+import { formatPersianDate } from '../../lib/utils/date'
 
 const STORAGE_KEY = 'persianpart_plans_v1'
 
@@ -10,7 +11,18 @@ function getInitialPlans(): Plan[] {
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
-      return JSON.parse(saved)
+      const parsed = JSON.parse(saved)
+      if (Array.isArray(parsed)) {
+        return parsed.map((p) => {
+          if (p.createdAt && (p.createdAt.includes('2026') || p.createdAt.includes('2025') || p.createdAt.includes('2024') || p.createdAt.startsWith('20'))) {
+            return {
+              ...p,
+              createdAt: formatPersianDate(p.createdAt),
+            }
+          }
+          return p
+        })
+      }
     }
   } catch {
     // fallback
@@ -32,10 +44,29 @@ function mapApiPlanToPlan(p: any): Plan {
       )
     : []
 
+  const interpolate = (txt: string) => {
+    if (!txt) return ''
+    return txt
+      .replace(/\{\{\s*user\.name\s*\}\}/gi, customerName)
+      .replace(/\{\{\s*name\s*\}\}/gi, customerName)
+      .replace(/\{name\}/gi, customerName)
+      .replace(/\[نام\s*کاربر\]/gi, customerName)
+      .replace(/\[نام\s*مشتری\]/gi, customerName)
+      .replace(/\[نام\]/gi, customerName)
+  }
+
+  const rawTitle = p.title || `${customerName} عزیز، این طرح برای شماست`
+  const title = interpolate(rawTitle)
+  let rawContent = p.content || p.notes || ''
+  let content = interpolate(rawContent)
+  if (customerName !== 'عمومی' && !content.includes(customerName) && content.trim() !== '') {
+    content = `${customerName} عزیز؛ ${content}`
+  }
+
   return {
     id: String(p.id),
-    title: p.title || `${customerName} عزیز، این طرح برای شماست`,
-    customerGreeting: p.dynamicTitle || p.title || `${customerName} عزیز، این طرح برای شماست`,
+    title,
+    customerGreeting: p.dynamicTitle ? interpolate(p.dynamicTitle) : title,
     customerId,
     customerName,
     type: p.type || 'credit_terms',
@@ -43,10 +74,10 @@ function mapApiPlanToPlan(p: any): Plan {
     discountAmount: p.discountAmount != null ? Number(p.discountAmount) : undefined,
     isActive,
     status: p.status || (isActive ? 'active' : 'expired'),
-    content: p.content || '',
+    content,
     productIds,
-    notes: p.content || '',
-    createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString('fa-IR') : 'امروز',
+    notes: content,
+    createdAt: p.createdAt ? formatPersianDate(p.createdAt) : formatPersianDate(new Date()),
   }
 }
 
@@ -197,7 +228,7 @@ export const plansStore = {
         content: data.content || '',
         productIds: data.productIds,
         notes: data.notes,
-        createdAt: 'امروز',
+        createdAt: formatPersianDate(new Date()),
       }
       currentPlans = [newPlan, ...currentPlans]
     }

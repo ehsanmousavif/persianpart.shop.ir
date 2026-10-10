@@ -1,4 +1,4 @@
-const CMS_ORIGIN = process.env.CMS_URL || 'http://localhost:5148'
+const CMS_ORIGIN = process.env.CMS_URL || 'http://localhost:5174'
 
 async function handle(request: Request) {
   const url = new URL(request.url)

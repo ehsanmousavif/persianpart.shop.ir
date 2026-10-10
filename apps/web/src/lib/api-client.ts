@@ -1,11 +1,12 @@
 import { createApiClient } from '@persianpart/api/client'
 import type { AppRouter, ApiClient } from '@persianpart/api'
 
-// In development & production, fallback to current origin or CMS port 5148
+// In browser, always use current origin so requests route via Vite's proxy seamlessly
+// regardless of whether the app is accessed via localhost, 127.0.0.1, or network IP
 const defaultBaseUrl =
   typeof window !== 'undefined'
-    ? (import.meta.env.PROD ? window.location.origin : 'http://localhost:5149')
-    : 'http://localhost:5149'
+    ? window.location.origin
+    : 'http://localhost:5175'
 
 export const api = createApiClient({
   baseURL: import.meta.env.VITE_API_URL || defaultBaseUrl,

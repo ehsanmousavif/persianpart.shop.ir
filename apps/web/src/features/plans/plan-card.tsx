@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router'
 import type { Plan } from '../../lib/mock-data/plans'
 import type { Product } from '../../lib/mock-data/products'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
+import { formatPersianDate } from '../../lib/utils/date'
 import { BoxIcon, ArrowLeftIcon, SparklesIcon, ClockIcon } from '../../components/ui/icons'
 
 export interface PlanCardProps {
@@ -70,7 +71,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             {plan.createdAt && (
               <span className="text-xs text-slate-400 font-medium flex items-center gap-1">
                 <ClockIcon size={12} />
-                <span>ثبت: {toPersianDigits(plan.createdAt)}</span>
+                <span>ثبت: {formatPersianDate(plan.createdAt)}</span>
               </span>
             )}
           </div>
@@ -151,9 +152,12 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <img
-                      src={prod.images[0]}
+                      src={prod.images[0] || '/assets/images/tile-sample-1.jpg'}
                       alt={prod.name}
                       className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0"
+                      onError={(e) => {
+                        e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                      }}
                     />
                     <div className="min-w-0">
                       <span className="text-xs font-bold text-slate-900 truncate block">

@@ -39,12 +39,14 @@ export function useCatalog() {
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
 
-  // Fetch from live backend API on mount
+  // Fetch from live backend API on mount with 1-second delay to display skeleton
   useEffect(() => {
     let isMounted = true
-    api.catalog
-      .list({ page: 1, limit: 100 })
-      .then((res) => {
+    Promise.all([
+      api.catalog.list({ page: 1, limit: 100 }),
+      new Promise((resolve) => setTimeout(resolve, 1000)), // 1s visible skeleton delay
+    ])
+      .then(([res]) => {
         if (isMounted) {
           if (res.items && res.items.length > 0) {
             const liveMapped: Product[] = res.items.map((item: any) => {

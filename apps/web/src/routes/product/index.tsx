@@ -396,7 +396,7 @@ function ProductCatalogPage() {
             <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs">
               {toPersianDigits(selectedProductIds.length)}
             </span>
-            <span className="text-sm font-bold">تعیین متراژ و ثبت سفارش</span>
+            <span className="text-sm font-bold">ثبت سفارش</span>
             <ArrowLeftIcon size={16} className="text-slate-200" />
           </Link>
         </div>

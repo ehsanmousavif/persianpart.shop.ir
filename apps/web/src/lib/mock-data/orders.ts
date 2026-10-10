@@ -37,6 +37,7 @@ export interface Order {
   id: string
   orderNumber: string
   date: string
+  createdAt?: string
   status: OrderStatus
   statusLabel: string
   storeName: string

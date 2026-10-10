@@ -23,30 +23,61 @@ export const Plans: CollectionConfig = {
       async ({ data, req }) => {
         if (!data) return data
 
-        // 1. Dynamic title generation if title is blank
-        if (!data.title || data.title.trim() === '') {
-          let targetName = 'همکار'
-          if (Array.isArray(data.users) && data.users.length > 0) {
-            const firstUserId =
-              typeof data.users[0] === 'object' && data.users[0] !== null
-                ? (data.users[0] as any).id
-                : data.users[0]
+        let targetName = 'همکار'
+        if (Array.isArray(data.users) && data.users.length > 0) {
+          const firstUserId =
+            typeof data.users[0] === 'object' && data.users[0] !== null
+              ? (data.users[0] as any).id
+              : data.users[0]
 
-            try {
-              const userDoc = await req.payload.findByID({
-                collection: 'users',
-                id: firstUserId,
-                depth: 0,
-              })
-              if (userDoc && (userDoc as any).fullName) {
-                targetName = (userDoc as any).fullName
-              }
-            } catch {
-              // fallback
+          try {
+            const userDoc = await req.payload.findByID({
+              collection: 'users',
+              id: firstUserId,
+              depth: 0,
+            })
+            if (userDoc) {
+              targetName =
+                (userDoc as any).fullName ||
+                (userDoc as any).companyName ||
+                (userDoc as any).phone ||
+                'همکار'
             }
+          } catch {
+            // fallback
           }
+        }
 
+        const replacePlaceholders = (text: string): string => {
+          if (!text) return text
+          return text
+            .replace(/\{\{\s*user\.name\s*\}\}/gi, targetName)
+            .replace(/\{\{\s*user\s*\}\}/gi, targetName)
+            .replace(/\{\{\s*name\s*\}\}/gi, targetName)
+            .replace(/\{name\}/gi, targetName)
+            .replace(/\{user\}/gi, targetName)
+            .replace(/\[نام\s*کاربر\]/gi, targetName)
+            .replace(/\[نام\s*مشتری\]/gi, targetName)
+            .replace(/\[نام\]/gi, targetName)
+        }
+
+        // 1. Dynamic title generation
+        if (!data.title || data.title.trim() === '') {
           data.title = `${targetName} عزیز، این طرح برای شماست`
+        } else {
+          data.title = replacePlaceholders(data.title)
+        }
+
+        // 2. Automatic personalization of content with target user name
+        if (data.content && typeof data.content === 'string') {
+          let personalizedContent = replacePlaceholders(data.content)
+          if (
+            targetName !== 'همکار' &&
+            !personalizedContent.includes(targetName)
+          ) {
+            personalizedContent = `${targetName} عزیز؛ ${personalizedContent}`
+          }
+          data.content = personalizedContent
         }
 
         return data
@@ -54,7 +85,6 @@ export const Plans: CollectionConfig = {
     ],
     afterRead: [
       ({ doc, context }) => {
-        // 2. Dynamic title resolution based on context.name or context.user
         const contextName =
           (context as any)?.name ||
           (context as any)?.user?.fullName ||
@@ -62,9 +92,16 @@ export const Plans: CollectionConfig = {
 
         if (contextName) {
           doc.dynamicTitle = `${contextName} عزیز، این طرح برای شماست`
-          if (doc.title && doc.title.includes('{name}')) {
-            doc.title = doc.title.replace(/\{name\}/g, contextName)
+          const replaceText = (str: string) => {
+            if (!str) return str
+            return str
+              .replace(/\{\{\s*user\.name\s*\}\}/gi, contextName)
+              .replace(/\{\{\s*name\s*\}\}/gi, contextName)
+              .replace(/\{name\}/gi, contextName)
+              .replace(/\[نام\s*کاربر\]/gi, contextName)
           }
+          if (doc.title) doc.title = replaceText(doc.title)
+          if (doc.content) doc.content = replaceText(doc.content)
         } else {
           doc.dynamicTitle = doc.title
         }

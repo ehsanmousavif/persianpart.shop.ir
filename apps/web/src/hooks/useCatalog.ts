@@ -20,7 +20,10 @@ export function useCatalog(filters?: {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await api.catalog.list(filters || {})
+      const [res] = await Promise.all([
+        api.catalog.list(filters || {}),
+        new Promise((resolve) => setTimeout(resolve, 1000)), // 1s visible skeleton delay
+      ])
       setProducts(res.items)
       setTotal(res.total)
     } catch (err: any) {

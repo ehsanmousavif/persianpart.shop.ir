@@ -5,6 +5,7 @@ import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus } from '../../lib/mock-data/orders'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
+import { formatPersianDate } from '../../lib/utils/date'
 import { toast } from '../../components/feedback/toast'
 import {
   PackageIcon,
@@ -15,6 +16,16 @@ import {
 export const Route = createFileRoute('/orders/')({
   component: OrdersListPage,
 })
+
+function cleanOrderNumber(orderNumber: string): string {
+  if (!orderNumber) return ''
+  const stripped = orderNumber.replace(/^PP-/, '')
+  // If it's a long millisecond timestamp like 1791478408275, take the last 6 digits for human-readable ID
+  if (/^\d{10,}$/.test(stripped)) {
+    return stripped.slice(-6)
+  }
+  return stripped
+}
 
 function OrdersListPage() {
   const navigate = useNavigate()
@@ -142,10 +153,11 @@ function OrdersListPage() {
                 className="bg-white border border-slate-200/90 hover:border-slate-300 rounded-2xl p-3.5 shadow-xs transition-all space-y-3"
               >
                 {/* Order Top Bar */}
-                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100">
+                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-slate-100 flex-wrap sm:flex-nowrap">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-slate-900 font-mono" dir="ltr">
-                      {order.orderNumber}
+                    <span className="px-2.5 py-0.5 rounded-lg bg-slate-100 border border-slate-200/80 text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <span className="text-slate-400 text-[11px] font-normal">سفارش</span>
+                      <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
                     </span>
                     <Badge variant={statusConfig.color} size="sm">
                       {statusConfig.label}
@@ -153,7 +165,7 @@ function OrdersListPage() {
                   </div>
 
                   <span className="text-xs text-slate-400 font-medium">
-                    {order.date}
+                    {formatPersianDate(order.createdAt || order.date)}
                   </span>
                 </div>
 
@@ -167,9 +179,12 @@ function OrdersListPage() {
                         title={item.productName}
                       >
                         <img
-                          src={item.productImage}
+                          src={item.productImage || '/assets/images/tile-sample-1.jpg'}
                           alt={item.productName}
                           className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                          }}
                         />
                       </div>
                     ))}

@@ -309,9 +309,12 @@ export function PlanModal({
                     className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
                   />
                   <img
-                    src={product.images[0]}
+                    src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
                     alt={product.name}
                     className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                    }}
                   />
                   <div className="flex-1 min-w-0">
                     <span className="text-xs font-bold text-slate-900 truncate block">

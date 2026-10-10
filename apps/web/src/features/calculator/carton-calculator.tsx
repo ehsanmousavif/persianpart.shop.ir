@@ -4,7 +4,7 @@ import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { useCart } from '../cart/cart-store'
 import { toast } from '../../components/feedback/toast'
-import { PlusIcon, MinusIcon, ShoppingCartIcon, BoxIcon, AlertTriangleIcon, CheckCircle2Icon } from '../../components/ui/icons'
+import { ShoppingCartIcon, BoxIcon, AlertTriangleIcon, CheckCircle2Icon } from '../../components/ui/icons'
 
 export interface CartonCalculatorProps {
   product: Product
@@ -35,11 +35,6 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
     }
   }
 
-  const handleCartonStep = (delta: number) => {
-    const nextCartons = Math.max(1, calc.cartonCount + delta)
-    const nextArea = Math.round(nextCartons * product.areaPerCarton * 100) / 100
-    setRequestedArea(nextArea)
-  }
 
   const handleAddToCart = () => {
     if (isOutOfStock || isExceedingStock || calc.cartonCount <= 0) return
@@ -81,64 +76,59 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
         </div>
       </div>
 
-      {/* Input Stage: Area required */}
+      {/* Input Stage: Area required (Meter-based only) */}
       <div>
         <label htmlFor={inputId} className="block text-xs font-bold text-slate-700 mb-1.5 text-start">
-          متراژ مورد نیاز پروژه:
+          متراژ مورد نیاز (ارسال صرفاً بر اساس متر مربع):
         </label>
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <input
-              id={inputId}
-              type="number"
-              step="0.1"
-              min="0.1"
-              value={requestedArea || ''}
-              onChange={(e) => handleAreaChange(e.target.value)}
-              placeholder="مثال: ۳۵"
-              className="w-full h-11 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-base text-start transition-all outline-hidden bg-white"
-            />
-          </div>
-
-          {/* Steppers for Cartons directly */}
-          <div className="flex items-center border border-slate-300 rounded-xl bg-white h-11 overflow-hidden shrink-0 shadow-xs">
-            <button
-              type="button"
-              onClick={() => handleCartonStep(1)}
-              className="w-9.5 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors cursor-pointer"
-              title="افزایش یک کارتن"
-            >
-              <PlusIcon size={15} />
-            </button>
-            <span className="px-2 text-xs font-bold text-slate-800 select-none">
-              {toPersianDigits(calc.cartonCount)} ک
-            </span>
-            <button
-              type="button"
-              onClick={() => handleCartonStep(-1)}
-              className="w-9.5 h-full flex items-center justify-center text-slate-600 hover:bg-slate-100 active:bg-slate-200 transition-colors cursor-pointer"
-              title="کاهش یک کارتن"
-            >
-              <MinusIcon size={15} />
-            </button>
-          </div>
+        <div className="relative">
+          <input
+            id={inputId}
+            type="number"
+            step="0.1"
+            min="0.1"
+            value={requestedArea || ''}
+            onChange={(e) => handleAreaChange(e.target.value)}
+            placeholder="مثال: ۳۵"
+            className="w-full h-11 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-base text-start transition-all outline-hidden bg-white"
+          />
+          <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+            متر مربع
+          </span>
         </div>
 
         {/* Quick Presets for Mobile */}
         <div className="flex flex-wrap items-center gap-1.5 mt-2">
           <span className="text-xs text-slate-500 font-medium">افزودن سریع:</span>
-          {[10, 25, 50, 100].map((preset) => (
+          {[5, 10, 25, 50, 100].map((preset) => (
             <button
               key={preset}
               type="button"
               onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
               className="px-2.5 py-1 rounded-lg bg-white border border-slate-200/90 hover:border-blue-400 text-xs font-semibold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
             >
-              +{toPersianDigits(preset)}
+              +{toPersianDigits(preset)} متر
             </button>
           ))}
         </div>
       </div>
+
+      {/* Round-Up Notice Banner */}
+      {!calc.isExactMultiple && calc.requestedArea > 0 && (
+        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1.5 shadow-xs">
+          <div className="flex items-center gap-2 font-bold text-amber-950">
+            <AlertTriangleIcon size={16} className="text-amber-600 shrink-0" />
+            <span>هشدار رُند شدن به بالا (بسته‌بندی کارخانه‌ای)</span>
+          </div>
+          <p className="text-xs leading-relaxed text-amber-900">
+            متراژ انتخابی شما ({toPersianDigits(calc.requestedArea)} متر) مضرب کامل کارتن نیست. سفارش شما{' '}
+            <strong className="text-amber-950 font-black underline decoration-amber-400">
+              به اندازه {toPersianDigits(calc.extraArea)} متر مربع به بالا رُند شد
+            </strong>{' '}
+            و معادل <strong>{toPersianDigits(calc.deliverableArea)} متر مربع</strong> ({toPersianDigits(calc.cartonCount)} کارتن پلمپ) به مبلغ کل {formatToman(calc.totalPrice)} محاسبه و ارسال خواهد شد.
+          </p>
+        </div>
+      )}
 
       {/* Result Cards Breakdown (Slides metric style) */}
       <div className="grid grid-cols-2 gap-2 pt-1">
