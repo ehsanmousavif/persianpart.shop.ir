@@ -2,9 +2,15 @@ import type { CollectionConfig } from 'payload'
 
 export const Products: CollectionConfig = {
   slug: 'products',
+  labels: {
+    singular: 'محصول / کاشی',
+    plural: 'محصولات و کاتالوگ انبار',
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'sku', 'sqmPerCarton', 'isActive', 'updatedAt'],
+    group: 'کاتالوگ و انبارداری',
+    description: 'مدیریت مشخصات فنی کاشی، متراژ کارتن، موجودی انبار مکانیزه و تصاویر.',
   },
   access: {
     read: () => true,
@@ -201,18 +207,23 @@ export const Products: CollectionConfig = {
           name: 'cover',
           type: 'upload',
           relationTo: 'media',
-          label: 'تصویر شاخص (Cover)',
+          label: 'تصویر شاخص (کاور اصلی)',
         },
         {
           name: 'gallery',
           type: 'array',
-          label: 'تصاویر گالری',
+          label: 'تصاویر گالری محصول',
+          labels: {
+            singular: 'تصویر',
+            plural: 'تصاویر',
+          },
           fields: [
             {
               name: 'image',
               type: 'upload',
               relationTo: 'media',
               required: true,
+              label: 'تصویر گالری',
             },
           ],
         },

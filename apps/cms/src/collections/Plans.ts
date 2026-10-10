@@ -9,7 +9,7 @@ export const Plans: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'type', 'discountPercent', 'status', 'users', 'createdAt'],
-    group: 'مدیریت فروش و مشتریان',
+    group: 'فروشگاه و مشتریان',
     description: 'مدیریت طرح‌ها، تخفیف‌ها و پیام‌های خوش‌آمدگویی اختصاصی برای کاربران و مشتریان منتخب.',
   },
   access: {

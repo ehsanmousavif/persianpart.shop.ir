@@ -127,9 +127,6 @@ export function ProfileView() {
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="text-base font-bold text-slate-900">{user.name}</h2>
-              <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200 text-xs font-semibold">
-                همکار B2B
-              </span>
             </div>
             <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
               <StoreIcon size={12} className="text-slate-400 shrink-0" />
@@ -368,7 +365,6 @@ export function ProfileView() {
 
           {/* Quick Edit CTA Footer inside View Card */}
           <div className="p-3 bg-slate-50/80 flex items-center justify-between">
-            <span className="text-xs text-slate-500">برای تغییر مشخصات یا نشانی بارگیری:</span>
             <button
               type="button"
               onClick={handleStartEdit}

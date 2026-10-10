@@ -3,13 +3,14 @@ import type { CollectionConfig } from 'payload'
 export const Orders: CollectionConfig = {
   slug: 'orders',
   labels: {
-    singular: 'سفارش',
-    plural: 'سفارشات',
+    singular: 'سفارش مشتری',
+    plural: 'سفارشات مشتریان',
   },
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'user', 'status', 'finalTotal', 'createdAt'],
     group: 'فروشگاه و مشتریان',
+    description: 'مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران، فرآیند آماده‌سازی و ارسال بار.',
   },
   access: {
     read: () => true,
@@ -322,6 +323,10 @@ export const Orders: CollectionConfig = {
       type: 'array',
       required: true,
       label: 'اقلام سفارش',
+      labels: {
+        singular: 'قلم سفارش',
+        plural: 'اقلام سفارش',
+      },
       fields: [
         {
           name: 'product',
@@ -419,6 +424,10 @@ export const Orders: CollectionConfig = {
       name: 'timeline',
       type: 'array',
       label: 'گاه‌شمار وضعیت سفارش',
+      labels: {
+        singular: 'رویداد وضعیت',
+        plural: 'گاه‌شمار رویدادها',
+      },
       fields: [
         {
           name: 'title',

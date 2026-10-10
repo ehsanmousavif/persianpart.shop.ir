@@ -163,6 +163,8 @@ export interface UserAuthOperations {
       };
 }
 /**
+ * مدیریت کاربران دارای دسترسی مدیریت به پنل CMS
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins".
  */
@@ -246,6 +248,8 @@ export interface User {
   collection: 'users';
 }
 /**
+ * مدیریت تصاویر کالاها، لوگوها و فایل‌های سیستم
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
@@ -265,6 +269,8 @@ export interface Media {
   focalY?: number | null;
 }
 /**
+ * دسته‌بندی‌های کاتالوگ محصولات و قطعات
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
@@ -282,6 +288,8 @@ export interface Category {
   createdAt: string;
 }
 /**
+ * مدیریت برندها و کارخانجات تولیدکننده قطعات و محصولات
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brands".
  */
@@ -295,6 +303,8 @@ export interface Brand {
   createdAt: string;
 }
 /**
+ * برچسب‌های کاتالوگ برای دسته‌بندی و فیلتر کردن پیشرفته محصولات.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags".
  */
@@ -307,6 +317,8 @@ export interface Tag {
   createdAt: string;
 }
 /**
+ * مدیریت مشخصات فنی کاشی، متراژ کارتن، موجودی انبار مکانیزه و تصاویر.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
@@ -361,6 +373,8 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران، فرآیند آماده‌سازی و ارسال بار.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
  */

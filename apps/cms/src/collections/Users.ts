@@ -9,7 +9,7 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'fullName',
     defaultColumns: ['fullName', 'phone', 'customerType', 'status', 'companyName', 'createdAt'],
-    group: 'مدیریت فروش و مشتریان',
+    group: 'فروشگاه و مشتریان',
     description: 'مشتریان سامانه توسط ادمین در این بخش تعریف می‌شوند. ورود به سایت منحصراً برای شماره‌های فعال در این لیست مجاز است.',
   },
   auth: {
@@ -104,6 +104,10 @@ export const Users: CollectionConfig = {
       name: 'addresses',
       type: 'array',
       label: 'دفترچه آدرس‌های ارسال سفارش',
+      labels: {
+        singular: 'نشانی پستی',
+        plural: 'نشانی‌های پستی',
+      },
       fields: [
         {
           name: 'title',

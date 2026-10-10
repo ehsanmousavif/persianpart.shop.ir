@@ -507,17 +507,29 @@ export const orderStore = {
 
 export function useOrders() {
   const [orders, setOrders] = useState<Order[]>(orderStore.getOrders())
+  const [isLoading, setIsLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    orderStore.syncFromApi()
+    let isMounted = true
+    Promise.all([
+      orderStore.syncFromApi(),
+      new Promise((resolve) => setTimeout(resolve, 1000)), // 1s visible skeleton delay
+    ]).finally(() => {
+      if (isMounted) {
+        setIsLoading(false)
+      }
+    })
+
     listeners.add(setOrders)
     return () => {
+      isMounted = false
       listeners.delete(setOrders)
     }
   }, [])
 
   return {
     orders,
+    isLoading,
     getOrderById: orderStore.getOrderById,
     fetchOrderById: orderStore.fetchOrderById,
     createOrder: orderStore.createOrder,

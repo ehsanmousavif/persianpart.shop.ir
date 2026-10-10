@@ -27,6 +27,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    meta: {
+      titleSuffix: ' - پنل مدیریت پرشین‌پارت',
+    },
   },
   collections: [Admins, Users, Media, Categories, Brands, Tags, Products, Orders, Plans],
   editor: lexicalEditor(),

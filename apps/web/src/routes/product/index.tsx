@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
-import { Pagination, ScrollShadow, TagGroup, Tag } from '@heroui/react'
+import { ScrollShadow, TagGroup, Tag } from '@heroui/react'
 import { useCatalog } from '../../features/catalog/catalog-store'
 import { ProductCard } from '../../features/catalog/product-card'
 import { ProductBottomSheet } from '../../features/catalog/product-bottom-sheet'
@@ -21,13 +21,16 @@ import {
 interface ProductSearch {
   productname?: string
   selected?: string
+  limit?: number
 }
 
 export const Route = createFileRoute('/product/')({
   validateSearch: (search: Record<string, unknown>): ProductSearch => {
+    const rawLimit = Number(search.limit)
     return {
       productname: typeof search.productname === 'string' ? search.productname : undefined,
       selected: typeof search.selected === 'string' ? search.selected : undefined,
+      limit: Number.isInteger(rawLimit) && rawLimit > 0 ? rawLimit : undefined,
     }
   },
   component: ProductCatalogPage,
@@ -51,12 +54,17 @@ function ProductCatalogPage() {
   const { products, allProducts, filters, setFilter, resetFilters, activeFilterCount, isLoading } = catalogHook
   const { isProductInCart } = useCart()
 
-  const [page, setPage] = useState(1)
-  const PAGE_SIZE = 24
+  const queryLimit = searchParams.limit || 12
+  const INITIAL_BATCH_SIZE = queryLimit
+  const BATCH_STEP = queryLimit
+  const LOAD_MORE_DELAY_MS = 500 // 500ms (۵ میل / نیم ثانیه دیلی برای مشاهده روان اسکلتون لودینگ)
+  const [displayLimit, setDisplayLimit] = useState(INITIAL_BATCH_SIZE)
+  const [isLoadingMore, setIsLoadingMore] = useState(false)
+  const observerTargetRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
-    setPage(1)
-  }, [filters])
+    setDisplayLimit(queryLimit)
+  }, [filters, queryLimit])
 
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>(() => {
@@ -143,11 +151,42 @@ function ProductCatalogPage() {
     return { pinnedProducts: pinned, unselectedProducts: unselected }
   }, [selectedProductIds, products, allProducts])
 
-  const totalPages = Math.max(1, Math.ceil(unselectedProducts.length / PAGE_SIZE))
-  const pagedProducts = useMemo(() => {
-    const start = (page - 1) * PAGE_SIZE
-    return unselectedProducts.slice(start, start + PAGE_SIZE)
-  }, [unselectedProducts, page])
+  const displayedProducts = useMemo(() => {
+    return unselectedProducts.slice(0, displayLimit)
+  }, [unselectedProducts, displayLimit])
+
+  const hasMore = displayLimit < unselectedProducts.length
+
+  useEffect(() => {
+    if (!hasMore || isLoadingMore) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsLoadingMore(true)
+          setTimeout(() => {
+            setDisplayLimit((prev) => Math.min(prev + BATCH_STEP, unselectedProducts.length))
+            setIsLoadingMore(false)
+          }, LOAD_MORE_DELAY_MS)
+        }
+      },
+      {
+        rootMargin: '250px',
+        threshold: 0.1,
+      }
+    )
+
+    const currentTarget = observerTargetRef.current
+    if (currentTarget) {
+      observer.observe(currentTarget)
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget)
+      }
+    }
+  }, [hasMore, isLoadingMore, unselectedProducts.length])
 
   return (
     <div className="w-full px-3 py-3 space-y-3 text-start pb-32">
@@ -326,8 +365,8 @@ function ProductCatalogPage() {
             </div>
           )}
 
-          {/* 2. Unselected Products (paginated 24 per page) */}
-          {pagedProducts.map((product) => {
+          {/* 2. Unselected Products (Infinite Scroll list) */}
+          {displayedProducts.map((product) => {
             const inCart = isProductInCart(product.id)
 
             return (
@@ -342,41 +381,39 @@ function ProductCatalogPage() {
             )
           })}
 
-          {/* HeroUI Pagination (24 items per page) */}
-          {totalPages > 1 && (
-            <div className="pt-4 pb-2 flex justify-center">
-              <Pagination>
-                <Pagination.Content>
-                  <Pagination.Item>
-                    <Pagination.Previous
-                      isDisabled={page === 1}
-                      onPress={() => setPage((p) => Math.max(1, p - 1))}
-                    >
-                      <Pagination.PreviousIcon />
-                      <span>قبلی</span>
-                    </Pagination.Previous>
-                  </Pagination.Item>
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <Pagination.Item key={p}>
-                      <Pagination.Link
-                        isActive={p === page}
-                        onPress={() => setPage(p)}
-                      >
-                        {toPersianDigits(p)}
-                      </Pagination.Link>
-                    </Pagination.Item>
-                  ))}
-                  <Pagination.Item>
-                    <Pagination.Next
-                      isDisabled={page === totalPages}
-                      onPress={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    >
-                      <span>بعدی</span>
-                      <Pagination.NextIcon />
-                    </Pagination.Next>
-                  </Pagination.Item>
-                </Pagination.Content>
-              </Pagination>
+          {/* Infinite Scroll Sentinel & Progressive Loading Indicator */}
+          {hasMore && (
+            <div ref={observerTargetRef} className="pt-2 space-y-2">
+              {isLoadingMore ? (
+                <div className="space-y-2">
+                  <ProductCardSkeleton />
+                  <ProductCardSkeleton />
+                </div>
+              ) : (
+                <div className="pt-2 text-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsLoadingMore(true)
+                      setTimeout(() => {
+                        setDisplayLimit((prev) => Math.min(prev + BATCH_STEP, unselectedProducts.length))
+                        setIsLoadingMore(false)
+                      }, LOAD_MORE_DELAY_MS)
+                    }}
+                    className="text-xs text-blue-600 hover:text-blue-700 font-bold py-2 px-4 rounded-xl bg-blue-50/70 hover:bg-blue-50 transition-all cursor-pointer"
+                  >
+                    بارگذاری کالاهای بیشتر ({toPersianDigits(unselectedProducts.length - displayLimit)} مانده)
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {!hasMore && unselectedProducts.length > INITIAL_BATCH_SIZE && (
+            <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+              <div className="h-px w-12 bg-slate-200" />
+              <span>تمامی کالاها بارگذاری شدند ({toPersianDigits(unselectedProducts.length)} کالا)</span>
+              <div className="h-px w-12 bg-slate-200" />
             </div>
           )}
         </div>

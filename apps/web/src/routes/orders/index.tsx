@@ -7,6 +7,7 @@ import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { formatPersianDate } from '../../lib/utils/date'
 import { toast } from '../../components/feedback/toast'
+import { OrderCardSkeleton } from '../../components/ui/skeleton'
 import {
   PackageIcon,
   RefreshCwIcon,
@@ -29,7 +30,7 @@ function cleanOrderNumber(orderNumber: string): string {
 
 function OrdersListPage() {
   const navigate = useNavigate()
-  const { orders, reorderToCart } = useOrders()
+  const { orders, reorderToCart, isLoading } = useOrders()
   const [selectedStatusTab, setSelectedStatusTab] = useState<'all' | OrderStatus>('all')
   const [page, setPage] = useState(1)
   const PAGE_SIZE = 12
@@ -128,7 +129,13 @@ function OrdersListPage() {
       </ScrollShadow>
 
       {/* Orders List */}
-      {filteredOrders.length === 0 ? (
+      {isLoading ? (
+        <div className="space-y-2.5">
+          <OrderCardSkeleton />
+          <OrderCardSkeleton />
+          <OrderCardSkeleton />
+        </div>
+      ) : filteredOrders.length === 0 ? (
         <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center shadow-xs space-y-2.5">
           <div className="w-12 h-12 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
             <PackageIcon size={24} />

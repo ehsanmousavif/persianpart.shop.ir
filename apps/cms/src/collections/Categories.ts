@@ -2,9 +2,15 @@ import type { CollectionConfig } from 'payload'
 
 export const Categories: CollectionConfig = {
   slug: 'categories',
+  labels: {
+    singular: 'دسته‌بندی کالا',
+    plural: 'دسته‌بندی‌های کاتالوگ',
+  },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'ordering', 'isActive'],
+    group: 'کاتالوگ و انبارداری',
+    description: 'دسته‌بندی‌های کاتالوگ محصولات و قطعات',
   },
   access: {
     read: () => true,

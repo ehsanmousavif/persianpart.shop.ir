@@ -27,7 +27,8 @@
     "migrate:create": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:create",
     "migrate:status": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:status",
     "migrate:down": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:down",
-    "migrate:fresh": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:fresh"
+    "migrate:fresh": "cross-env NODE_OPTIONS=--no-deprecation payload migrate:fresh",
+    "seed": "cross-env NODE_OPTIONS=--no-deprecation node --import tsx src/seed.ts"
   },
   "dependencies": {
     "@payloadcms/db-postgres": "^3.90.2",
@@ -46,9 +47,11 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@next/env": "^16.4.0",
     "@types/node": "^24.12.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
     "typescript": "^6.0.3"
   }
 }

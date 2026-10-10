@@ -4,6 +4,7 @@ import { api } from '../../lib/api-client'
 import { plansStore } from '../plans/plans-store'
 
 export type SortOption = 'default' | 'cheapest' | 'expensive' | 'newest' | 'oldest'
+export type ViewMode = 'list' | 'grid-2' | 'compact' | 'showcase'
 
 export interface FilterState {
   searchQuery: string
@@ -15,8 +16,22 @@ export interface FilterState {
   selectedTags: string[]
   selectedCategory: string | null
   onlyInStock: boolean
-  viewMode: 'grid' | 'list'
+  viewMode: ViewMode
   sortBy: SortOption
+}
+
+const getSavedViewMode = (): ViewMode => {
+  if (typeof window !== 'undefined') {
+    try {
+      const saved = localStorage.getItem('persianpart_product_view_mode')
+      if (saved === 'list' || saved === 'grid-2' || saved === 'compact' || saved === 'showcase') {
+        return saved
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
+  }
+  return 'list'
 }
 
 const DEFAULT_FILTERS: FilterState = {
@@ -29,7 +44,7 @@ const DEFAULT_FILTERS: FilterState = {
   selectedTags: [],
   selectedCategory: null,
   onlyInStock: false,
-  viewMode: 'grid',
+  viewMode: getSavedViewMode(),
   sortBy: 'default',
 }
 
@@ -264,6 +279,13 @@ export function useCatalog() {
   }
 
   const setFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
+    if (key === 'viewMode' && typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('persianpart_product_view_mode', String(value))
+      } catch {
+        // Ignore localStorage errors
+      }
+    }
     setFilters((prev) => ({
       ...prev,
       [key]: value,

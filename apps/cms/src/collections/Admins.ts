@@ -3,13 +3,14 @@ import type { CollectionConfig } from 'payload'
 export const Admins: CollectionConfig = {
   slug: 'admins',
   labels: {
-    singular: "Great Admin",
-    plural: "Great Admins",
+    singular: 'مدیر سیستم',
+    plural: 'مدیران سیستم',
   },
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'role', 'isActive', 'updatedAt'],
-    group: 'دسترسی و مدیریت',
+    group: 'تنظیمات و دسترسی‌های سیستم',
+    description: 'مدیریت کاربران دارای دسترسی مدیریت به پنل CMS',
   },
   auth: true,
   access: {

@@ -8,6 +8,7 @@ import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { formatPersianDate } from '../../lib/utils/date'
 import { toast } from '../../components/feedback/toast'
+import { OrderDetailSkeleton } from '../../components/ui/skeleton'
 import {
   ArrowRightIcon,
   RefreshCwIcon,
@@ -108,12 +109,7 @@ function OrderDetailPage() {
   }
 
   if (isLoading) {
-    return (
-      <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
-        <div className="w-10 h-10 border-3 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto" />
-        <p className="text-xs font-bold text-slate-500">در حال دریافت اطلاعات سفارش از سرور...</p>
-      </div>
-    )
+    return <OrderDetailSkeleton />
   }
 
   if (!order) {
