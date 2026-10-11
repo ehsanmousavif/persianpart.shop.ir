@@ -260,7 +260,7 @@ export const catalog = base.catalog.router({
           if (ct && typeof ct === 'object') {
             markupPercent = Number(ct.markupPercent) || 0
           } else if (ct) {
-            const ctDoc: any = await (payload.crud as any).customerTypes.findByID({ id: ct })
+            const ctDoc: any = await payload.crud['customer-types'].findByID({ id: ct })
             markupPercent = Number(ctDoc?.markupPercent) || 0
           }
         } catch {
