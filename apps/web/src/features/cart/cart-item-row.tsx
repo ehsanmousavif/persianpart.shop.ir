@@ -19,7 +19,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           <div className="flex items-center gap-1.5">
             <AlertTriangleIcon size={15} className="text-amber-600 shrink-0" />
             <span className="text-xs">
-              موجودی محدود است (حداکثر <strong>{toPersianDigits(item.stockCartons)}</strong> کارتن).
+              موجودی محدود است (حداکثر <strong>{toPersianDigits(Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100)}</strong> م²).
             </span>
           </div>
           <button
@@ -115,17 +115,19 @@ export function CartItemRow({ item }: CartItemRowProps) {
             <span>{toPersianDigits(item.dimension)}</span>
           </div>
 
-          <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
             <BoxIcon size={13} className="text-slate-400" />
-            <span>متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong> م²</span>
-            <span className="text-xs text-slate-500">({toPersianDigits(item.cartonCount)} کارتن بر اساس ضریب {toPersianDigits(item.sqmPerCarton)})</span>
+            <span>متراژ تحویلی: <strong className="text-slate-800">{toPersianDigits(item.deliverableArea)}</strong> م²</span>
+            {item.sqmPerCarton > 0 && (
+              <span className="text-slate-400 text-[11px]">• ضریب: {toPersianDigits(item.sqmPerCarton)}</span>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Meter Stepper & Auto-calculated Cartons & Total Price Row */}
+      {/* Meter Stepper & Total Price Row */}
       <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
-        {/* Meter Stepper & Calculated Cartons */}
+        {/* Meter Stepper */}
         <div className="flex items-center gap-2">
           <div className="flex items-center border border-slate-300 rounded-xl bg-slate-50 h-8.5 overflow-hidden">
             <button
@@ -161,9 +163,6 @@ export function CartItemRow({ item }: CartItemRowProps) {
               <MinusIcon size={14} />
             </button>
           </div>
-          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-1 rounded-lg">
-            {toPersianDigits(item.cartonCount)} کارتن
-          </span>
         </div>
 
         {/* Pricing */}

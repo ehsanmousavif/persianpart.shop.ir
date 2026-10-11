@@ -27,7 +27,6 @@ function CartPage() {
   const {
     items,
     itemCount,
-    totalCartons,
     totalArea,
     subtotal,
     discountAmount,
@@ -160,13 +159,8 @@ function CartPage() {
               </div>
 
               <div className="flex justify-between">
-                <span>مجموع کارتن‌های سفارش:</span>
-                <span className="font-bold text-slate-900">{toPersianDigits(totalCartons)} کارتن</span>
-              </div>
-
-              <div className="flex justify-between">
                 <span>مجموع متراژ تحویلی:</span>
-                <span className="font-bold text-slate-900">{toPersianDigits(totalArea)}</span>
+                <span className="font-bold text-slate-900">{toPersianDigits(totalArea)} م²</span>
               </div>
 
               <div className="pt-1.5 border-t border-slate-100 flex justify-between">
