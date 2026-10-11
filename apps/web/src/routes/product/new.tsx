@@ -27,10 +27,17 @@ export const Route = createFileRoute('/product/new')({
 function ProductNewConfigurationPage() {
   const navigate = useNavigate()
   const { allProducts } = useCatalog()
-  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection } = useProductSelection()
+  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection, reconcileWithCatalog } = useProductSelection()
 
   // Modal state for Pre-Invoice
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
+
+  // Reconcile selected IDs with live catalog products
+  useEffect(() => {
+    if (allProducts && allProducts.length > 0) {
+      reconcileWithCatalog(allProducts.map((p) => p.id))
+    }
+  }, [allProducts, reconcileWithCatalog])
 
   // Selected products resolved from live catalog database
   const selectedProducts = useMemo(() => {

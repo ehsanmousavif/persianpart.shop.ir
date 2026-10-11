@@ -37,9 +37,25 @@ const CATALOG_DIMENSIONS = [
 function ProductCatalogPage() {
   const navigate = useNavigate()
   const catalogHook = useCatalog()
-  const { products, dimensions, filters, setFilter, resetFilters, activeFilterCount, isLoading } = catalogHook
+  const { products, allProducts, dimensions, filters, setFilter, resetFilters, activeFilterCount, isLoading } = catalogHook
   const { isProductInCart } = useCart()
-  const { selectedIds, toggleProduct, isProductSelected, selectProduct } = useProductSelection()
+  const { selectedIds, toggleProduct, isProductSelected, selectProduct, reconcileWithCatalog } = useProductSelection()
+
+  // Reconcile selected IDs with live catalog products to eliminate any phantom/ghost IDs
+  useEffect(() => {
+    if (!isLoading && allProducts && allProducts.length > 0) {
+      reconcileWithCatalog(allProducts.map((p) => p.id))
+    }
+  }, [isLoading, allProducts, reconcileWithCatalog])
+
+  // Count only valid selected products
+  const selectedCount = useMemo(() => {
+    if (!allProducts || allProducts.length === 0) {
+      return selectedIds.length
+    }
+    const catalogSet = new Set(allProducts.map((p) => String(p.id).replace(/["']/g, '').trim()))
+    return selectedIds.filter((id) => catalogSet.has(String(id).replace(/["']/g, '').trim())).length
+  }, [allProducts, selectedIds])
 
   const INITIAL_BATCH_SIZE = 12
   const BATCH_STEP = 12
@@ -311,15 +327,15 @@ function ProductCatalogPage() {
       )}
 
       {/* Prominent Floating Action Bar (FAB) - Positioned Safely ABOVE MobileBottomNav */}
-      {selectedIds.length > 0 && (
+      {selectedCount > 0 && (
         <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-22 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
           <Link
             to="/product/new"
-            aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedIds.length)} محصول انتخاب شده`}
+            aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedCount)} محصول انتخاب شده`}
             className="h-12 px-5 rounded-full bg-slate-950/95 backdrop-blur-md text-white flex items-center gap-3 shadow-2xl border border-slate-800 ring-1 ring-white/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-slate-900"
           >
             <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs">
-              {toPersianDigits(selectedIds.length)}
+              {toPersianDigits(selectedCount)}
             </span>
             <span className="text-sm font-bold">ثبت سفارش</span>
             <ArrowLeftIcon size={16} className="text-slate-200" />

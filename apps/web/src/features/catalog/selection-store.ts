@@ -3,6 +3,11 @@ import { useSyncExternalStore } from 'react'
 const SELECTED_STORAGE_KEY = 'persianpart_selected_products'
 const QUANTITIES_STORAGE_KEY = 'persianpart_product_quantities'
 
+export function normalizeId(id: unknown): string {
+  if (id === null || id === undefined) return ''
+  return String(id).replace(/["']/g, '').trim()
+}
+
 interface SelectionState {
   selectedIds: string[]
   quantities: Record<string, number>
@@ -20,7 +25,7 @@ function getStoredState(): SelectionState {
       if (rawSelected) {
         const parsed = JSON.parse(rawSelected)
         if (Array.isArray(parsed)) {
-          selectedIds = parsed.map((s) => String(s).trim()).filter(Boolean)
+          selectedIds = Array.from(new Set(parsed.map(normalizeId))).filter(Boolean)
         }
       }
     } catch {
@@ -32,7 +37,12 @@ function getStoredState(): SelectionState {
       if (rawQuantities) {
         const parsed = JSON.parse(rawQuantities)
         if (parsed && typeof parsed === 'object') {
-          quantities = parsed
+          Object.entries(parsed).forEach(([k, v]) => {
+            const cleanKey = normalizeId(k)
+            if (cleanKey && typeof v === 'number') {
+              quantities[cleanKey] = v
+            }
+          })
         }
       }
     } catch {
@@ -85,9 +95,10 @@ export const selectionStore = {
   getSelectedIds: () => memoryState.selectedIds,
   getQuantities: () => memoryState.quantities,
 
-  toggleProduct: (productId: string) => {
-    const cleanId = String(productId).trim()
-    const current = memoryState.selectedIds
+  toggleProduct: (productId: unknown) => {
+    const cleanId = normalizeId(productId)
+    if (!cleanId) return
+    const current = memoryState.selectedIds.map(normalizeId)
     const isSelected = current.includes(cleanId)
     const nextIds = isSelected
       ? current.filter((id) => id !== cleanId)
@@ -99,34 +110,38 @@ export const selectionStore = {
     }
 
     persistAndNotify({
-      selectedIds: nextIds,
+      selectedIds: Array.from(new Set(nextIds)),
       quantities: nextQuantities,
     })
   },
 
-  selectProduct: (productId: string) => {
-    const cleanId = String(productId).trim()
-    if (!memoryState.selectedIds.includes(cleanId)) {
+  selectProduct: (productId: unknown) => {
+    const cleanId = normalizeId(productId)
+    if (!cleanId) return
+    const current = memoryState.selectedIds.map(normalizeId)
+    if (!current.includes(cleanId)) {
       persistAndNotify({
-        selectedIds: [...memoryState.selectedIds, cleanId],
+        selectedIds: Array.from(new Set([...current, cleanId])),
         quantities: memoryState.quantities,
       })
     }
   },
 
-  unselectProduct: (productId: string) => {
-    const cleanId = String(productId).trim()
+  unselectProduct: (productId: unknown) => {
+    const cleanId = normalizeId(productId)
+    if (!cleanId) return
     const nextQuantities = { ...memoryState.quantities }
     delete nextQuantities[cleanId]
 
     persistAndNotify({
-      selectedIds: memoryState.selectedIds.filter((id) => id !== cleanId),
+      selectedIds: memoryState.selectedIds.map(normalizeId).filter((id) => id !== cleanId),
       quantities: nextQuantities,
     })
   },
 
-  setQuantity: (productId: string, quantity: number) => {
-    const cleanId = String(productId).trim()
+  setQuantity: (productId: unknown, quantity: number) => {
+    const cleanId = normalizeId(productId)
+    if (!cleanId) return
     const nextQuantities = {
       ...memoryState.quantities,
       [cleanId]: Math.max(0, quantity),
@@ -136,6 +151,26 @@ export const selectionStore = {
       selectedIds: memoryState.selectedIds,
       quantities: nextQuantities,
     })
+  },
+
+  reconcileWithCatalog: (validIds: unknown[]) => {
+    const validSet = new Set(validIds.map(normalizeId).filter(Boolean))
+    const current = memoryState.selectedIds.map(normalizeId).filter(Boolean)
+    const nextIds = current.filter((id) => validSet.has(id))
+
+    if (nextIds.length !== current.length) {
+      const nextQuantities = { ...memoryState.quantities }
+      Object.keys(nextQuantities).forEach((k) => {
+        if (!validSet.has(normalizeId(k))) {
+          delete nextQuantities[k]
+        }
+      })
+
+      persistAndNotify({
+        selectedIds: Array.from(new Set(nextIds)),
+        quantities: nextQuantities,
+      })
+    }
   },
 
   clearSelection: () => {
@@ -155,11 +190,15 @@ export function useProductSelection() {
   return {
     selectedIds: state.selectedIds,
     quantities: state.quantities,
-    isProductSelected: (id: string) => state.selectedIds.includes(String(id).trim()),
+    isProductSelected: (id: unknown) => {
+      const cleanId = normalizeId(id)
+      return state.selectedIds.some((s) => normalizeId(s) === cleanId)
+    },
     toggleProduct: selectionStore.toggleProduct,
     selectProduct: selectionStore.selectProduct,
     unselectProduct: selectionStore.unselectProduct,
     setQuantity: selectionStore.setQuantity,
+    reconcileWithCatalog: selectionStore.reconcileWithCatalog,
     clearSelection: selectionStore.clearSelection,
   }
 }
