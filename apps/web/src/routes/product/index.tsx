@@ -134,7 +134,7 @@ function ProductCatalogPage() {
             type="text"
             value={filters.searchQuery}
             onChange={(e) => setFilter('searchQuery', e.target.value)}
-            placeholder="جستجو در محصولات"
+            placeholder="جستجوی کالا، کد یا برند..."
             className="w-full h-13 px-3 ps-9 placeholder:font-bold placeholder:text-[12px] rounded-[12px] bg-white border border-slate-200/90 focus:border-slate-800 text-xs font-semibold text-slate-900 transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
             aria-label="جستجوی سریع کاتالوگ"
           />
@@ -194,7 +194,7 @@ function ProductCatalogPage() {
                   : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
               }`}
             >
-              همه ابعاد
+              همه
             </Tag>
             {(dimensions && dimensions.length > 0 ? dimensions : CATALOG_DIMENSIONS).map((dim) => {
               const isSelected = filters.selectedDimension === dim
@@ -227,7 +227,7 @@ function ProductCatalogPage() {
       <div className="flex items-center justify-between gap-2 px-1 py-1 flex-wrap sm:flex-nowrap">
         {/* Right: Top Badge & Active Count */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-slate-900">لیست محصولات</span>
+          <span className="text-sm font-bold text-slate-900">کاتالوگ محصولات</span>
         
           {activeFilterCount > 0 && (
             <button
@@ -235,7 +235,7 @@ function ProductCatalogPage() {
               onClick={resetFilters}
               className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
             >
-              حذف همه فیلترها ({toPersianDigits(activeFilterCount)})
+              پاک کردن فیلترها ({toPersianDigits(activeFilterCount)})
             </button>
           )}
         </div>
@@ -265,7 +265,7 @@ function ProductCatalogPage() {
             className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors cursor-pointer"
           >
             <RefreshCwIcon size={13} />
-            <span>حذف همه فیلترها</span>
+            <span>پاک کردن فیلترها</span>
           </button>
         </div>
       ) : (
@@ -310,7 +310,7 @@ function ProductCatalogPage() {
                     }}
                     className="text-xs text-blue-600 hover:text-blue-700 font-bold py-2 px-4 rounded-xl bg-blue-50/70 hover:bg-blue-50 transition-all cursor-pointer"
                   >
-                    بارگذاری کالاهای بیشتر ({toPersianDigits(products.length - displayLimit)} مانده)
+                    نمایش بیشتر ({toPersianDigits(products.length - displayLimit)} کالا)
                   </button>
                 </div>
               )}

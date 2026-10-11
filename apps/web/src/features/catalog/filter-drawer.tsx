@@ -37,8 +37,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       {/* Stock Toggle */}
       <div className="py-3 border-b border-slate-100 flex items-center justify-between text-start">
         <div>
-          <span className="text-xs font-bold text-slate-900 block">فقط کالاهای موجود در انبار</span>
-          <span className="text-xs text-slate-500">پنهان‌سازی کالاهای ناموجود یا بدون سهمیه</span>
+          <span className="text-xs font-bold text-slate-900 block">فقط کالاهای موجود</span>
         </div>
         <button
           type="button"
@@ -56,7 +55,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </div>
 
       {/* Sort Options */}
-      <FilterSection title="مرتب‌سازی کالاها">
+      <FilterSection title="مرتب‌سازی">
         {[
           { id: 'default', label: 'پیش‌فرض' },
           { id: 'cheapest', label: 'ارزان‌ترین' },
@@ -83,7 +82,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </FilterSection>
 
       {/* Structured Dimensions (Single Selection) */}
-      <FilterSection title="ابعاد ساختاریافته تایل (انتخاب تک‌گزینه‌ای)">
+      <FilterSection title="ابعاد">
         <button
           type="button"
           onClick={() => setFilter('selectedDimension', null)}
@@ -93,7 +92,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
               : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
           }`}
         >
-          همه ابعاد
+          همه
         </button>
         {(dimensions && dimensions.length > 0 ? dimensions : AVAILABLE_DIMENSIONS).map((dim) => {
           const isSelected = filters.selectedDimension === dim
@@ -115,7 +114,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </FilterSection>
 
       {/* Brands */}
-      <FilterSection title="برند و کارخانه سازنده">
+      <FilterSection title="برند">
         {AVAILABLE_BRANDS.map((brand) => {
           const isSelected = filters.selectedBrands.includes(brand)
           return (
@@ -136,7 +135,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </FilterSection>
 
       {/* Colors */}
-      <FilterSection title="طیف رنگی">
+      <FilterSection title="رنگ">
         {AVAILABLE_COLORS.map((col) => {
           const isSelected = filters.selectedColors.includes(col)
           return (
@@ -178,7 +177,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </FilterSection>
 
       {/* Tags (Independent lightweight grouping) */}
-      <FilterSection title="تگ‌ها و ویژگی‌ها">
+      <FilterSection title="ویژگی‌ها">
         {AVAILABLE_TAGS.map((tag) => {
           const isSelected = filters.selectedTags.includes(tag)
           return (
@@ -204,7 +203,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={`فیلترهای پیشرفته ${activeFilterCount > 0 ? `(${toPersianDigits(activeFilterCount)})` : ''}`}
+      title={`فیلترها ${activeFilterCount > 0 ? `(${toPersianDigits(activeFilterCount)})` : ''}`}
       isBottomSheetOnMobile={true}
     >
       <div className="flex flex-col h-full">
@@ -216,7 +215,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
             className="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={14} />
-            <span>حذف فیلترها</span>
+            <span>پاک کردن فیلترها</span>
           </button>
           <button
             type="button"
@@ -224,7 +223,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
             className="py-2.5 px-4 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <CheckIcon size={14} />
-            <span>مشاهده نتایج ({toPersianDigits(catalogHook.products.length)})</span>
+            <span>اعمال فیلتر ({toPersianDigits(catalogHook.products.length)})</span>
           </button>
         </div>
       </div>

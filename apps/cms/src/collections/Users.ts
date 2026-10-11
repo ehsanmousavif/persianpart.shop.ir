@@ -10,7 +10,7 @@ export const Users: CollectionConfig = {
     useAsTitle: 'fullName',
     defaultColumns: ['fullName', 'phone', 'customerType', 'status', 'companyName', 'createdAt'],
     group: 'فروشگاه و مشتریان',
-    description: 'مشتریان سامانه توسط ادمین در این بخش تعریف می‌شوند. ورود به سایت منحصراً برای شماره‌های فعال در این لیست مجاز است.',
+    description: 'فهرست مشتریان و خریداران تجاری.',
   },
   access: {
     read: () => true,
@@ -24,26 +24,26 @@ export const Users: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      label: 'شماره همراه مشتری (شناسه یکتا - ورود با OTP)',
+      label: 'شماره همراه',
       admin: {
-        description: 'این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و ورود با کد یکبار مصرف (OTP) انجام می‌پذیرد.',
+        description: 'شناسه ورود با کد یکبار مصرف (OTP).',
       },
     },
     {
       name: 'fullName',
       type: 'text',
       required: true,
-      label: 'نام و نام خانوادگی مشتری',
+      label: 'نام و نام خانوادگی',
     },
     {
       name: 'companyName',
       type: 'text',
-      label: 'نام فروشگاه، شرکت یا تعمیرگاه',
+      label: 'نام فروشگاه / شرکت',
     },
     {
       name: 'nationalCode',
       type: 'text',
-      label: 'کد ملی / شناسه ملی',
+      label: 'کد ملی',
     },
     {
       name: 'economicCode',
@@ -55,9 +55,9 @@ export const Users: CollectionConfig = {
       type: 'relationship',
       relationTo: 'customer-types',
       required: true,
-      label: 'نقش و رده مشتری',
+      label: 'رده مشتری',
       admin: {
-        description: 'نقش مشتری مبنای تعیین درصد افزایش قیمت (Markup) و رده کاربری است.',
+        description: 'تعیین‌کننده درصد قیمت و تخفیف کاتالوگ.',
       },
     },
     {
@@ -65,11 +65,11 @@ export const Users: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'active',
-      label: 'وضعیت دسترسی به پنل',
+      label: 'وضعیت حساب',
       options: [
-        { label: 'فعال (امکان ورود به پنل و سفارش)', value: 'active' },
-        { label: 'در انتظار تایید مدارک (غیرفعال)', value: 'pending' },
-        { label: 'معلق / مسدود شده (عدم امکان ورود)', value: 'suspended' },
+        { label: 'فعال', value: 'active' },
+        { label: 'در انتظار بررسی', value: 'pending' },
+        { label: 'مسدود', value: 'suspended' },
       ],
     },
     {
@@ -85,22 +85,22 @@ export const Users: CollectionConfig = {
     {
       name: 'address',
       type: 'textarea',
-      label: 'نشانی پستی دقیق',
+      label: 'نشانی',
     },
     {
       name: 'addresses',
       type: 'array',
-      label: 'دفترچه آدرس‌های ارسال سفارش',
+      label: 'آدرس‌های تحویل',
       labels: {
-        singular: 'نشانی پستی',
-        plural: 'نشانی‌های پستی',
+        singular: 'نشانی',
+        plural: 'نشانی‌ها',
       },
       fields: [
         {
           name: 'title',
           type: 'text',
           required: true,
-          label: 'عنوان آدرس (مثلاً مغازه، انبار، منزل)',
+          label: 'عنوان آدرس (انبار، پروژه...)',
         },
         {
           name: 'province',
@@ -117,20 +117,20 @@ export const Users: CollectionConfig = {
         {
           name: 'postalCode',
           type: 'text',
-          label: 'کد پستی ۱۰ رقمی',
+          label: 'کد پستی',
         },
         {
           name: 'addressDetail',
           type: 'textarea',
           required: true,
-          label: 'نشانی دقیق پستی و پلاک',
+          label: 'نشانی کامل و پلاک',
         },
       ],
     },
     {
       name: 'notes',
       type: 'textarea',
-      label: 'یادداشت‌های داخلی مدیریت (مشتری مشاهده نمی‌کند)',
+      label: 'یادداشت داخلی',
       admin: {
         position: 'sidebar',
       },

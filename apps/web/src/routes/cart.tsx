@@ -34,7 +34,6 @@ function CartPage() {
     finalTotal,
     hasBlockingIssues,
     clearCart,
-    resetCart,
   } = useCart()
 
   const { user, isAuthenticated } = useAuth()
@@ -88,10 +87,10 @@ function CartPage() {
         <div>
           <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
             <ShoppingCartIcon size={20} className="text-blue-600" />
-            <span>سبد خرید و فاکتور B2B</span>
+            <span>سبد خرید</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            بررسی متراژ تحویلی، تخفیف‌های تجاری و صدور پیش‌فاکتور
+            بررسی اقلام و تکمیل سفارش
           </p>
         </div>
 
@@ -115,10 +114,10 @@ function CartPage() {
           </div>
           <div>
             <h3 className="text-sm font-bold text-slate-900">
-              سبد خرید شما در حال حاضر خالی است
+              سبد خرید خالی است
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-              جهت انتخاب کاشی، پرسلان و اسلب‌های پروژه، به کاتالوگ محصولات مراجعه فرمایید.
+              برای مشاهده و انتخاب کالاها به کاتالوگ مراجعه کنید.
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
@@ -126,15 +125,8 @@ function CartPage() {
               to="/product"
               className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
             >
-              مشاهده کاتالوگ محصولات
+              مشاهده کاتالوگ
             </Link>
-            <button
-              type="button"
-              onClick={resetCart}
-              className="w-full py-2 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
-            >
-              بارگذاری اقلام نمونه دمو
-            </button>
           </div>
         </div>
       ) : (
@@ -149,38 +141,38 @@ function CartPage() {
           {/* Invoice Summary Card */}
           <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
             <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100">
-              خلاصه صورت‌حساب تجاری
+              خلاصه صورت‌حساب
             </h3>
 
             <div className="space-y-2 text-xs text-slate-600">
               <div className="flex justify-between">
-                <span>تعداد اقلام انتخابی:</span>
+                <span>تعداد اقلام:</span>
                 <span className="font-bold text-slate-900">{toPersianDigits(itemCount)} ردیف</span>
               </div>
 
               <div className="flex justify-between">
-                <span>مجموع متراژ تحویلی:</span>
+                <span>مجموع متراژ:</span>
                 <span className="font-bold text-slate-900">{toPersianDigits(totalArea)} م²</span>
               </div>
 
               <div className="pt-1.5 border-t border-slate-100 flex justify-between">
-                <span>جمع کل اقلام (ناخالص):</span>
+                <span>جمع اقلام:</span>
                 <span className="font-bold text-slate-900">{formatToman(subtotal)}</span>
               </div>
 
               <div className="flex justify-between text-emerald-700 font-bold">
-                <span>تخفیف همکاری تجاری (۵٪):</span>
+                <span>تخفیف (۵٪):</span>
                 <span>- {formatToman(discountAmount)}</span>
               </div>
 
               <div className="flex justify-between">
-                <span>مالیات بر ارزش افزوده (۱۰٪):</span>
+                <span>مالیات ارزش افزوده (۱۰٪):</span>
                 <span className="font-medium text-slate-700">{formatToman(taxAmount)}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t-2 border-slate-200/80 flex items-baseline justify-between">
-              <span className="text-sm font-bold text-slate-900">مبلغ نهایی فاکتور:</span>
+              <span className="text-sm font-bold text-slate-900">مبلغ نهایی:</span>
               <span className="text-lg font-bold text-blue-700">
                 {formatToman(finalTotal)}
               </span>
@@ -189,7 +181,7 @@ function CartPage() {
             {hasBlockingIssues && (
               <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-1.5">
                 <AlertTriangleIcon size={15} className="text-rose-600 shrink-0" />
-                <span>لطفاً پیش از ثبت سفارش، کالای ناموجود را حذف فرمایید.</span>
+                <span>کالاهای ناموجود را از سبد حذف کنید.</span>
               </div>
             )}
 
@@ -199,7 +191,7 @@ function CartPage() {
               disabled={hasBlockingIssues || items.length === 0}
               className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <span>تأیید و ادامه ثبت سفارش</span>
+              <span>ادامه ثبت سفارش</span>
               <ArrowRightIcon size={15} />
             </button>
           </div>
@@ -210,7 +202,7 @@ function CartPage() {
       <Modal
         isOpen={isCheckoutModalOpen}
         onClose={() => setIsCheckoutModalOpen(false)}
-        title="تأیید نهایی و صدور حواله سفارش"
+        title="تأیید و ثبت سفارش"
         isBottomSheetOnMobile={true}
       >
         <div className="space-y-4">
@@ -227,25 +219,25 @@ function CartPage() {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1 text-start">
-              توضیحات و هماهنگی تحویل (اختیاری):
+              توضیحات سفارش (اختیاری):
             </label>
             <textarea
               rows={2}
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
-              placeholder="مثال: تحویل قبل از ساعت ۱۲ ظهر با هماهنگی تلفنی..."
+              placeholder="یادداشت تحویل یا هماهنگی..."
               className="w-full p-3 rounded-xl border border-slate-300 focus:border-blue-600 text-xs text-slate-900 transition-all outline-hidden bg-slate-50/50"
             />
           </div>
 
           <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs space-y-1">
             <div className="flex justify-between font-bold text-emerald-900">
-              <span>مبلغ نهایی قابل تسویه:</span>
+              <span>مبلغ نهایی:</span>
               <span className="text-sm font-bold">{formatToman(finalTotal)}</span>
             </div>
             <div className="flex justify-between text-emerald-700 text-xs">
-              <span>شیوه تسویه:</span>
-              <span>اعتبار تجاری باز ۶۰ روزه پرشین پارت</span>
+              <span>شیوه پرداخت:</span>
+              <span>اعتبار تجاری</span>
             </div>
           </div>
 
@@ -268,7 +260,7 @@ function CartPage() {
               ) : (
                 <>
                   <CheckCircle2Icon size={16} />
-                  <span>ثبت قطعی سفارش</span>
+                  <span>ثبت نهایی سفارش</span>
                 </>
               )}
             </button>

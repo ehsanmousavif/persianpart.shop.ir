@@ -105,10 +105,10 @@ export function LoginCard() {
           <ShieldCheckIcon size={22} />
         </div>
         <h2 className="text-base font-bold text-slate-900">
-          ورود همکاران و خریداران B2B
+          ورود به حساب کاربری
         </h2>
         <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-          سامانه سفارش‌گذاری سریع محصولات پرشین‌پارت
+          سفارش‌گذاری پرشین‌پارت
         </p>
       </div>
 
@@ -124,7 +124,7 @@ export function LoginCard() {
         <form onSubmit={handleSendPhone} className="space-y-3.5">
           <div>
             <label htmlFor="phone" className="block text-xs font-bold text-slate-700 mb-1.5 text-start">
-              شماره تلفن همراه:
+              شماره همراه:
             </label>
             <div className="relative">
               <input
@@ -140,7 +140,7 @@ export function LoginCard() {
               <PhoneIcon size={18} className="absolute start-3 top-3 text-slate-400 pointer-events-none" />
             </div>
             <p className="text-xs text-slate-500 mt-1.5 text-start leading-relaxed">
-              کد اعتبارسنجی یکبارمصرف به این شماره پیامک خواهد شد.
+              کد تأیید به این شماره ارسال می‌شود.
             </p>
           </div>
 

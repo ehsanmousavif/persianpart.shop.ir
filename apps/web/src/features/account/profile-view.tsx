@@ -174,7 +174,7 @@ export function ProfileView() {
               <TextField name="name" isRequired className="space-y-1 text-start">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <UserIcon size={13} className="text-slate-400" />
-                  <span>نام نماینده / مدیر خرید</span>
+                  <span>نام و نام خانوادگی</span>
                   <span className="text-rose-500">*</span>
                 </Label>
                 <Input
@@ -189,14 +189,14 @@ export function ProfileView() {
               <TextField name="storeName" isRequired className="space-y-1 text-start">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <StoreIcon size={13} className="text-slate-400" />
-                  <span>عنوان فروشگاه / شرکت حقوقی</span>
+                  <span>نام فروشگاه / شرکت</span>
                   <span className="text-rose-500">*</span>
                 </Label>
                 <Input
                   value={formData.storeName}
                   onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
                   className="w-full px-3 py-2 text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all"
-                  placeholder="مثال: پخش بازرگانی پرشین پارت"
+                  placeholder="مثال: بازرگانی پرشین پارت"
                 />
               </TextField>
 
@@ -205,11 +205,11 @@ export function ProfileView() {
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                     <PhoneIcon size={13} className="text-slate-400" />
-                    <span>شماره تلفن همراه</span>
+                    <span>شماره همراه</span>
                   </label>
                   <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded flex items-center gap-1">
                     <LockIcon size={10} className="text-slate-400" />
-                    <span>غیرقابل تغییر</span>
+                    <span>ثابت</span>
                   </span>
                 </div>
                 <div className="flex items-center justify-between px-3 py-2 bg-slate-100/90 border border-slate-200 rounded-xl text-slate-600 select-none">
@@ -218,19 +218,16 @@ export function ProfileView() {
                   </span>
                   <span className="flex items-center gap-1 text-xs font-medium text-slate-500 bg-white/80 px-2 py-0.5 rounded-lg border border-slate-200/60 shadow-2xs">
                     <LockIcon size={11} className="text-slate-400" />
-                    <span>شناسه هویتی ثابت</span>
+                    <span>غیرقابل تغییر</span>
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 leading-relaxed pt-0.5">
-                  شماره همراه شناسه یکتای حساب شماست و امکان ویرایش یا تغییر آن وجود ندارد.
-                </p>
               </div>
 
               {/* Economic / National Code */}
               <TextField name="economicCode" className="space-y-1 text-start">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <ShieldCheckIcon size={14} className="text-slate-400" />
-                  <span>شناسه ملی / کد اقتصادی</span>
+                  <span>کد اقتصادی / شناسه ملی</span>
                 </Label>
                 <Input
                   dir="ltr"
@@ -273,7 +270,7 @@ export function ProfileView() {
               <TextField name="address" className="space-y-1 text-start">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <MapPinIcon size={14} className="text-slate-400" />
-                  <span>نشانی دقیق انبار یا محل تحویل</span>
+                  <span>نشانی تحویل</span>
                 </Label>
                 <TextArea
                   rows={3}

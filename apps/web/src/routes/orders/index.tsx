@@ -73,21 +73,21 @@ function OrdersListPage() {
 
   const TABS = [
     { key: 'all', label: 'همه سفارش‌ها' },
-    { key: 'pending', label: 'در حال بررسی بازرگانی' },
-    { key: 'approve', label: 'حواله ثبت شده (تکمیل شده)' },
+    { key: 'pending', label: 'در حال بررسی' },
+    { key: 'approve', label: 'تأیید شده' },
     { key: 'cancel', label: 'لغو شده' },
   ] as const
 
   return (
-    <div className="w-full px-3 py-3 space-y-3">
+    <div className="w-full h-full  px-3 py-3 space-y-3">
       {/* Header */}
       <div>
         <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
           <PackageIcon size={20} className="text-blue-600" />
-          <span>سفارش‌ها و سوابق خرید</span>
+          <span>سفارش‌ها</span>
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          پیگیری وضعیت پردازش، ارسال و تحویل سفارش‌ها
+          پیگیری وضعیت سفارش‌ها
         </p>
       </div>
 
@@ -143,10 +143,10 @@ function OrdersListPage() {
             <PackageIcon size={24} />
           </div>
           <h3 className="text-sm font-bold text-slate-900">
-            سفارشی در این بخش یافت نشد
+            سفارشی یافت نشد
           </h3>
           <p className="text-xs text-slate-500">
-            در این دسته‌بندی هنوز سفارشی برای حساب شما ثبت نگردیده است.
+            هنوز سفارشی ثبت نشده است.
           </p>
         </div>
       ) : (
@@ -215,7 +215,7 @@ function OrdersListPage() {
                   {/* Financials & Action Buttons */}
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-xs text-slate-500 block font-medium leading-tight mb-0.5">مبلغ کل فاکتور:</span>
+                      <span className="text-xs text-slate-500 block font-medium leading-tight mb-0.5">مبلغ کل:</span>
                       <span className="text-sm font-bold text-slate-900">
                         {formatToman(order.finalTotal)}
                       </span>

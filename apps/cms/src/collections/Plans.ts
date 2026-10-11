@@ -10,7 +10,7 @@ export const Plans: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'type', 'discountPercent', 'status', 'users', 'createdAt'],
     group: 'فروشگاه و مشتریان',
-    description: 'مدیریت طرح‌ها، تخفیف‌ها و پیام‌های خوش‌آمدگویی اختصاصی برای کاربران و مشتریان منتخب.',
+    description: 'طرح‌ها و تخفیف‌های مشتریان.',
   },
   access: {
     read: () => true,
@@ -114,10 +114,9 @@ export const Plans: CollectionConfig = {
     {
       name: 'title',
       type: 'text',
-      label: 'عنوان طرح (اسم)',
+      label: 'عنوان طرح',
       admin: {
-        description:
-          'در صورت خالی بودن، به صورت خودکار به شکل «[نام کاربر] عزیز، این طرح برای شماست» تولید می‌شود. همچنین می‌توانید از {name} در متن استفاده کنید.',
+        description: 'در صورت خالی بودن، خودکار بر اساس نام مشتری ساخته می‌شود. امکان درج {name} در متن وجود دارد.',
       },
     },
     {
@@ -126,39 +125,30 @@ export const Plans: CollectionConfig = {
       relationTo: 'users',
       hasMany: true,
       required: true,
-      label: 'کاربران هدف (لیست Userها)',
-      admin: {
-        description: 'مشخص کنید این طرح به کدام کاربر یا کاربران اختصاص داده می‌شود.',
-      },
+      label: 'مشتریان هدف',
     },
     {
       name: 'content',
       type: 'textarea',
       required: true,
-      label: 'متن پیام / توضیحات طرح (Textarea)',
-      admin: {
-        description: 'متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود (مثلاً شرایط پرداخت مدت‌دار ۳ ماهه یا توضیحات آفر ویژه).',
-      },
+      label: 'متن طرح',
     },
     {
       name: 'type',
       type: 'select',
       required: true,
       defaultValue: 'credit_terms',
-      label: 'نوع طرح تجاری (طرح اعتباری یا تخفیف کالا)',
+      label: 'نوع طرح',
       options: [
         {
-          label: 'شرایط اعتباری و مدت‌دار (پرداخت اقساطی / بازپرداخت ۳ ماهه)',
+          label: 'شرایط اعتباری و مدت‌دار',
           value: 'credit_terms',
         },
         {
-          label: 'تخفیف روی کالاها (اعمال درصد تخفیف روی اقلام منتخب)',
+          label: 'تخفیف روی کالاها',
           value: 'product_discount',
         },
       ],
-      admin: {
-        description: 'تعیین کنید این طرح اعتباری/مدت‌دار است یا تخفیف مستقیم روی کالاها.',
-      },
     },
     {
       type: 'row',
@@ -170,19 +160,17 @@ export const Plans: CollectionConfig = {
           name: 'discountPercent',
           type: 'number',
           defaultValue: 10,
-          label: 'درصد تخفیف روی کالاها (%)',
+          label: 'درصد تخفیف (%)',
           admin: {
             width: '50%',
-            description: 'درصد تخفیف اعمالی روی محصولات منتخب طرح (مثلاً ۱۰ یا ۱۵ درصد)',
           },
         },
         {
           name: 'discountAmount',
           type: 'number',
-          label: 'مبلغ تخفیف ثابت (تومان - اختیاری)',
+          label: 'مبلغ تخفیف ثابت (تومان)',
           admin: {
             width: '50%',
-            description: 'تخفیف مقطوع به تومان به جای درصدی',
           },
         },
       ],
@@ -192,10 +180,10 @@ export const Plans: CollectionConfig = {
       type: 'select',
       required: true,
       defaultValue: 'active',
-      label: 'وضعیت طرح (Status)',
+      label: 'وضعیت',
       options: [
         {
-          label: 'در حال اجرا (فعال)',
+          label: 'فعال',
           value: 'active',
         },
         {
@@ -207,24 +195,18 @@ export const Plans: CollectionConfig = {
           value: 'draft',
         },
       ],
-      admin: {
-        description: 'وضعیت اجرای طرح: در حال اجرا، منقضی شده یا پیش‌نویس.',
-      },
     },
     {
       name: 'products',
       type: 'relationship',
       relationTo: 'products',
       hasMany: true,
-      label: 'محصولات پیشنهادی طرح (اختیاری)',
-      admin: {
-        description: 'کالاهای منتخب برای این طرح تجاری.',
-      },
+      label: 'محصولات شامل طرح',
     },
     {
       name: 'expiresAt',
       type: 'date',
-      label: 'تاریخ و مهلت انقضا (اختیاری)',
+      label: 'مهلت انقضا',
       admin: {
         date: {
           pickerAppearance: 'dayAndTime',

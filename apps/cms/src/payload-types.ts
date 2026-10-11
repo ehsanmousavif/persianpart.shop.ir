@@ -136,8 +136,6 @@ export interface AdminAuthOperations {
   };
 }
 /**
- * مدیریت کاربران دارای دسترسی مدیریت به پنل CMS
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "admins".
  */
@@ -167,7 +165,7 @@ export interface Admin {
   collection: 'admins';
 }
 /**
- * مشتریان سامانه توسط ادمین در این بخش تعریف می‌شوند. ورود به سایت منحصراً برای شماره‌های فعال در این لیست مجاز است.
+ * فهرست مشتریان و خریداران تجاری.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
@@ -175,7 +173,7 @@ export interface Admin {
 export interface User {
   id: number;
   /**
-   * این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و ورود با کد یکبار مصرف (OTP) انجام می‌پذیرد.
+   * شناسه ورود با کد یکبار مصرف (OTP).
    */
   phone: string;
   fullName: string;
@@ -183,7 +181,7 @@ export interface User {
   nationalCode?: string | null;
   economicCode?: string | null;
   /**
-   * نقش مشتری مبنای تعیین درصد افزایش قیمت (Markup) و رده کاربری است.
+   * تعیین‌کننده درصد قیمت و تخفیف کاتالوگ.
    */
   customerType: number | CustomerType;
   status: 'active' | 'pending' | 'suspended';
@@ -205,7 +203,7 @@ export interface User {
   createdAt: string;
 }
 /**
- * مدیریت رده‌ها و نقش‌های مشتریان با امکان تنظیم درصد افزایش/کاهش قیمت (Markup).
+ * رده‌های مشتریان و ضریب قیمت (Markup).
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "customer-types".
@@ -215,7 +213,7 @@ export interface CustomerType {
   name: string;
   slug: string;
   /**
-   * درصد اثرگذار بر قیمت پایه کالاها برای این نوع مشتری (مثبت برای افزایش، منفی برای تخفیف).
+   * اثر بر قیمت پایه (مثبت: افزایش، منفی: تخفیف).
    */
   markupPercent: number;
   isActive?: boolean | null;
@@ -245,17 +243,12 @@ export interface Media {
   focalY?: number | null;
 }
 /**
- * دسته‌بندی‌های کاتالوگ محصولات و قطعات
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "categories".
  */
 export interface Category {
   id: number;
   name: string;
-  /**
-   * فقط حروف کوچک انگلیسی، اعداد و خط تیره (-)
-   */
   slug: string;
   ordering?: number | null;
   parent?: (number | null) | Category;
@@ -264,8 +257,6 @@ export interface Category {
   createdAt: string;
 }
 /**
- * مدیریت برندها و کارخانجات تولیدکننده قطعات و محصولات
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "brands".
  */
@@ -279,8 +270,6 @@ export interface Brand {
   createdAt: string;
 }
 /**
- * برچسب‌های کاتالوگ برای دسته‌بندی و فیلتر کردن پیشرفته محصولات.
- *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "tags".
  */
@@ -293,7 +282,7 @@ export interface Tag {
   createdAt: string;
 }
 /**
- * مدیریت متمرکز ابعاد و سایزهای کاشی و سرامیک جهت انتخاب در کالاها و فیلترهای فروشگاه.
+ * ابعاد استاندارد کاشی و سرامیک.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "dimensions".
@@ -309,16 +298,13 @@ export interface Dimension {
   createdAt: string;
 }
 /**
- * مدیریت مشخصات فنی کاشی، متراژ کارتن، موجودی انبار مکانیزه و تصاویر.
+ * کاتالوگ و موجودی کالاها.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
  */
 export interface Product {
   id: number;
-  /**
-   * شناسه یکتای غیرقابل تغییر کالا در انبار
-   */
   sku: string;
   name: string;
   slug: string;
@@ -327,12 +313,9 @@ export interface Product {
   color?: string | null;
   grade?: ('grade_1' | 'grade_2' | 'grade_3' | 'grade_4') | null;
   tags?: (number | Tag)[] | null;
-  /**
-   * انتخاب سایز از پیش تعریف‌شده (مانند ۱۰۰×۱۰۰ یا ۶۰×۱۲۰)
-   */
   dimension: number | Dimension;
   /**
-   * مبنای محاسبه تعداد کارتن = متراژ ÷ ضریب. ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲، ۱.۴
+   * ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲
    */
   sqmPerCarton: number;
   width?: number | null;
@@ -368,25 +351,16 @@ export interface Product {
   createdAt: string;
 }
 /**
- * مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران و فرآیند آماده‌سازی سفارش.
+ * فهرست و وضعیت سفارشات.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
  */
 export interface Order {
   id: number;
-  /**
-   * کد پیگیری یکتای سفارش خریدار
-   */
   orderNumber: string;
   user: number | User;
-  /**
-   * موقعیت عملیاتی سفارش در گردش کار تأمین و انبارداری
-   */
   status: 'pending' | 'approve' | 'cancel';
-  /**
-   * مشخص‌کننده اینکه سفارش توسط مشتری یا ادمین لغو گردیده است.
-   */
   cancelledBy?: ('customer' | 'admin') | null;
   items: {
     product: number | Product;
@@ -414,7 +388,7 @@ export interface Order {
   createdAt: string;
 }
 /**
- * مدیریت طرح‌ها، تخفیف‌ها و پیام‌های خوش‌آمدگویی اختصاصی برای کاربران و مشتریان منتخب.
+ * طرح‌ها و تخفیف‌های مشتریان.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "plans".
@@ -422,36 +396,15 @@ export interface Order {
 export interface Plan {
   id: number;
   /**
-   * در صورت خالی بودن، به صورت خودکار به شکل «[نام کاربر] عزیز، این طرح برای شماست» تولید می‌شود. همچنین می‌توانید از {name} در متن استفاده کنید.
+   * در صورت خالی بودن، خودکار بر اساس نام مشتری ساخته می‌شود. امکان درج {name} در متن وجود دارد.
    */
   title?: string | null;
-  /**
-   * مشخص کنید این طرح به کدام کاربر یا کاربران اختصاص داده می‌شود.
-   */
   users: (number | User)[];
-  /**
-   * متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود (مثلاً شرایط پرداخت مدت‌دار ۳ ماهه یا توضیحات آفر ویژه).
-   */
   content: string;
-  /**
-   * تعیین کنید این طرح اعتباری/مدت‌دار است یا تخفیف مستقیم روی کالاها.
-   */
   type: 'credit_terms' | 'product_discount';
-  /**
-   * درصد تخفیف اعمالی روی محصولات منتخب طرح (مثلاً ۱۰ یا ۱۵ درصد)
-   */
   discountPercent?: number | null;
-  /**
-   * تخفیف مقطوع به تومان به جای درصدی
-   */
   discountAmount?: number | null;
-  /**
-   * وضعیت اجرای طرح: در حال اجرا، منقضی شده یا پیش‌نویس.
-   */
   status: 'active' | 'expired' | 'draft';
-  /**
-   * کالاهای منتخب برای این طرح تجاری.
-   */
   products?: (number | Product)[] | null;
   expiresAt?: string | null;
   updatedAt: string;

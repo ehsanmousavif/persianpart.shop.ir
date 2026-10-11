@@ -13,7 +13,6 @@ import {
   ArrowLeftIcon,
   Trash2Icon,
   BoxIcon,
-  LayersIcon,
   SolarRulerIcon,
   SolarBoxIcon,
   SolarLayersIcon,
@@ -152,17 +151,6 @@ function ProductNewConfigurationPage() {
         </div>
       </div>
 
-      {/* Guide Banner */}
-      <div className="p-3 bg-blue-50/70 border border-blue-100 rounded-2xl text-xs text-blue-900 flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-blue-100/80 text-blue-600 flex items-center justify-center shrink-0 border border-blue-200/60">
-          <LayersIcon size={16} />
-        </div>
-        <div className="leading-relaxed">
-          <span className="font-bold block leading-snug">تعیین متراژ:</span>
-          متراژ مورد نیاز کالاها را مشخص نموده و دکمه «تایید» را بزنید.
-        </div>
-      </div>
-
       {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}
       <div className="space-y-4">
         {selectedProducts.map((product) => {
@@ -210,9 +198,8 @@ function ProductNewConfigurationPage() {
                     </h3>
 
                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
-                      <span className="font-mono text-slate-700 font-bold" dir="ltr">{product.sku}</span>
-                      <span>•</span>
-                      <span>قیمت پایه: <strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong></span>
+                      {/* <span className="font-mono text-slate-700 font-bold" dir="ltr">{product.sku}</span> */}
+                      <span><strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong></span>
                     </div>
                   </div>
                 </div>

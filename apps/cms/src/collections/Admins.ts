@@ -3,14 +3,13 @@ import type { CollectionConfig } from 'payload'
 export const Admins: CollectionConfig = {
   slug: 'admins',
   labels: {
-    singular: 'مدیر سیستم',
-    plural: 'مدیران سیستم',
+    singular: 'مدیر',
+    plural: 'مدیران',
   },
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'role', 'isActive', 'updatedAt'],
-    group: 'تنظیمات و دسترسی‌های سیستم',
-    description: 'مدیریت کاربران دارای دسترسی مدیریت به پنل CMS',
+    group: 'تنظیمات و دسترسی‌ها',
   },
   auth: true,
   access: {
@@ -21,26 +20,26 @@ export const Admins: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
-      label: 'نام و نام خانوادگی مدیر',
+      label: 'نام و نام خانوادگی',
     },
     {
       name: 'role',
       type: 'select',
       required: true,
       defaultValue: 'editor',
-      label: 'سطح دسترسی مدیریتی',
+      label: 'نقش',
       options: [
-        { label: 'مدیر کل سیستم (Super Admin)', value: 'superadmin' },
-        { label: 'مدیر فروشگاه و سفارشات (Store Manager)', value: 'manager' },
-        { label: 'ویرایشگر کاتالوگ و محتوا (Editor)', value: 'editor' },
-        { label: 'پشتیبانی مشتریان (Support)', value: 'support' },
+        { label: 'مدیر کل', value: 'superadmin' },
+        { label: 'مدیر فروش', value: 'manager' },
+        { label: 'ویرایشگر', value: 'editor' },
+        { label: 'پشتیبانی', value: 'support' },
       ],
     },
     {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
-      label: 'حساب فعال است',
+      label: 'فعال',
     },
   ],
 }

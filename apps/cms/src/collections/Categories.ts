@@ -3,14 +3,13 @@ import type { CollectionConfig } from 'payload'
 export const Categories: CollectionConfig = {
   slug: 'categories',
   labels: {
-    singular: 'دسته‌بندی کالا',
-    plural: 'دسته‌بندی‌های کاتالوگ',
+    singular: 'دسته‌بندی',
+    plural: 'دسته‌بندی‌ها',
   },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'ordering', 'isActive'],
     group: 'کاتالوگ و انبارداری',
-    description: 'دسته‌بندی‌های کاتالوگ محصولات و قطعات',
   },
   access: {
     read: () => true,
@@ -23,17 +22,14 @@ export const Categories: CollectionConfig = {
       name: 'name',
       type: 'text',
       required: true,
-      label: 'نام دسته‌بندی',
+      label: 'نام',
     },
     {
       name: 'slug',
       type: 'text',
       required: true,
       unique: true,
-      label: 'اسلاگ انگلیسی (شناسه URL)',
-      admin: {
-        description: 'فقط حروف کوچک انگلیسی، اعداد و خط تیره (-)',
-      },
+      label: 'شناسه انگلیسی (Slug)',
     },
     {
       name: 'ordering',
@@ -45,13 +41,13 @@ export const Categories: CollectionConfig = {
       name: 'parent',
       type: 'relationship',
       relationTo: 'categories',
-      label: 'دسته‌بندی والد (اختیاری)',
+      label: 'دسته‌بندی والد',
     },
     {
       name: 'isActive',
       type: 'checkbox',
       defaultValue: true,
-      label: 'فعال در کاتالوگ',
+      label: 'فعال',
     },
   ],
 }

@@ -17,6 +17,7 @@ import {
   MapPinIcon,
   PhoneIcon,
   AlertTriangleIcon,
+  ClockIcon,
 } from '../../components/ui/icons'
 
 export const Route = createFileRoute('/orders/$id')({
@@ -213,11 +214,11 @@ function OrderDetailPage() {
                     : 'bg-slate-100 text-slate-500 border-slate-200'
                 }`}
               >
-                <span>⏱️</span>
+                <ClockIcon size={13} className={isWithin3Minutes ? 'text-amber-700' : 'text-slate-400'} />
                 <span>
                   {isWithin3Minutes
                     ? `مهلت لغو خریدار: ${formatCountdown(timeLeftSeconds)}`
-                    : 'مهلت لغو توسط مشتری منقضی شد'}
+                    : 'مهلت لغو به پایان رسید'}
                 </span>
               </span>
             )}
@@ -243,10 +244,10 @@ function OrderDetailPage() {
           <button
             type="button"
             onClick={handleReorder}
-            className="py-2.5  whitespace-nowrap px-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
+            className="py-2.5 whitespace-nowrap px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
-            <span className="w-full">سفارش مجدد این اقلام</span>
+            <span>سفارش مجدد</span>
           </button>
         </div>
       </div>
@@ -254,7 +255,7 @@ function OrderDetailPage() {
       {/* Visual Stepper Timeline */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
-          مراحل پیشرفت و پیگیری سفارش
+          وضعیت سفارش
         </h3>
         <OrderTimeline steps={timeline} />
       </div>
@@ -262,7 +263,7 @@ function OrderDetailPage() {
       {/* Products in this order */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100 flex items-center justify-between">
-          <span>اقلام و کالاهای فاکتور</span>
+          <span>اقلام سفارش</span>
           <span className="text-xs text-slate-400 font-normal">
             {toPersianDigits(order.items.length)} ردیف کالا
           </span>
@@ -323,16 +324,16 @@ function OrderDetailPage() {
           </div>
           {order.discountAmount > 0 && (
             <div className="flex justify-between text-emerald-700 font-semibold">
-              <span>تخفیف همکاری تجاری:</span>
+              <span>تخفیف:</span>
               <span>- {formatToman(order.discountAmount)}</span>
             </div>
           )}
           <div className="flex justify-between">
-            <span>مالیات بر ارزش افزوده:</span>
+            <span>مالیات ارزش افزوده:</span>
             <span>{formatToman(order.taxAmount)}</span>
           </div>
           <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-slate-900">
-            <span>مبلغ نهایی پرداخت‌شده / تعهد:</span>
+            <span>مبلغ نهایی:</span>
             <span className="text-base font-bold text-blue-700">{formatToman(order.finalTotal)}</span>
           </div>
         </div>
@@ -341,14 +342,14 @@ function OrderDetailPage() {
       {/* Delivery Information */}
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
-          اطلاعات تحویل سفارش
+          اطلاعات تحویل
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="flex items-start gap-2.5">
             <StoreIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">فروشگاه خریدار:</span>
+              <span className="text-slate-400 block">فروشگاه:</span>
               <span className="font-bold text-slate-800">{order.storeName}</span>
             </div>
           </div>
@@ -356,7 +357,7 @@ function OrderDetailPage() {
           <div className="flex items-start gap-2.5">
             <PhoneIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">تحویل‌گیرنده / شماره تماس:</span>
+              <span className="text-slate-400 block">تحویل‌گیرنده:</span>
               <span className="font-bold text-slate-800">
                 {order.customerName} ({toPersianDigits(order.customerPhone)})
               </span>
@@ -366,7 +367,7 @@ function OrderDetailPage() {
           <div className="flex items-start gap-2.5">
             <MapPinIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">نشانی انبار مقصد:</span>
+              <span className="text-slate-400 block">نشانی تحویل:</span>
               <span className="font-bold text-slate-800">{order.deliveryAddress}</span>
             </div>
           </div>
@@ -392,20 +393,20 @@ function OrderDetailPage() {
               </div>
               <div>
                 <HeroUIModal.Heading className="text-base font-bold text-slate-900">
-                  لغو سفارش خریدار
+                  لغو سفارش
                 </HeroUIModal.Heading>
                 <p className="text-xs text-slate-500 mt-1 leading-relaxed">
                   آیا از لغو سفارش <strong>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
                 <div className="mt-2.5 p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 text-start">
-                  ✓ با لغو سفارش، کلیه اقلام بلافاصله به موجودی انبار بازگردانده خواهند شد.
+                  اقلام سفارش به موجودی انبار بازگردانده می‌شوند.
                 </div>
               </div>
 
               {/* Cancellation Reason Selector */}
               <div className="text-start space-y-1">
                 <label className="text-[11px] font-bold text-slate-700 block">
-                  دلیل لغو سفارش:
+                  دلیل لغو:
                 </label>
                 <select
                   value={cancelReason}
@@ -432,7 +433,7 @@ function OrderDetailPage() {
                   onClick={handleCancel}
                   className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer transition-all"
                 >
-                  تأیید لغو و بازگشت موجودی
+                  تأیید لغو
                 </button>
               </div>
             </HeroUIModal.Dialog>

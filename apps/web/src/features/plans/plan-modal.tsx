@@ -94,14 +94,14 @@ export function PlanModal({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={editingPlan ? 'ویرایش طرح تجاری' : 'ایجاد طرح تجاری جدید'}
+      title={editingPlan ? 'ویرایش طرح' : 'ایجاد طرح جدید'}
       isBottomSheetOnMobile={true}
     >
       <form onSubmit={handleSubmit} className="space-y-4 text-start">
         {/* Customer Selection: Customer [ Select Customer ▼ ] */}
         <div>
           <label className="block text-xs font-bold text-slate-800 mb-1">
-            کاربر هدف (لیست Userها): <span className="text-rose-500">*</span>
+            مشتری هدف: <span className="text-rose-500">*</span>
           </label>
           <div className="relative">
             <select
@@ -124,7 +124,7 @@ export function PlanModal({
         {/* Plan Title (Dynamic preview if empty) */}
         <div>
           <label className="block text-xs font-bold text-slate-800 mb-1">
-            عنوان طرح (اسم): <span className="text-slate-400 font-normal">(اختیاری - خودکار ساخته می‌شود)</span>
+            عنوان طرح (اختیاری):
           </label>
           <input
             type="text"
@@ -134,7 +134,7 @@ export function PlanModal({
             className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-900 transition-all outline-hidden bg-slate-50/50"
           />
           <div className="text-xs text-blue-600 mt-1 flex items-center gap-1 font-medium">
-            <span>عنوان داینامیک:</span>
+            <span>پیش‌نمایش عنوان:</span>
             <span className="font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
               {title || defaultDynamicTitle}
             </span>
@@ -156,12 +156,11 @@ export function PlanModal({
                   : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <span className="flex items-center gap-1.5 font-bold">
-                <span>💳</span>
-                <span>شرایط اعتباری و مدت‌دار</span>
+              <span className="font-bold text-xs">
+                خرید اعتباری
               </span>
               <span className="text-[11px] font-normal text-slate-500 leading-tight">
-                ثبت مهلت پرداخت و تسویه مدت‌دار (مثلاً ۳ ماهه) در متن طرح
+                تعیین مهلت پرداخت مدت‌دار
               </span>
             </button>
 
@@ -174,12 +173,11 @@ export function PlanModal({
                   : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
               }`}
             >
-              <span className="flex items-center gap-1.5 font-bold">
-                <span>🏷️</span>
-                <span>تخفیف روی کالاها</span>
+              <span className="font-bold text-xs">
+                تخفیف کالاها
               </span>
               <span className="text-[11px] font-normal text-slate-500 leading-tight">
-                اعمال مستقیم درصد تخفیف روی اقلام منتخب در کاتالوگ
+                اعمال درصد تخفیف روی اقلام منتخب
               </span>
             </button>
           </div>

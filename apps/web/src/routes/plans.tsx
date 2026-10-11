@@ -27,10 +27,10 @@ function CustomerPlansPage() {
         <div>
           <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
             <ClipboardListIcon size={20} className="text-blue-600" />
-            <span>طرح‌ها و تخفیف‌های اختصاصی شما</span>
+            <span>طرح‌ها</span>
           </h1>
           <p className="text-xs text-slate-500 mt-1">
-            پیشنهادات ویژه و تخفیف‌های تجاری تعریف‌شده توسط مدیریت برای حساب شما
+            طرح‌های تشویقی و تخفیف‌های فعال حساب شما
           </p>
         </div>
 
@@ -56,7 +56,7 @@ function CustomerPlansPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            همه طرح‌ها ({toPersianDigits(plans.length)})
+            همه ({toPersianDigits(plans.length)})
           </button>
           <button
             type="button"
@@ -67,7 +67,7 @@ function CustomerPlansPage() {
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            طرح‌های در حال اجرا ({toPersianDigits(plans.filter((p) => p.status === 'active' || p.isActive).length)})
+            طرح‌های فعال ({toPersianDigits(plans.filter((p) => p.status === 'active' || p.isActive).length)})
           </button>
         </ScrollShadow>
       </div>
@@ -85,17 +85,17 @@ function CustomerPlansPage() {
           </div>
           <div className="space-y-1 max-w-sm mx-auto">
             <h3 className="text-sm font-bold text-slate-900">
-              در حال حاضر طرح فعالی برای حساب شما ثبت نشده است
+              طرح فعالی یافت نشد
             </h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              مدیریت بازرگانی به صورت دوره‌ای طرح‌های تشویقی و تخفیف‌های ویژه را برای مشتریان فعال می‌نماید. به محض تخصیص طرح به حساب شما، شرایط آن در این بخش نمایش داده خواهد شد.
+              در حال حاضر طرح یا تخفیف فعالی برای حساب شما وجود ندارد.
             </p>
           </div>
           <Link
             to="/product"
             className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800"
           >
-            <span>مشاهده کاتالوگ کالاها</span>
+            <span>مشاهده کاتالوگ</span>
             <ArrowLeftIcon size={14} />
           </Link>
         </div>

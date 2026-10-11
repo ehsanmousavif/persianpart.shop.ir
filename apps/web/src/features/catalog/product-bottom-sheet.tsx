@@ -153,7 +153,7 @@ export function ProductBottomSheet({
                       className="absolute bottom-2 end-2 px-2.5 py-1 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-[10px] font-semibold flex items-center gap-1 shadow-md cursor-pointer transition-transform active:scale-95"
                     >
                       <ZoomInIcon size={12} />
-                      <span>بزرگ‌نمایی و زوم</span>
+                      <span>بزرگ‌نمایی</span>
                     </button>
 
                     {/* Stock Status Badge */}
@@ -184,7 +184,7 @@ export function ProductBottomSheet({
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between px-0.5">
                       <span className="text-[11px] text-slate-600 font-bold">
-                        مشاهده نمونه‌کارها
+                        تصاویر کالا
                       </span>
 
                       <Chip
@@ -345,7 +345,7 @@ export function ProductBottomSheet({
                         <SolarTagIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">شناسه کالا (SKU)</span>
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">شناسه کالا</span>
                         <span className="font-mono font-bold text-slate-800 text-xs leading-normal truncate block" dir="ltr">
                           {product.sku}
                         </span>
@@ -371,7 +371,7 @@ export function ProductBottomSheet({
                         <SolarShopIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">برند سازنده</span>
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">برند</span>
                         <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
                           {product.brand}
                         </span>
@@ -410,7 +410,7 @@ export function ProductBottomSheet({
                         <SolarScaleIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">وزن کارتن</span>
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">وزن هر کارتن</span>
                         <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
                           {toPersianDigits(product.cartonWeightKg)} کیلوگرم
                         </span>

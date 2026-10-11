@@ -9,7 +9,7 @@ export interface ProductCardProps {
   isSelected: boolean;
   isInCart?: boolean;
   onToggleSelect: (product: Product) => void;
-  onOpenBottomSheet: (product: Product) => void;
+  onOpenBottomSheet?: (product: Product) => void;
 }
 
 export function ProductCard({
@@ -42,7 +42,7 @@ export function ProductCard({
       onClick={handleCardClick}
       className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[12px] border transition-all duration-150 cursor-pointer overflow-hidden text-start select-none ${
         isSelected
-          ? "border-emerald-600/60 shadow-[0_1px_3px_rgba(16,185,129,0.22)] bg-emerald-50/25"
+        ? "border-emerald-600/60 scale-[0.98] shadow-[0_1px_3px_rgba(16,185,129,0.22)] bg-emerald-50/25"
           : "border-slate-200/90 hover:border-slate-300 shadow-none bg-white"
       }`}
       role="button"
@@ -63,17 +63,17 @@ export function ProductCard({
           tabIndex={0}
           onClick={(e) => {
             e.stopPropagation();
-            onOpenBottomSheet(product);
+            onOpenBottomSheet?.(product);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.stopPropagation();
-              onOpenBottomSheet(product);
+              onOpenBottomSheet?.(product);
             }
           }}
           className="relative size-20 rounded-[12px] overflow-hidden shrink-0 border border-slate-200 bg-slate-100 group/img cursor-pointer transition-transform active:scale-95"
-          title="مشاهده مشخصات و گالری نمونه‌کارها"
-          aria-label={`مشاهده مشخصات و نمونه کارهای ${product.name}`}
+          title="مشاهده جزئیات کالا"
+          aria-label={`مشاهده جزئیات ${product.name}`}
         >
           <img
             alt={product.name}
@@ -127,8 +127,8 @@ export function ProductCard({
 
         {product.discountPercent ? (
           <>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-0.5 animate-pulse">
-              {toPersianDigits(product.discountPercent)}٪ تخفیف طرح
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-0.5">
+              {toPersianDigits(product.discountPercent)}٪ تخفیف
             </span>
             <span className="text-[11px] text-slate-400 line-through">
               {formatToman(

@@ -10,7 +10,7 @@ export const Orders: CollectionConfig = {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'user', 'status', 'finalTotal', 'createdAt'],
     group: 'فروشگاه و مشتریان',
-    description: 'مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران و فرآیند آماده‌سازی سفارش.',
+    description: 'فهرست و وضعیت سفارشات.',
   },
   access: {
     read: () => true,
@@ -186,17 +186,14 @@ export const Orders: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      label: 'شماره سفارش (کد پیگیری)',
-      admin: {
-        description: 'کد پیگیری یکتای سفارش خریدار',
-      },
+      label: 'شماره سفارش',
     },
     {
       name: 'user',
       type: 'relationship',
       relationTo: 'users',
       required: true,
-      label: 'خریدار / مشتری',
+      label: 'مشتری',
     },
     {
       name: 'status',
@@ -205,26 +202,20 @@ export const Orders: CollectionConfig = {
       defaultValue: 'pending',
       label: 'وضعیت سفارش',
       options: [
-        { label: 'در حال بررسی واحد بازرگانی (pending)', value: 'pending' },
-        { label: 'حواله ثبت شده / تکمیل شده (approve)', value: 'approve' },
-        { label: 'لغو سفارش (cancel)', value: 'cancel' },
+        { label: 'در حال بررسی واحد بازرگانی', value: 'pending' },
+        { label: 'حواله ثبت شده (تکمیل شده)', value: 'approve' },
+        { label: 'لغو شده', value: 'cancel' },
       ],
-      admin: {
-        description: 'موقعیت عملیاتی سفارش در گردش کار تأمین و انبارداری',
-      },
     },
     {
       name: 'cancelledBy',
       type: 'select',
-      label: 'لغو کننده سفارش',
+      label: 'لغو شده توسط',
       options: [
-        { label: 'لغو توسط مشتری', value: 'customer' },
-        { label: 'لغو توسط ادمین', value: 'admin' },
+        { label: 'مشتری', value: 'customer' },
+        { label: 'ادمین', value: 'admin' },
       ],
       defaultValue: 'admin',
-      admin: {
-        description: 'مشخص‌کننده اینکه سفارش توسط مشتری یا ادمین لغو گردیده است.',
-      },
     },
     {
       name: 'items',

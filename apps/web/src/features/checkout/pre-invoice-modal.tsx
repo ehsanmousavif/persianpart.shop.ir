@@ -11,8 +11,6 @@ import {
   XIcon,
   ClockIcon,
   PencilIcon,
-  FileTextIcon,
-  LayersIcon,
 } from '../../components/ui/icons'
 
 export interface PreInvoiceModalProps {
@@ -168,22 +166,11 @@ export function PreInvoiceModal({
             {/* Header */}
             <HeroUIModal.Header className="px-4 sm:px-6 py-3.5 border-b border-slate-100 flex items-center justify-between shrink-0 bg-slate-50/70">
               <div className="flex items-center gap-2.5">
-                <span className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100/60 shadow-2xs">
-                  <FileTextIcon size={18} />
-                </span>
                 <div>
                   <HeroUIModal.Heading className="text-sm sm:text-base font-bold text-slate-900">
                     پیش‌فاکتور تایید سفارش
                   </HeroUIModal.Heading>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 font-medium">
-                    <span>بازرگانی پرشین پارت</span>
-                    <span>•</span>
-                    <span className="font-mono font-bold text-slate-700 bg-slate-100 px-1.5 py-0.5 rounded border border-slate-200" dir="ltr">
-                      PP-1403-9021
-                    </span>
-                    <span>•</span>
-                    <span>{toPersianDigits(invoiceItems.length)} ردیف انتخابی</span>
-                  </div>
+              
                 </div>
               </div>
 
@@ -205,10 +192,7 @@ export function PreInvoiceModal({
                     <ClockIcon size={18} />
                   </div>
                   <div className="leading-tight min-w-0">
-                    <span className="font-bold text-xs block">اعتبار پیش‌فاکتور: ۱۰ دقیقه</span>
-                    <span className="text-xs text-amber-850 truncate block mt-0.5">
-                      برای رزرو سهمیه انبار و تثبیت قیمت، سفارش خود را تایید نمایید.
-                    </span>
+                    <span className="font-bold text-xs block">این فاکتور به مدت ده دقیقه اعتبار دارد و پس از آن امکان لغو توسط مشتری مقدور نمی باشد</span>
                   </div>
                 </div>
 
@@ -222,18 +206,9 @@ export function PreInvoiceModal({
               </div>
 
               {/* Items Table / Detailed Breakdown */}
-              <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-2xs">
-                <div className="bg-slate-100/80 px-3.5 py-2 border-b border-slate-200 flex items-center justify-between text-xs font-bold text-slate-700">
-                  <span className="flex items-center gap-1.5">
-                    <LayersIcon size={14} className="text-slate-500" />
-                    <span>اقلام پیش‌فاکتور</span>
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">
-                    {toPersianDigits(invoiceItems.length)} قلم کالا
-                  </span>
-                </div>
+              <div className="flerounded-2xl overflow-hidden shadow-2xs">
 
-                <div className="divide-y divide-slate-100">
+                <div className=" divide-slate-100">
                   {invoiceItems.map((item) => (
                     <div
                       key={item.product.id}

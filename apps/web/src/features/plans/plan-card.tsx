@@ -41,7 +41,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                   isActive ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'
                 }`}
               />
-              <span>{isActive ? 'طرح فعال و در حال اجرا' : 'طرح منقضی شده'}</span>
+              <span>{isActive ? 'طرح فعال' : 'منقضی شده'}</span>
             </span>
 
             {plan.type === 'product_discount' ? (
@@ -52,8 +52,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                     : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}
               >
-                <span>🏷️</span>
-                <span>{toPersianDigits(plan.discountPercent || 10)}٪ تخفیف روی کالاها</span>
+                <span>{toPersianDigits(plan.discountPercent || 10)}٪ تخفیف</span>
               </span>
             ) : (
               <span
@@ -63,8 +62,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                     : 'bg-slate-100 text-slate-600 border-slate-200'
                 }`}
               >
-                <span>💳</span>
-                <span>شرایط اعتباری و مدت‌دار</span>
+                <span>خرید اعتباری</span>
               </span>
             )}
 
@@ -90,7 +88,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             <span className="w-6 h-6 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 font-bold">
               !
             </span>
-            <span className="font-semibold">مهلت استفاده از این طرح تجاری به پایان رسیده است.</span>
+            <span className="font-semibold">مهلت استفاده از این طرح به پایان رسیده است.</span>
           </div>
           <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[11px] font-bold shrink-0">
             منقضی شده
@@ -117,10 +115,10 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 : 'text-blue-900'
           }`}
         >
-          <span>{plan.type === 'product_discount' ? 'شرایط تخفیف اختصاصی:' : 'شرایط پرداخت اعتباری:'}</span>
+          <span>{plan.type === 'product_discount' ? 'شرایط تخفیف:' : 'شرایط پرداخت:'}</span>
         </div>
         <p className="text-xs sm:text-sm font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
-          {plan.content || plan.notes || 'این طرح تجاری ویژه توسط مدیریت بازرگانی برای حساب شما تعریف شده است.'}
+          {plan.content || plan.notes || 'شرایط این طرح توسط مدیریت تعیین شده است.'}
         </p>
       </div>
 
@@ -130,7 +128,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
           <div className="flex items-center justify-between text-xs">
             <span className="font-bold text-slate-800 flex items-center gap-1.5">
               <BoxIcon size={15} className="text-blue-600" />
-              <span>کالاهای شامل این طرح</span>
+              <span>کالاهای طرح</span>
             </span>
             <span className="text-xs font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-100">
               {toPersianDigits(planProducts.length)} محصول

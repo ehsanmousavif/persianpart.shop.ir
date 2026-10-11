@@ -10,7 +10,7 @@ export const Products: CollectionConfig = {
     useAsTitle: 'name',
     defaultColumns: ['name', 'sku', 'sqmPerCarton', 'isActive', 'updatedAt'],
     group: 'کاتالوگ و انبارداری',
-    description: 'مدیریت مشخصات فنی کاشی، متراژ کارتن، موجودی انبار مکانیزه و تصاویر.',
+    description: 'کاتالوگ و موجودی کالاها.',
   },
   access: {
     read: () => true,
@@ -64,7 +64,6 @@ export const Products: CollectionConfig = {
           label: 'کد کالا (SKU)',
           admin: {
             width: '50%',
-            description: 'شناسه یکتای غیرقابل تغییر کالا در انبار',
           },
         },
         {
@@ -83,7 +82,7 @@ export const Products: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      label: 'اسلاگ یکتای محصول (URL)',
+      label: 'اسلاگ (URL)',
     },
     {
       type: 'row',
@@ -99,7 +98,7 @@ export const Products: CollectionConfig = {
           name: 'brand',
           type: 'relationship',
           relationTo: 'brands',
-          label: 'برند / کارخانه تولیدکننده',
+          label: 'برند',
           admin: { width: '50%' },
         },
       ],
@@ -110,7 +109,7 @@ export const Products: CollectionConfig = {
         {
           name: 'color',
           type: 'text',
-          label: 'رنگ کالا',
+          label: 'رنگ',
           admin: { width: '50%' },
         },
         {
@@ -132,11 +131,11 @@ export const Products: CollectionConfig = {
       type: 'relationship',
       relationTo: 'tags',
       hasMany: true,
-      label: 'تگ‌های محصول',
+      label: 'ویژگی‌ها و برچسب‌ها',
     },
     {
       type: 'collapsible',
-      label: 'ابعاد و مشخصات بسته‌بندی کارتن (الزامی برای سفارش)',
+      label: 'ابعاد و ضریب متراژ',
       fields: [
         {
           type: 'row',
@@ -146,20 +145,19 @@ export const Products: CollectionConfig = {
               type: 'relationship',
               relationTo: 'dimensions',
               required: true,
-              label: 'بُعد / سایز کاشی',
+              label: 'ابعاد',
               admin: {
                 width: '50%',
-                description: 'انتخاب سایز از پیش تعریف‌شده (مانند ۱۰۰×۱۰۰ یا ۶۰×۱۲۰)',
               },
             },
             {
               name: 'sqmPerCarton',
               type: 'number',
               required: true,
-              label: 'ضریب متراژ هر کارتن (متر مربع)',
+              label: 'ضریب متراژ هر کارتن (م²)',
               admin: {
                 width: '50%',
-                description: 'مبنای محاسبه تعداد کارتن = متراژ ÷ ضریب. ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲، ۱.۴',
+                description: 'ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲',
               },
             },
             {
@@ -190,7 +188,7 @@ export const Products: CollectionConfig = {
     },
     {
       type: 'collapsible',
-      label: 'قیمت‌گذاری و موجودی انبار مکانیزه',
+      label: 'قیمت و موجودی',
       fields: [
         {
           type: 'row',
@@ -206,14 +204,14 @@ export const Products: CollectionConfig = {
               name: 'stockCartons',
               type: 'number',
               defaultValue: 350,
-              label: 'موجودی انبار (تعداد کارتن)',
+              label: 'موجودی کارتن',
               admin: { width: '33.3%' },
             },
             {
               name: 'inventorySqm',
               type: 'number',
               defaultValue: 504,
-              label: 'موجودی کل انبار (متر مربع)',
+              label: 'موجودی متراژ (م²)',
               admin: { width: '33.3%' },
             },
           ],
@@ -222,7 +220,7 @@ export const Products: CollectionConfig = {
     },
     {
       type: 'collapsible',
-      label: 'تصاویر و گالری محصول',
+      label: 'تصاویر کالا',
       fields: [
         {
           name: 'cover',
