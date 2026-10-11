@@ -10,8 +10,6 @@ export interface UserProfile {
   city: string
   address: string
   economicCode: string
-  creditLimit: number
-  availableCredit: number
 }
 
 interface AuthState {
@@ -90,8 +88,6 @@ export const authStore = {
         city: userData.city || 'تهران',
         address: userData.address || '',
         economicCode: '',
-        creditLimit: 0,
-        availableCredit: 0,
       }
 
       broadcast({

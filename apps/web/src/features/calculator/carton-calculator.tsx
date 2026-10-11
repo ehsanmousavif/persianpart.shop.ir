@@ -187,7 +187,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
         <div className="p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-1.5">
           <CheckCircle2Icon size={15} className="text-emerald-600 shrink-0" />
           <span>
-            سهمیه موجود است ({toPersianDigits(product.stockCartons)} کارتن در انبار آماده بارگیری).
+            سهمیه موجود است ({toPersianDigits(product.stockCartons)} کارتن در انبار آماده تحویل).
           </span>
         </div>
       )}

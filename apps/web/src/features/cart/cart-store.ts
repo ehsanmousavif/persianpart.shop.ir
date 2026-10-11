@@ -144,6 +144,32 @@ export const cartStore = {
     broadcast({ ...currentState, items: updatedItems })
   },
 
+  updateRequestedArea: (productId: string, newArea: number) => {
+    if (newArea <= 0) {
+      cartStore.removeItem(productId)
+      return
+    }
+
+    const updatedItems = currentState.items.map((item) => {
+      if (item.productId === productId) {
+        const safePerCarton = Math.max(0.01, item.sqmPerCarton || 1)
+        const cartonCount = Math.max(1, Math.ceil(newArea / safePerCarton))
+        const deliverableArea = Math.round(cartonCount * safePerCarton * 100) / 100
+        const totalPrice = Math.round(deliverableArea * item.unitPrice)
+        return {
+          ...item,
+          requestedArea: Math.round(newArea * 100) / 100,
+          cartonCount,
+          deliverableArea,
+          totalPrice,
+        }
+      }
+      return item
+    })
+
+    broadcast({ ...currentState, items: updatedItems })
+  },
+
   removeItem: (productId: string) => {
     const updatedItems = currentState.items.filter(
       (item) => item.productId !== productId
@@ -249,6 +275,7 @@ export function useCart() {
     addItem: cartStore.addItem,
     setProductQuantity: cartStore.setProductQuantity,
     updateCartonCount: cartStore.updateCartonCount,
+    updateRequestedArea: cartStore.updateRequestedArea,
     removeItem: cartStore.removeItem,
     clearCart: cartStore.clearCart,
     resetCart: cartStore.resetCart,

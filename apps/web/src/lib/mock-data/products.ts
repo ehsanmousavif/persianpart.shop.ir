@@ -12,7 +12,6 @@ export interface Product {
   dimension: string
   brand: string
   color: string
-  finish: 'پولیش' | 'مات' | 'براق' | 'شوگر' | 'رستیک'
   grade: 'درجه ۱' | 'درجه ۲' | 'صادراتی'
   category: 'پرسلان کف' | 'اسلب پرسلان' | 'دیوار لوکس' | 'نما و محوطه'
   finalCustomerPricePerSqm: number // Toman per m²

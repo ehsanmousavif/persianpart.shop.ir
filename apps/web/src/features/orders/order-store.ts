@@ -4,23 +4,28 @@ import { cartStore } from '../cart/cart-store'
 import { api } from '../../lib/api-client'
 import {
   formatPersianDate,
-  formatPersianDateTime,
   formatPersianTimelineTs,
 } from '../../lib/utils/date'
 
-const STORAGE_KEY = 'persianpart_orders'
+const STORAGE_KEY = 'persianpart_orders_v2'
 
 function getInitialState(): Order[] {
   if (typeof window === 'undefined') {
     return []
   }
   try {
+    // Purge legacy fake mock orders storage
+    localStorage.removeItem('persianpart_orders')
+
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
       if (Array.isArray(parsed)) {
-        return parsed.map((o) => {
-          // If stored order had Gregorian date (e.g. starting with 202), convert to Shamsi
+        // Discard any fake IDs
+        const filtered = parsed.filter(
+          (o) => !['ord-101', 'ord-102', 'ord-103', 'ord-104'].includes(o.id) && !o.id.startsWith('ord-fake')
+        )
+        return filtered.map((o) => {
           if (o.date && (o.date.includes('2026') || o.date.includes('2025') || o.date.includes('2024') || o.date.startsWith('20'))) {
             return {
               ...o,
@@ -52,179 +57,139 @@ function broadcast(orders: Order[]) {
   listeners.forEach((listener) => listener(currentOrders))
 }
 
-export function buildFullOrderTimeline(doc: any, persianDate: string): TimelineStep[] {
+export function buildFullOrderTimeline(
+  doc: any,
+  persianDate?: string,
+  force3MinutesPassed?: boolean
+): TimelineStep[] {
   const status = doc.status || 'pending'
-  const rawEvents = Array.isArray(doc.timeline) ? doc.timeline : []
+  const isCancelledByCustomer = status === 'cancelled_by_customer' || doc.cancelledBy === 'customer'
+  const isCancelled = status === 'cancel' || status === 'cancelled' || isCancelledByCustomer || status === 'cancelled_by_admin'
 
-  const findEvent = (keywords: string[]) => {
-    return rawEvents.find((e: any) =>
-      keywords.some(
-        (k) =>
-          (e.title || '').includes(k) ||
-          (e.status || '') === k
-      )
-    )
-  }
+  const pDate = persianDate || (doc.createdAt ? formatPersianDate(doc.createdAt) : '')
 
   const formatTs = (ts?: string) => {
     if (!ts) return undefined
-    return formatPersianTimelineTs(ts, persianDate)
+    return formatPersianTimelineTs(ts, pDate)
   }
 
-  const isCancelled =
-    status === 'cancelled' ||
-    status === 'cancelled_by_customer' ||
-    status === 'cancelled_by_admin'
+  const createdAtMs = doc.createdAt ? new Date(doc.createdAt).getTime() : Date.now()
+  const deadlineMs = createdAtMs + 3 * 60 * 1000
 
-  const STAGES = [
+  const is3MinutesPassed = force3MinutesPassed ?? (Date.now() >= deadlineMs)
+  const isApproved = status === 'approve' || status === 'approved' || status === 'completed'
+
+  // Cancellation Flow
+  if (isCancelled) {
+    const cancelTitle = isCancelledByCustomer ? 'لغو توسط مشتری' : 'لغو توسط ادمین'
+
+    const cancelDesc = isCancelledByCustomer
+      ? doc.notes || 'لغو توسط مشری'
+      : doc.notes || "لغو توسط واحد. بازرگانی"
+
+    const steps: TimelineStep[] = [
+      {
+        id: 'step-1',
+        title: 'در حال بررسی واحد بازرگانی',
+        description: 'سفارش در سامانه ثبت شده و در صف بررسی واحد بازرگانی قرار داشت.',
+        timestamp: formatTs(doc.createdAt) || pDate,
+        status: 'completed',
+      },
+    ]
+
+    if (is3MinutesPassed) {
+      steps.push({
+        id: 'step-2',
+        title: 'ثبت سفارش توسط واحد بازرگانی',
+        description: 'سفارش توسط واحد بازرگانی بررسی اولیه شده بود.',
+        timestamp: formatTs(new Date(createdAtMs + 3 * 60 * 1000).toISOString()),
+        status: 'completed',
+      })
+    }
+
+    steps.push({
+      id: 'step-cancel',
+      title: cancelTitle,
+      description: cancelDesc,
+      timestamp: formatTs(doc.updatedAt) || 'لغو نهایی',
+      status: 'cancelled',
+    })
+
+    return steps
+  }
+
+  // Active / Normal Flow (3 stages)
+  // Stage 1: در حال بررسی واحد بازرگانی (تایید اولیه ثبت)
+  // Stage 2: ثبت سفارش توسط واحد بازرگانی (خودکار ۳ دقیقه بعد تایید می‌شود)
+  // Stage 3: حواله ثبت شده (تکمیل شده) (با وضعیت approve تایید می‌شود)
+  const step1Status: 'completed' = 'completed'
+  const step2Status: 'completed' | 'current' = (isApproved || is3MinutesPassed) ? 'completed' : 'current'
+  const step3Status: 'completed' | 'current' | 'pending' = isApproved ? 'completed' : is3MinutesPassed ? 'current' : 'pending'
+
+  const step1Timestamp = formatTs(doc.createdAt) || pDate
+  const step2Timestamp = (isApproved || is3MinutesPassed)
+    ? formatTs(new Date(createdAtMs + 3 * 60 * 1000).toISOString())
+    : '۳ دقیقه پس از بررسی اولیه'
+  const step3Timestamp = isApproved
+    ? formatTs(doc.updatedAt || doc.createdAt) || pDate
+    : undefined
+
+  return [
     {
       id: 'step-1',
-      key: 'pending',
-      keywords: ['ثبت', 'pending'],
-      title: 'ثبت سفارش خریدار',
-      desc: 'سفارش توسط خریدار در سامانه با موفقیت ثبت شد.',
+      title: 'در حال بررسی واحد بازرگانی',
+      description: 'سفارش در سامانه ثبت شده و در صف بررسی واحد بازرگانی قرار دارد.',
+      timestamp: step1Timestamp,
+      status: step1Status,
     },
     {
       id: 'step-2',
-      key: 'checking',
-      keywords: ['بررسی', 'checking'],
-      title: 'در حال بررسی واحد بازرگانی',
-      desc: 'ارزیابی مالی، استعلام سهمیه و بررسی شرایط توسط واحد بازرگانی.',
+      title: 'ثبت سفارش توسط واحد بازرگانی',
+      description: (isApproved || is3MinutesPassed)
+        ? 'سفارش با موفقیت توسط واحد بازرگانی تایید و در سیستم انبارداری ثبت شد.'
+        : 'در حال پردازش و ثبت سفارش توسط واحد بازرگانی (مهلت ۳ دقیقه)...',
+      timestamp: step2Timestamp,
+      status: step2Status,
     },
     {
       id: 'step-3',
-      key: 'approved',
-      keywords: ['تأیید', 'تایید', 'approved'],
-      title: 'تأیید واحد بازرگانی',
-      desc: 'تأیید مالی و صدور حواله خروج از انبار توسط مدیریت بازرگانی.',
-    },
-    {
-      id: 'step-4',
-      key: 'preparing',
-      keywords: ['آماده‌سازی', 'بارگیری', 'preparing', 'processing'],
-      title: 'در حال آماده‌سازی و بارگیری انبار',
-      desc: 'تفکیک، بسته‌بندی، پالت‌بندی و آماده‌سازی قطعات در انبار مکانیزه.',
-    },
-    {
-      id: 'step-5',
-      key: 'shipping',
-      keywords: ['ارسال', 'حمل', 'بارنامه', 'shipping', 'ready'],
-      title: 'در حال ارسال و صدور بارنامه',
-      desc: 'صدور بارنامه رسمی و هماهنگی ناوگان حمل‌ونقل و باربری بین‌شهری.',
-    },
-    {
-      id: 'step-6',
-      key: 'completed',
-      keywords: ['تکمیل', 'تحویل نهایی', 'completed'],
-      title: 'تکمیل شده و تحویل نهایی',
-      desc: 'تخلیه بار در نشانی مقصد و تحویل قطعی سفارش با تأیید فاکتور.',
+      title: 'حواله ثبت شده (تکمیل شده)',
+      description: isApproved
+        ? 'حواله رسمی خروج از انبار صادر گردیده و فرآیند سفارش با موفقیت تکمیل شد.'
+        : 'در انتظار تایید نهایی و صدور حواله رسمی توسط واحد بازرگانی.',
+      timestamp: step3Timestamp,
+      status: step3Status,
     },
   ]
-
-  const statusLevelMap: Record<string, number> = {
-    pending: 1,
-    checking: 2,
-    approved: 3,
-    preparing: 4,
-    processing: 4,
-    shipping: 5,
-    ready: 5,
-    completed: 6,
-  }
-
-  if (isCancelled) {
-    const cancelTitle =
-      status === 'cancelled_by_customer'
-        ? 'لغو سفارش توسط خریدار'
-        : status === 'cancelled_by_admin'
-        ? 'لغو سفارش توسط مدیریت / بازرگانی'
-        : 'لغو سفارش'
-
-    const cancelDesc =
-      status === 'cancelled_by_customer'
-        ? doc.notes || 'سفارش در مهلت مقرر توسط خریدار لغو گردید و موجودی به انبار بازگردانده شد.'
-        : status === 'cancelled_by_admin'
-        ? doc.notes || 'سفارش توسط مدیریت لغو و موجودی کالا به انبار بازگردانی گردید.'
-        : doc.notes || 'سفارش لغو شد و موجودی به انبار بازگردانده شد.'
-
-    const regEvent = findEvent(['ثبت', 'pending'])
-    const cancelEvent = findEvent(['لغو', 'cancelled'])
-
-    return [
-      {
-        id: 'step-1',
-        title: 'ثبت سفارش خریدار',
-        description: regEvent?.description || 'سفارش در سامانه ثبت گردید.',
-        timestamp: formatTs(regEvent?.timestamp || doc.createdAt) || persianDate,
-        status: 'completed',
-      },
-      {
-        id: 'step-cancel',
-        title: cancelTitle,
-        description: cancelEvent?.description || cancelDesc,
-        timestamp: formatTs(cancelEvent?.timestamp || doc.updatedAt) || persianDate,
-        status: 'cancelled',
-      },
-    ]
-  }
-
-  const currentLevel = statusLevelMap[status] ?? 1
-
-  return STAGES.map((stage, idx) => {
-    const stageLevel = idx + 1
-    const matchedEvent = findEvent(stage.keywords)
-
-    let stepStatus: 'completed' | 'current' | 'pending' = 'pending'
-    let stepTimestamp = matchedEvent?.timestamp ? formatTs(matchedEvent.timestamp) : undefined
-
-    if (stageLevel < currentLevel || (currentLevel === 6 && stageLevel <= 6)) {
-      stepStatus = 'completed'
-      if (!stepTimestamp) {
-        stepTimestamp = stageLevel === 1 ? formatTs(doc.createdAt) : undefined
-      }
-    } else if (stageLevel === currentLevel) {
-      stepStatus = 'current'
-      if (!stepTimestamp) {
-        stepTimestamp = 'موقعیت فعلی'
-      }
-    } else {
-      stepStatus = 'pending'
-    }
-
-    return {
-      id: stage.id,
-      title: stage.title,
-      description: matchedEvent?.description || stage.desc,
-      timestamp: stepTimestamp,
-      status: stepStatus,
-    }
-  })
 }
 
 export function mapDocToOrder(doc: any): Order {
   const createdAt = doc.createdAt || new Date().toISOString()
   const persianDate = formatPersianDate(createdAt)
-  const normalizedStatus = doc.status === 'processing' ? 'preparing' : (doc.status || 'pending')
+  const normalizedStatus = doc.status === 'processing' ? 'pending' : (doc.status || 'pending')
 
-  const statusLabels: Record<string, string> = {
-    pending: 'در انتظار تأیید اولیه',
-    checking: 'در حال بررسی واحد بازرگانی',
-    approved: 'تأیید شده بازرگانی',
-    processing: 'در حال آماده‌سازی و بارگیری',
-    preparing: 'در حال آماده‌سازی و بارگیری',
-    shipping: 'در حال ارسال و بارنامه',
-    ready: 'آماده تحویل و بارنامه',
-    completed: 'تکمیل شده و تحویل نهایی',
-    cancelled_by_customer: 'لغو شده توسط خریدار',
-    cancelled_by_admin: 'لغو شده توسط مدیریت / بازرگانی',
-    cancelled: 'لغو شده',
+  const createdAtMs = new Date(createdAt).getTime()
+  const deadlineMs = createdAtMs + 3 * 60 * 1000
+  const is3MinutesPassed = Date.now() >= deadlineMs
+
+  let statusLabel = 'در حال بررسی واحد بازرگانی'
+  if (normalizedStatus === 'pending') {
+    statusLabel = is3MinutesPassed ? 'ثبت سفارش توسط واحد بازرگانی' : 'در حال بررسی واحد بازرگانی'
+  } else if (normalizedStatus === 'approve' || normalizedStatus === 'approved') {
+    statusLabel = 'حواله ثبت شده (تکمیل شده)'
+  } else if (normalizedStatus === 'cancel' || normalizedStatus === 'cancelled') {
+    statusLabel = doc.cancelledBy === 'customer' ? 'لغو توسط مشتری' : 'لغو توسط ادمین'
   }
 
   const items: OrderItem[] = (doc.items || []).map((i: any) => {
     const prod = typeof i.product === 'object' && i.product !== null ? i.product : null
     const width = prod?.width || 60
     const height = prod?.height || 120
-    const coverUrl = prod?.cover?.url || (typeof prod?.cover === 'string' ? prod.cover : '/assets/images/tile-sample-1.jpg')
+    const coverUrl =
+      prod?.cover?.url ||
+      (prod?.cover?.filename ? `/api/media/file/${prod.cover.filename}` : '') ||
+      (typeof prod?.cover === 'string' && prod.cover.startsWith('/') ? prod.cover : '') ||
+      '/assets/images/placeholder.svg'
     return {
       productId: String(prod?.id || i.product || ''),
       productName: prod?.name || 'قطعه',
@@ -240,7 +205,7 @@ export function mapDocToOrder(doc: any): Order {
     }
   })
 
-  const timeline = buildFullOrderTimeline(doc, persianDate)
+  const timeline = buildFullOrderTimeline(doc, persianDate, is3MinutesPassed)
 
   const userObj = typeof doc.user === 'object' && doc.user !== null ? doc.user : null
 
@@ -250,14 +215,14 @@ export function mapDocToOrder(doc: any): Order {
     date: persianDate,
     createdAt,
     status: normalizedStatus as any,
-    statusLabel: statusLabels[doc.status] || 'در انتظار بررسی',
+    cancelledBy: doc.cancelledBy || (normalizedStatus === 'cancelled_by_customer' ? 'customer' : 'admin'),
+    statusLabel,
     storeName: userObj?.companyName || 'بازرگانی دهقان (پرشین پارت)',
     customerName: userObj?.fullName || 'خریدار محترم',
     customerPhone: userObj?.phone || '',
     deliveryAddress: doc.deliveryAddress || userObj?.address || 'انبار مرکزی بازرگانی دهقان',
-    deliveryMethod: 'باربری بین‌شهری / تیپاکس',
     notes: doc.notes || '',
-    cancellationDeadline: doc.cancellationDeadline || (doc.createdAt ? new Date(new Date(doc.createdAt).getTime() + 10 * 60 * 1000).toISOString() : undefined),
+    cancellationDeadline: new Date(createdAtMs + 3 * 60 * 1000).toISOString(),
     items,
     subtotal: doc.subtotal || 0,
     discountAmount: doc.discountAmount || 0,
@@ -318,60 +283,35 @@ export const orderStore = {
     const now = new Date()
     const isoString = now.toISOString()
     const persianDate = formatPersianDate(now)
-    const persianDateTime = formatPersianDateTime(now)
+    const deadlineIso = new Date(now.getTime() + 3 * 60 * 1000).toISOString()
+    const timeline = buildFullOrderTimeline(
+      {
+        status: 'pending',
+        createdAt: isoString,
+      },
+      persianDate,
+      false
+    )
 
     const newOrder: Order = {
       id: newId,
       orderNumber,
       date: persianDate,
       createdAt: isoString,
-      cancellationDeadline: new Date(now.getTime() + 10 * 60 * 1000).toISOString(),
+      cancellationDeadline: deadlineIso,
       status: 'pending',
-      statusLabel: 'در انتظار بررسی',
+      statusLabel: 'در حال بررسی واحد بازرگانی',
       storeName: 'بازرگانی دهقان (پرشین پارت تهران)',
       customerName: 'آرش دهقان',
       customerPhone: '۰۹۱۲۳۴۵۶۷۸۹',
       deliveryAddress: payload.deliveryAddress,
-      deliveryMethod: 'باربری خاور سرپوشیده اختصاصی',
       notes: payload.notes,
       items: payload.items,
       subtotal: payload.subtotal,
       discountAmount: payload.discountAmount,
       taxAmount: payload.taxAmount,
       finalTotal: payload.finalTotal,
-      timeline: [
-        {
-          id: 't-1',
-          title: 'ثبت سفارش',
-          description: 'سفارش توسط خریدار در سامانه ثبت گردید و در انتظار تأیید بازرگانی است.',
-          timestamp: persianDateTime,
-          status: 'completed',
-        },
-        {
-          id: 't-2',
-          title: 'تأیید واحد بازرگانی',
-          description: 'بررسی اعتبار تجاری و تخصیص سهمیه از خط تولید.',
-          status: 'current',
-        },
-        {
-          id: 't-3',
-          title: 'در حال آماده‌سازی و بارگیری',
-          description: 'پالت‌بندی و بارگیری در انبار مکانیزه کارخانه.',
-          status: 'pending',
-        },
-        {
-          id: 't-4',
-          title: 'آماده تحویل / صدور بارنامه',
-          description: 'اعزام خودرو و صدور حواله الکترونیکی خروج.',
-          status: 'pending',
-        },
-        {
-          id: 't-5',
-          title: 'تکمیل شده و تحویل نهایی',
-          description: 'تخلیه بار در انبار خریدار و تسویه نهایی.',
-          status: 'pending',
-        },
-      ],
+      timeline,
     }
 
     const updated = [newOrder, ...currentOrders]
@@ -390,21 +330,13 @@ export const orderStore = {
 
     const updated = currentOrders.map((order) => {
       if (order.id === orderId || order.orderNumber === orderId) {
-        return {
+        return mapDocToOrder({
           ...order,
-          status: 'cancelled_by_customer' as const,
-          statusLabel: 'لغو شده توسط خریدار',
-          timeline: [
-            ...order.timeline.filter((t) => t.status === 'completed'),
-            {
-              id: `t-cancel-${Date.now()}`,
-              title: 'لغو سفارش توسط خریدار',
-              description: reason ? `لغو در مهلت ۱۰ دقیقه: ${reason}` : 'سفارش در مهلت ۱۰ دقیقه‌ای توسط خریدار لغو گردید و موجودی به انبار بازگردانی شد.',
-              timestamp: 'هم‌اکنون',
-              status: 'cancelled' as const,
-            },
-          ],
-        }
+          status: 'cancel',
+          cancelledBy: 'customer',
+          notes: reason ? `دلیل لغو: ${reason}` : 'لغو توسط خریدار ',
+          updatedAt: new Date().toISOString(),
+        })
       }
       return order
     })
@@ -422,21 +354,13 @@ export const orderStore = {
 
     const updated = currentOrders.map((order) => {
       if (order.id === orderId || order.orderNumber === orderId) {
-        return {
+        return mapDocToOrder({
           ...order,
-          status: 'cancelled_by_admin' as const,
-          statusLabel: 'لغو شده توسط مدیریت / بازرگانی',
-          timeline: [
-            ...order.timeline.filter((t) => t.status === 'completed'),
-            {
-              id: `t-staff-cancel-${Date.now()}`,
-              title: 'لغو سفارش توسط مدیریت / بازرگانی',
-              description: reason || 'سفارش توسط مدیریت لغو شد و موجودی به انبار بازگردانی گردید.',
-              timestamp: 'هم‌اکنون',
-              status: 'cancelled' as const,
-            },
-          ],
-        }
+          status: 'cancel',
+          cancelledBy: 'admin',
+          notes: reason || 'لغو توسط مدیریت / واحد بازرگانی',
+          updatedAt: new Date().toISOString(),
+        })
       }
       return order
     })

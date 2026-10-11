@@ -101,7 +101,6 @@ export const contract = {
             categoryId: z.union([z.string(), z.number()]).optional(),
             brandId: z.union([z.string(), z.number()]).optional(),
             color: z.string().optional(),
-            finish: z.string().optional(),
             grade: z.string().optional(),
             onlyActive: z.boolean().optional(),
             limit: z.number().default(50).optional(),
@@ -166,6 +165,32 @@ export const contract = {
           totalPrice: z.number(),
         })
       ),
+
+    dimensions: oc
+      .input(
+        z
+          .object({
+            onlyActive: z.boolean().optional(),
+          })
+          .optional()
+      )
+      .output(z.any()),
+
+    deleteProduct: oc
+      .input(
+        z.object({
+          id: z.union([z.string(), z.number()]),
+        })
+      )
+      .output(z.any()),
+
+    deleteCategory: oc
+      .input(
+        z.object({
+          id: z.union([z.string(), z.number()]),
+        })
+      )
+      .output(z.any()),
   },
 
   shopping: {
@@ -442,6 +467,15 @@ export const contract = {
         })
       )
       .output(z.any()),
+    types: oc
+      .input(
+        z
+          .object({
+            onlyActive: z.boolean().optional(),
+          })
+          .optional()
+      )
+      .output(z.any()),
   },
 
   user: {
@@ -471,6 +505,24 @@ export const contract = {
           address: z.string().optional(),
           addresses: z.any().optional(),
         })
+      )
+      .output(z.any()),
+
+    delete: oc
+      .input(
+        z.object({
+          id: z.union([z.string(), z.number()]),
+        })
+      )
+      .output(z.any()),
+
+    customerTypes: oc
+      .input(
+        z
+          .object({
+            onlyActive: z.boolean().optional(),
+          })
+          .optional()
       )
       .output(z.any()),
   },

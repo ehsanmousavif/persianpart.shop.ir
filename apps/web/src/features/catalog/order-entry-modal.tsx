@@ -110,11 +110,13 @@ export function OrderEntryModal({
           {/* Selected Product Summary Card */}
           <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
             <img
-              src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
+              src={product.images[0] || '/assets/images/placeholder.svg'}
               alt={product.name}
               className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0"
               onError={(e) => {
-                e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                  e.currentTarget.src = '/assets/images/placeholder.svg'
+                }
               }}
             />
             <div className="flex-1 min-w-0">
@@ -182,7 +184,7 @@ export function OrderEntryModal({
               </div>
               <p className="text-xs leading-relaxed text-amber-900">
                 متراژ انتخابی شما ({toPersianDigits(calc.requestedArea)} متر) مضرب کاملی از بسته‌بندی کارخانه نیست.
-                جهت جلوگیری از آسیب به بار، مقدار به اندازه{' '}
+                جهت حفظ سلامت قطعات و بسته‌بندی کارخانه‌ای، مقدار به اندازه{' '}
                 <strong className="text-amber-950 font-black underline decoration-amber-400">
                   {toPersianDigits(calc.extraArea)} متر مربع به بالا رُند شد
                 </strong>{' '}

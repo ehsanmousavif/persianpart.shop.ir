@@ -64,16 +64,17 @@ export type SupportedTimezones =
 export interface Config {
   auth: {
     admins: AdminAuthOperations;
-    users: UserAuthOperations;
   };
   blocks: {};
   collections: {
     admins: Admin;
     users: User;
+    'customer-types': CustomerType;
     media: Media;
     categories: Category;
     brands: Brand;
     tags: Tag;
+    dimensions: Dimension;
     products: Product;
     orders: Order;
     plans: Plan;
@@ -86,10 +87,12 @@ export interface Config {
   collectionsSelect: {
     admins: AdminsSelect<false> | AdminsSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
+    'customer-types': CustomerTypesSelect<false> | CustomerTypesSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
+    dimensions: DimensionsSelect<false> | DimensionsSelect<true>;
     products: ProductsSelect<false> | ProductsSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     plans: PlansSelect<false> | PlansSelect<true>;
@@ -108,7 +111,7 @@ export interface Config {
   widgets: {
     collections: CollectionsWidget;
   };
-  user: Admin | User;
+  user: Admin;
   jobs: {
     tasks: unknown;
     workflows: unknown;
@@ -131,36 +134,6 @@ export interface AdminAuthOperations {
     email: string;
     password: string;
   };
-}
-export interface UserAuthOperations {
-  forgotPassword:
-    | {
-        email: string;
-      }
-    | {
-        username: string;
-      };
-  login:
-    | {
-        email: string;
-        password: string;
-      }
-    | {
-        password: string;
-        username: string;
-      };
-  registerFirstUser: {
-    password: string;
-    username: string;
-    email?: string;
-  };
-  unlock:
-    | {
-        email: string;
-      }
-    | {
-        username: string;
-      };
 }
 /**
  * مدیریت کاربران دارای دسترسی مدیریت به پنل CMS
@@ -202,16 +175,18 @@ export interface Admin {
 export interface User {
   id: number;
   /**
-   * این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و مشتری امکان ویرایش آن را ندارد.
+   * این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و ورود با کد یکبار مصرف (OTP) انجام می‌پذیرد.
    */
   phone: string;
   fullName: string;
   companyName?: string | null;
   nationalCode?: string | null;
   economicCode?: string | null;
-  customerType: 'regular' | 'mechanic' | 'store_partner' | 'wholesaler';
+  /**
+   * نقش مشتری مبنای تعیین درصد افزایش قیمت (Markup) و رده کاربری است.
+   */
+  customerType: number | CustomerType;
   status: 'active' | 'pending' | 'suspended';
-  creditLimit?: number | null;
   province?: string | null;
   city?: string | null;
   address?: string | null;
@@ -228,24 +203,25 @@ export interface User {
   notes?: string | null;
   updatedAt: string;
   createdAt: string;
-  email?: string | null;
-  username: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
+}
+/**
+ * مدیریت رده‌ها و نقش‌های مشتریان با امکان تنظیم درصد افزایش/کاهش قیمت (Markup).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-types".
+ */
+export interface CustomerType {
+  id: number;
+  name: string;
+  slug: string;
+  /**
+   * درصد اثرگذار بر قیمت پایه کالاها برای این نوع مشتری (مثبت برای افزایش، منفی برای تخفیف).
+   */
+  markupPercent: number;
+  isActive?: boolean | null;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * مدیریت تصاویر کالاها، لوگوها و فایل‌های سیستم
@@ -317,6 +293,22 @@ export interface Tag {
   createdAt: string;
 }
 /**
+ * مدیریت متمرکز ابعاد و سایزهای کاشی و سرامیک جهت انتخاب در کالاها و فیلترهای فروشگاه.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dimensions".
+ */
+export interface Dimension {
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  slug: string;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * مدیریت مشخصات فنی کاشی، متراژ کارتن، موجودی انبار مکانیزه و تصاویر.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -333,16 +325,19 @@ export interface Product {
   category?: (number | null) | Category;
   brand?: (number | null) | Brand;
   color?: string | null;
-  finish?: ('matte' | 'glossy' | 'polished' | 'semi_polished' | 'sugar' | 'rustic') | null;
   grade?: ('grade_1' | 'grade_2' | 'grade_3' | 'grade_4') | null;
   tags?: (number | Tag)[] | null;
-  width: number;
-  height: number;
-  piecesPerCarton: number;
   /**
-   * مبنای اصلی محاسبه کارتن و هزینه سفارش
+   * انتخاب سایز از پیش تعریف‌شده (مانند ۱۰۰×۱۰۰ یا ۶۰×۱۲۰)
+   */
+  dimension: number | Dimension;
+  /**
+   * مبنای محاسبه تعداد کارتن = متراژ ÷ ضریب. ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲، ۱.۴
    */
   sqmPerCarton: number;
+  width?: number | null;
+  height?: number | null;
+  piecesPerCarton?: number | null;
   basePricePerSqm?: number | null;
   stockCartons?: number | null;
   inventorySqm?: number | null;
@@ -373,7 +368,7 @@ export interface Product {
   createdAt: string;
 }
 /**
- * مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران، فرآیند آماده‌سازی و ارسال بار.
+ * مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران و فرآیند آماده‌سازی سفارش.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "orders".
@@ -388,20 +383,11 @@ export interface Order {
   /**
    * موقعیت عملیاتی سفارش در گردش کار تأمین و انبارداری
    */
-  status:
-    | 'pending'
-    | 'checking'
-    | 'approved'
-    | 'preparing'
-    | 'shipping'
-    | 'completed'
-    | 'cancelled_by_customer'
-    | 'cancelled_by_admin'
-    | 'cancelled';
+  status: 'pending' | 'approve' | 'cancel';
   /**
-   * تا این زمان خریدار فرصت دارد سفارش را لغو کند. پس از آن سفارش نهایی و قفل می‌گردد.
+   * مشخص‌کننده اینکه سفارش توسط مشتری یا ادمین لغو گردیده است.
    */
-  cancellationDeadline?: string | null;
+  cancelledBy?: ('customer' | 'admin') | null;
   items: {
     product: number | Product;
     requestedArea: number;
@@ -419,8 +405,6 @@ export interface Order {
   notes?: string | null;
   timeline?:
     | {
-        title: string;
-        description?: string | null;
         timestamp?: string | null;
         status?: string | null;
         id?: string | null;
@@ -506,6 +490,10 @@ export interface PayloadLockedDocument {
         value: number | User;
       } | null)
     | ({
+        relationTo: 'customer-types';
+        value: number | CustomerType;
+      } | null)
+    | ({
         relationTo: 'media';
         value: number | Media;
       } | null)
@@ -522,6 +510,10 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
+        relationTo: 'dimensions';
+        value: number | Dimension;
+      } | null)
+    | ({
         relationTo: 'products';
         value: number | Product;
       } | null)
@@ -534,15 +526,10 @@ export interface PayloadLockedDocument {
         value: number | Plan;
       } | null);
   globalSlug?: string | null;
-  user:
-    | {
-        relationTo: 'admins';
-        value: number | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: number | User;
-      };
+  user: {
+    relationTo: 'admins';
+    value: number | Admin;
+  };
   updatedAt: string;
   createdAt: string;
 }
@@ -552,15 +539,10 @@ export interface PayloadLockedDocument {
  */
 export interface PayloadPreference {
   id: number;
-  user:
-    | {
-        relationTo: 'admins';
-        value: number | Admin;
-      }
-    | {
-        relationTo: 'users';
-        value: number | User;
-      };
+  user: {
+    relationTo: 'admins';
+    value: number | Admin;
+  };
   key?: string | null;
   value?:
     | {
@@ -623,7 +605,6 @@ export interface UsersSelect<T extends boolean = true> {
   economicCode?: T;
   customerType?: T;
   status?: T;
-  creditLimit?: T;
   province?: T;
   city?: T;
   address?: T;
@@ -640,22 +621,19 @@ export interface UsersSelect<T extends boolean = true> {
   notes?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  username?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-types_select".
+ */
+export interface CustomerTypesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  markupPercent?: T;
+  isActive?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -713,6 +691,19 @@ export interface TagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dimensions_select".
+ */
+export interface DimensionsSelect<T extends boolean = true> {
+  name?: T;
+  width?: T;
+  height?: T;
+  slug?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products_select".
  */
 export interface ProductsSelect<T extends boolean = true> {
@@ -722,13 +713,13 @@ export interface ProductsSelect<T extends boolean = true> {
   category?: T;
   brand?: T;
   color?: T;
-  finish?: T;
   grade?: T;
   tags?: T;
+  dimension?: T;
+  sqmPerCarton?: T;
   width?: T;
   height?: T;
   piecesPerCarton?: T;
-  sqmPerCarton?: T;
   basePricePerSqm?: T;
   stockCartons?: T;
   inventorySqm?: T;
@@ -752,7 +743,7 @@ export interface OrdersSelect<T extends boolean = true> {
   orderNumber?: T;
   user?: T;
   status?: T;
-  cancellationDeadline?: T;
+  cancelledBy?: T;
   items?:
     | T
     | {
@@ -773,8 +764,6 @@ export interface OrdersSelect<T extends boolean = true> {
   timeline?:
     | T
     | {
-        title?: T;
-        description?: T;
         timestamp?: T;
         status?: T;
         id?: T;

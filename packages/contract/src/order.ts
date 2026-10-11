@@ -59,6 +59,8 @@ export type ValidateCartOutput = z.infer<typeof ValidateCartOutputSchema>
 
 export const OrderStatusSchema = z.enum([
   'pending',
+  'approve',
+  'cancel',
   'checking',
   'approved',
   'preparing',
@@ -135,7 +137,7 @@ export const OrderSchema = z.object({
   totalSqm: z.number().nonnegative(),
   totalCartons: z.number().int().nonnegative(),
   notes: z.string().optional(),
-  cancellationDeadline: z.string(),
+  cancellationDeadline: z.string().optional(),
   timeline: z.array(OrderTimelineEventSchema),
   cancellationReason: z.string().optional(),
   cancellationNote: z.string().optional(),

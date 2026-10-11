@@ -6,7 +6,6 @@ export function useCatalog(filters?: {
   categoryId?: string
   brandId?: string
   color?: string
-  finish?: string
   grade?: string
   page?: number
   limit?: number
@@ -36,7 +35,6 @@ export function useCatalog(filters?: {
     filters?.categoryId,
     filters?.brandId,
     filters?.color,
-    filters?.finish,
     filters?.grade,
     filters?.page,
     filters?.limit,

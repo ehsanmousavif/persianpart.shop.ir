@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Modal as HeroUIModal } from '@heroui/react'
-import { useOrders } from '../../features/orders/order-store'
+import { useOrders, buildFullOrderTimeline } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type Order, type OrderItem } from '../../lib/mock-data/orders'
 import { OrderTimeline } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
@@ -13,7 +13,6 @@ import {
   ArrowRightIcon,
   RefreshCwIcon,
   XIcon,
-  TruckIcon,
   StoreIcon,
   MapPinIcon,
   PhoneIcon,
@@ -51,14 +50,11 @@ function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
   const [isLoading, setIsLoading] = useState(!order)
 
-  // 10-Minute Countdown Timer calculation
+  // 3-Minute Countdown Timer calculation (calculated purely from order createdAt)
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
     if (!order) return 0
-    const deadline = order.cancellationDeadline
-      ? new Date(order.cancellationDeadline).getTime()
-      : order.createdAt
-      ? new Date(order.createdAt).getTime() + 10 * 60 * 1000
-      : Date.now()
+    const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
+    const deadline = createdAtMs + 3 * 60 * 1000
     return Math.max(0, Math.floor((deadline - Date.now()) / 1000))
   })
 
@@ -86,11 +82,8 @@ function OrderDetailPage() {
 
   useEffect(() => {
     if (!order) return
-    const deadline = order.cancellationDeadline
-      ? new Date(order.cancellationDeadline).getTime()
-      : order.createdAt
-      ? new Date(order.createdAt).getTime() + 10 * 60 * 1000
-      : Date.now()
+    const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
+    const deadline = createdAtMs + 3 * 60 * 1000
 
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
@@ -100,7 +93,7 @@ function OrderDetailPage() {
     updateTimer()
     const timer = setInterval(updateTimer, 1000)
     return () => clearInterval(timer)
-  }, [order?.cancellationDeadline, order?.createdAt])
+  }, [order?.createdAt])
 
   const formatCountdown = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -128,19 +121,44 @@ function OrderDetailPage() {
     )
   }
 
-  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || {
-    label: order.statusLabel || 'در انتظار بررسی',
-    color: 'warning' as const,
-  }
-
   const isCancelled =
+    order.status === 'cancel' ||
     order.status === 'cancelled' ||
     order.status === 'cancelled_by_customer' ||
     order.status === 'cancelled_by_admin'
 
-  const isCompleted = order.status === 'completed'
-  const isWithin10Minutes = timeLeftSeconds > 0
-  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin10Minutes
+  const isCompleted = order.status === 'completed' || order.status === 'approved' || order.status === 'approve'
+  const isWithin3Minutes = timeLeftSeconds > 0
+  const is3MinutesPassed = timeLeftSeconds <= 0
+  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin3Minutes
+
+  const timeline = useMemo(() => {
+    return buildFullOrderTimeline(
+      order,
+      formatPersianDate(order.createdAt || order.date),
+      is3MinutesPassed
+    )
+  }, [order, is3MinutesPassed])
+
+  const displayStatusLabel = useMemo(() => {
+    if (order.status === 'pending') {
+      return is3MinutesPassed ? 'ثبت سفارش توسط واحد بازرگانی' : 'در حال بررسی واحد بازرگانی'
+    }
+    if (order.status === 'approve' || order.status === 'approved' || order.status === 'completed') {
+      return 'حواله ثبت شده (تکمیل شده)'
+    }
+    if (isCancelled) {
+      return order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
+        ? 'لغو توسط مشتری'
+        : 'لغو توسط ادمین'
+    }
+    return ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.label || order.statusLabel
+  }, [order.status, order.statusLabel, order.cancelledBy, is3MinutesPassed, isCancelled])
+
+  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || {
+    label: displayStatusLabel,
+    color: isCancelled ? ('danger' as const) : isCompleted ? ('success' as const) : ('warning' as const),
+  }
 
   const handleCancel = async () => {
     await cancelOrder(order.id, cancelReason)
@@ -183,23 +201,23 @@ function OrderDetailPage() {
               <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
             </span>
             <Badge variant={statusConfig.color} size="md">
-              {statusConfig.label}
+              {displayStatusLabel}
             </Badge>
 
-            {/* 10-Minute Customer Countdown Badge */}
+            {/* 3-Minute Customer Countdown Badge */}
             {!isCancelled && !isCompleted && (
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs ${
-                  isWithin10Minutes
+                  isWithin3Minutes
                     ? 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'
                     : 'bg-slate-100 text-slate-500 border-slate-200'
                 }`}
               >
                 <span>⏱️</span>
                 <span>
-                  {isWithin10Minutes
+                  {isWithin3Minutes
                     ? `مهلت لغو خریدار: ${formatCountdown(timeLeftSeconds)}`
-                    : 'مهلت ۱۰ دقیقه‌ای لغو منقضی شد (ثبت قطعی)'}
+                    : 'مهلت لغو توسط مشتری منقضی شد'}
                 </span>
               </span>
             )}
@@ -218,7 +236,7 @@ function OrderDetailPage() {
               className="py-2.5 px-4 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <XIcon size={16} />
-              <span>لغو سفارش (مهلت ۱۰ دقیقه)</span>
+              <span>لغو سفارش</span>
             </button>
           )}
 
@@ -238,7 +256,7 @@ function OrderDetailPage() {
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
           مراحل پیشرفت و پیگیری سفارش
         </h3>
-        <OrderTimeline steps={order.timeline} />
+        <OrderTimeline steps={timeline} />
       </div>
 
       {/* Products in this order */}
@@ -260,11 +278,13 @@ function OrderDetailPage() {
                   className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shrink-0 block"
                 >
                   <img
-                    src={item.productImage || '/assets/images/tile-sample-1.jpg'}
+                    src={item.productImage || '/assets/images/placeholder.svg'}
                     alt={item.productName}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                      if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                        e.currentTarget.src = '/assets/images/placeholder.svg'
+                      }
                     }}
                   />
                 </Link>
@@ -318,10 +338,10 @@ function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Shipping & Delivery Information */}
+      {/* Delivery Information */}
       <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
-          اطلاعات تحویل و هماهنگی باربری
+          اطلاعات تحویل سفارش
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -340,14 +360,6 @@ function OrderDetailPage() {
               <span className="font-bold text-slate-800">
                 {order.customerName} ({toPersianDigits(order.customerPhone)})
               </span>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-2.5">
-            <TruckIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
-            <div>
-              <span className="text-slate-400 block">روش حمل و باربری:</span>
-              <span className="font-bold text-slate-800">{order.deliveryMethod}</span>
             </div>
           </div>
 

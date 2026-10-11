@@ -10,7 +10,7 @@ export const Orders: CollectionConfig = {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'user', 'status', 'finalTotal', 'createdAt'],
     group: 'فروشگاه و مشتریان',
-    description: 'مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران، فرآیند آماده‌سازی و ارسال بار.',
+    description: 'مدیریت و پیگیری کلیه سفارشات ثبت‌شده خریداران و فرآیند آماده‌سازی سفارش.',
   },
   access: {
     read: () => true,
@@ -74,23 +74,6 @@ export const Orders: CollectionConfig = {
           data.finalTotal = Math.max(0, (data.subtotal || calculatedSubtotal) - discount + tax)
         }
 
-        // 3. Set cancellation deadline (10 minutes from creation) on create
-        if (operation === 'create') {
-          if (!data.cancellationDeadline) {
-            data.cancellationDeadline = new Date(Date.now() + 10 * 60 * 1000).toISOString()
-          }
-          if (!data.timeline || data.timeline.length === 0) {
-            data.timeline = [
-              {
-                title: 'ثبت سفارش خریدار',
-                description: 'سفارش توسط خریدار در سامانه ثبت گردید و در صف بررسی واحد بازرگانی قرار گرفت.',
-                timestamp: new Date().toISOString(),
-                status: data.status || 'pending',
-              },
-            ]
-          }
-        }
-
         return data
       },
     ],
@@ -140,7 +123,7 @@ export const Orders: CollectionConfig = {
 
         // B. Handle Inventory restoration on cancellation (by customer or admin)
         const isCancelledStatus = (s?: string) =>
-          s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
+          s === 'cancel' || s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
 
         if (
           operation === 'update' &&
@@ -193,77 +176,6 @@ export const Orders: CollectionConfig = {
           }
         }
 
-        // C. Record timeline event automatically on status change
-        if (operation === 'update' && originalDoc && data.status && data.status !== originalDoc.status) {
-          const statusLabels: Record<string, { title: string; desc: string }> = {
-            pending: {
-              title: 'در انتظار تأیید اولیه',
-              desc: 'سفارش ثبت شده و در نوبت کارشناسی اولیه قرار دارد.',
-            },
-            checking: {
-              title: 'در حال بررسی واحد بازرگانی',
-              desc: 'کارشناس بازرگانی در حال ارزیابی شرایط فاکتور، سهمیه تخصیصی و استعلام خط تولید است.',
-            },
-            approved: {
-              title: 'تأیید واحد بازرگانی',
-              desc: 'بررسی مالی، احراز هویت و صدور حواله انبار توسط مدیریت بازرگانی انجام شد.',
-            },
-            preparing: {
-              title: 'در حال آماده‌سازی و بارگیری انبار',
-              desc: 'پالت‌بندی کالاها، بسته‌بندی تسمه‌ای و آماده‌سازی بار در انبار مکانیزه در جریان است.',
-            },
-            processing: {
-              title: 'در حال آماده‌سازی و بارگیری انبار',
-              desc: 'پالت‌بندی کالاها و آماده‌سازی بار در انبار مکانیزه در جریان است.',
-            },
-            shipping: {
-              title: 'در حال ارسال و صدور بارنامه',
-              desc: 'بارنامه رسمی صادر شد و سفارش جهت حمل بین‌شهری تحویل ناوگان باربری گردید.',
-            },
-            ready: {
-              title: 'آماده تحویل و صدور بارنامه',
-              desc: 'سفارش آماده خروج از انبار شده و بارنامه صادر گردید.',
-            },
-            completed: {
-              title: 'تکمیل شده و تحویل قطعی',
-              desc: 'تخلیه بار در انبار مقصد انجام و سفارش با موفقیت تحویل خریدار گردید.',
-            },
-            cancelled_by_customer: {
-              title: 'لغو سفارش توسط خریدار',
-              desc: data.notes
-                ? `سفارش در مهلت مقرر توسط خریدار لغو گردید. (${data.notes})`
-                : 'سفارش در مهلت ۱۰ دقیقه‌ای توسط خریدار لغو شد و موجودی انبار بازگردانی گردید.',
-            },
-            cancelled_by_admin: {
-              title: 'لغو سفارش توسط مدیریت / بازرگانی',
-              desc: data.notes
-                ? `سفارش توسط مدیریت لغو گردید. (${data.notes})`
-                : 'سفارش بنا به دلایل اداری یا مالی توسط مدیریت لغو و موجودی به انبار برگشت داده شد.',
-            },
-            cancelled: {
-              title: 'لغو سفارش',
-              desc: data.notes ? `سفارش لغو گردید. (${data.notes})` : 'سفارش لغو شد و موجودی انبار بازگردانی گردید.',
-            },
-          }
-
-          const info = statusLabels[data.status]
-          if (info) {
-            const currentTimeline = Array.isArray(data.timeline)
-              ? [...data.timeline]
-              : Array.isArray(originalDoc.timeline)
-                ? [...originalDoc.timeline]
-                : []
-
-            currentTimeline.push({
-              title: info.title,
-              description: info.desc,
-              timestamp: new Date().toISOString(),
-              status: data.status,
-            })
-            data.timeline = currentTimeline
-          }
-        }
-
         return data
       },
     ],
@@ -293,29 +205,25 @@ export const Orders: CollectionConfig = {
       defaultValue: 'pending',
       label: 'وضعیت سفارش',
       options: [
-        { label: 'در انتظار تأیید اولیه (Pending)', value: 'pending' },
-        { label: 'در حال بررسی واحد بازرگانی (Checking)', value: 'checking' },
-        { label: 'تأیید شده بازرگانی (Approved)', value: 'approved' },
-        { label: 'در حال آماده‌سازی و بارگیری (Preparing)', value: 'preparing' },
-        { label: 'در حال ارسال و حمل بار (Shipping)', value: 'shipping' },
-        { label: 'تکمیل شده و تحویل نهایی (Completed)', value: 'completed' },
-        { label: 'لغو شده توسط خریدار (Cancelled by Customer)', value: 'cancelled_by_customer' },
-        { label: 'لغو شده توسط مدیریت / بازرگانی (Cancelled by Staff)', value: 'cancelled_by_admin' },
-        { label: 'لغو شده (سایر)', value: 'cancelled' },
+        { label: 'در حال بررسی واحد بازرگانی (pending)', value: 'pending' },
+        { label: 'حواله ثبت شده / تکمیل شده (approve)', value: 'approve' },
+        { label: 'لغو سفارش (cancel)', value: 'cancel' },
       ],
       admin: {
         description: 'موقعیت عملیاتی سفارش در گردش کار تأمین و انبارداری',
       },
     },
     {
-      name: 'cancellationDeadline',
-      type: 'date',
-      label: 'مهلت ۱۰ دقیقه‌ای لغو سفارش خریدار',
+      name: 'cancelledBy',
+      type: 'select',
+      label: 'لغو کننده سفارش',
+      options: [
+        { label: 'لغو توسط مشتری', value: 'customer' },
+        { label: 'لغو توسط ادمین', value: 'admin' },
+      ],
+      defaultValue: 'admin',
       admin: {
-        description: 'تا این زمان خریدار فرصت دارد سفارش را لغو کند. پس از آن سفارش نهایی و قفل می‌گردد.',
-        date: {
-          pickerAppearance: 'dayAndTime',
-        },
+        description: 'مشخص‌کننده اینکه سفارش توسط مشتری یا ادمین لغو گردیده است.',
       },
     },
     {
@@ -413,7 +321,7 @@ export const Orders: CollectionConfig = {
     {
       name: 'deliveryAddress',
       type: 'textarea',
-      label: 'آدرس و محل تخلیه بار',
+      label: 'آدرس تحویل سفارش',
     },
     {
       name: 'notes',
@@ -430,19 +338,8 @@ export const Orders: CollectionConfig = {
       },
       fields: [
         {
-          name: 'title',
-          type: 'text',
-          required: true,
-          label: 'عنوان رویداد',
-        },
-        {
-          name: 'description',
-          type: 'text',
-          label: 'توضیحات رویداد',
-        },
-        {
           name: 'timestamp',
-          type: 'text',
+          type: 'date',
           label: 'زمان رویداد',
         },
         {

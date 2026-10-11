@@ -2,16 +2,65 @@ import { useState, useMemo, useEffect } from 'react'
 import type { Product } from '../../lib/mock-data/products'
 import { api } from '../../lib/api-client'
 import { plansStore } from '../plans/plans-store'
+import { toPersianDigits } from '../../lib/utils/currency'
+import { useQueryStates } from 'nuqs'
+import { catalogFilterParsers, type SortOption } from './catalog-filters'
+export type { SortOption }
 
-export type SortOption = 'default' | 'cheapest' | 'expensive' | 'newest' | 'oldest'
-export type ViewMode = 'list' | 'grid-2' | 'compact' | 'showcase'
+export function resolveMediaUrl(media: any): string {
+  if (!media) return ''
+  if (typeof media === 'string') {
+    if (media.startsWith('http://') || media.startsWith('https://') || media.startsWith('/')) {
+      return media
+    }
+    if (media.includes('.')) {
+      return `/api/media/file/${media}`
+    }
+    return ''
+  }
+  if (typeof media === 'object') {
+    if (media.url && typeof media.url === 'string') return media.url
+    if (media.thumbnailURL && typeof media.thumbnailURL === 'string') return media.thumbnailURL
+    if (media.filename && typeof media.filename === 'string') return `/api/media/file/${media.filename}`
+    if (media.image) return resolveMediaUrl(media.image)
+  }
+  return ''
+}
+
+export function formatGrade(rawGrade?: string): string {
+  if (!rawGrade) return 'درجه ۱'
+  const gradeStr = String(rawGrade).trim()
+  const mapping: Record<string, string> = {
+    grade_1: 'درجه ۱',
+    grade_2: 'درجه ۲',
+    grade_3: 'درجه ۳',
+    grade_4: 'درجه ۴',
+    grade: 'درجه',
+    '1': 'درجه ۱',
+    '2': 'درجه ۲',
+    '3': 'درجه ۳',
+    '4': 'درجه ۴',
+    'درجه 1': 'درجه ۱',
+    'درجه 2': 'درجه ۲',
+    'درجه 3': 'درجه ۳',
+    'درجه 4': 'درجه ۴',
+    'اصلی (Genuine)': 'درجه ۱ (اصلی)',
+  }
+  if (mapping[gradeStr]) return mapping[gradeStr]
+  if (gradeStr.startsWith('grade_')) {
+    const num = gradeStr.replace('grade_', '')
+    return `درجه ${toPersianDigits(num)}`
+  }
+  return gradeStr
+}
+
+export type ViewMode = 'list' | 'grid-2' | 'grid-3' | 'compact'
 
 export interface FilterState {
   searchQuery: string
   selectedDimension: string | null
   selectedBrands: string[]
   selectedColors: string[]
-  selectedFinishes: string[]
   selectedGrades: string[]
   selectedTags: string[]
   selectedCategory: string | null
@@ -20,39 +69,52 @@ export interface FilterState {
   sortBy: SortOption
 }
 
-const getSavedViewMode = (): ViewMode => {
-  if (typeof window !== 'undefined') {
-    try {
-      const saved = localStorage.getItem('persianpart_product_view_mode')
-      if (saved === 'list' || saved === 'grid-2' || saved === 'compact' || saved === 'showcase') {
-        return saved
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-  }
-  return 'list'
-}
-
-const DEFAULT_FILTERS: FilterState = {
-  searchQuery: '',
-  selectedDimension: null,
-  selectedBrands: [],
-  selectedColors: [],
-  selectedFinishes: [],
-  selectedGrades: [],
-  selectedTags: [],
-  selectedCategory: null,
-  onlyInStock: false,
-  viewMode: getSavedViewMode(),
-  sortBy: 'default',
-}
-
 export function useCatalog() {
-  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS)
+  const [queryFilters, setQueryFilters] = useQueryStates(catalogFilterParsers, { shallow: true })
+  const [viewMode, setViewMode] = useState<ViewMode>('list')
   const [productsList, setProductsList] = useState<Product[]>([])
   const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
   const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [dimensions, setDimensions] = useState<string[]>([
+    '30×90',
+    '60×120',
+    '80×160',
+    '100×100',
+    '120×240',
+    '60×60',
+    '30×60',
+    '20×120',
+  ])
+
+  const filters: FilterState = useMemo(() => ({
+    searchQuery: queryFilters.q,
+    selectedDimension: queryFilters.dimension,
+    selectedBrands: queryFilters.brands,
+    selectedColors: queryFilters.colors,
+    selectedGrades: queryFilters.grades,
+    selectedTags: queryFilters.tags,
+    selectedCategory: queryFilters.category,
+    onlyInStock: queryFilters.inStock,
+    viewMode,
+    sortBy: queryFilters.sort,
+  }), [queryFilters, viewMode])
+
+  // Fetch dimensions from live CMS API
+  useEffect(() => {
+    let isMounted = true
+    api.catalog.dimensions({ onlyActive: true })
+      .then((dims: any) => {
+        if (isMounted && Array.isArray(dims) && dims.length > 0) {
+          const list = dims.map((d: any) => d.name || `${d.width}×${d.height}`)
+          setDimensions(Array.from(new Set(list)))
+        }
+      })
+      .catch(() => {})
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Fetch from live backend API on mount with 1-second delay to display skeleton
   useEffect(() => {
@@ -65,13 +127,21 @@ export function useCatalog() {
         if (isMounted) {
           if (res.items && res.items.length > 0) {
             const liveMapped: Product[] = res.items.map((item: any) => {
-              const width = item.width || 60
-              const height = item.height || 120
-              const dimStr = `${width}×${height}`
+              const dimObj = typeof item.dimension === 'object' ? item.dimension : null
+              const width = dimObj?.width || item.width || 60
+              const height = dimObj?.height || item.height || 120
+              const dimStr = dimObj?.name || `${width}×${height}`
               const brandName = typeof item.brand === 'object' && item.brand !== null ? item.brand.name : (item.brandName || 'پرشین پارت')
               const categoryName = typeof item.category === 'object' && item.category !== null ? item.category.name : (item.categoryName || 'عمومی')
               const basePrice = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
-              const coverUrl = item.cover?.url || (typeof item.cover === 'string' ? item.cover : '/assets/images/tile-sample-1.jpg')
+              const rawGallery = Array.isArray(item.gallery) ? item.gallery : []
+              const galleryUrls = rawGallery
+                .map((g: any) => resolveMediaUrl(g?.image || g))
+                .filter(Boolean)
+
+              const rawCoverUrl = resolveMediaUrl(item.cover)
+              const primaryImage = rawCoverUrl || galleryUrls[0] || '/assets/images/placeholder.svg'
+              const imagesList = [primaryImage, ...galleryUrls.filter((u: string) => u !== primaryImage)]
 
               // Check if any active product_discount plan covers this product
               const activeDiscountPlans = plansStore
@@ -106,8 +176,7 @@ export function useCatalog() {
                 dimension: dimStr,
                 brand: brandName,
                 color: item.color || 'استاندارد',
-                finish: (item.finish as any) || 'فابریک',
-                grade: (item.grade as any) || 'اصلی (Genuine)',
+                grade: formatGrade(item.grade) as any,
                 category: categoryName,
                 finalCustomerPricePerSqm: finalPrice,
                 pricePerM2: finalPrice,
@@ -134,8 +203,8 @@ export function useCatalog() {
                 description: item.richDescription || undefined,
                 applications: ['خودرو سواری', 'سفارش عمده'],
                 tags: Array.isArray(item.tags) ? item.tags.map((t: any) => typeof t === 'object' ? t.name : t) : [],
-                images: [coverUrl],
-                gallery: Array.isArray(item.gallery) ? item.gallery.map((g: any) => g.image?.url || g.image).filter(Boolean) : [],
+                images: imagesList,
+                gallery: galleryUrls.length > 0 ? galleryUrls : [primaryImage],
               }
             })
             setProductsList(liveMapped)
@@ -168,7 +237,6 @@ export function useCatalog() {
     if (filters.selectedDimension) count++
     count += filters.selectedBrands.length
     count += filters.selectedColors.length
-    count += filters.selectedFinishes.length
     count += filters.selectedGrades.length
     count += filters.selectedTags.length
     if (filters.selectedCategory) count++
@@ -213,14 +281,6 @@ export function useCatalog() {
       if (
         filters.selectedColors.length > 0 &&
         !filters.selectedColors.includes(product.color)
-      ) {
-        return false
-      }
-
-      // Finishes
-      if (
-        filters.selectedFinishes.length > 0 &&
-        !filters.selectedFinishes.includes(product.finish)
       ) {
         return false
       }
@@ -275,45 +335,69 @@ export function useCatalog() {
   }, [filters, productsList])
 
   const resetFilters = () => {
-    setFilters(DEFAULT_FILTERS)
+    setQueryFilters(null)
   }
 
   const setFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]) => {
-    if (key === 'viewMode' && typeof window !== 'undefined') {
-      try {
-        localStorage.setItem('persianpart_product_view_mode', String(value))
-      } catch {
-        // Ignore localStorage errors
-      }
+    switch (key) {
+      case 'searchQuery':
+        setQueryFilters({ q: (value as string) || null })
+        break
+      case 'selectedDimension':
+        setQueryFilters({ dimension: (value as string | null) || null })
+        break
+      case 'selectedBrands':
+        setQueryFilters({ brands: (value as string[]).length > 0 ? (value as string[]) : null })
+        break
+      case 'selectedColors':
+        setQueryFilters({ colors: (value as string[]).length > 0 ? (value as string[]) : null })
+        break
+      case 'selectedGrades':
+        setQueryFilters({ grades: (value as string[]).length > 0 ? (value as string[]) : null })
+        break
+      case 'selectedTags':
+        setQueryFilters({ tags: (value as string[]).length > 0 ? (value as string[]) : null })
+        break
+      case 'selectedCategory':
+        setQueryFilters({ category: (value as string | null) || null })
+        break
+      case 'onlyInStock':
+        setQueryFilters({ inStock: value ? true : null })
+        break
+      case 'viewMode':
+        setViewMode(value as ViewMode)
+        break
+      case 'sortBy':
+        setQueryFilters({ sort: (value as SortOption) === 'default' ? null : (value as SortOption) })
+        break
     }
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
   }
 
   const toggleArrayFilter = (
     key:
       | 'selectedBrands'
       | 'selectedColors'
-      | 'selectedFinishes'
       | 'selectedGrades'
       | 'selectedTags',
     value: string
   ) => {
-    setFilters((prev) => {
-      const arr = prev[key]
-      const exists = arr.includes(value)
-      return {
-        ...prev,
-        [key]: exists ? arr.filter((v) => v !== value) : [...arr, value],
-      }
-    })
+    const map: Record<typeof key, 'brands' | 'colors' | 'grades' | 'tags'> = {
+      selectedBrands: 'brands',
+      selectedColors: 'colors',
+      selectedGrades: 'grades',
+      selectedTags: 'tags',
+    }
+    const queryKey = map[key]
+    const currentArr = queryFilters[queryKey] || []
+    const exists = currentArr.includes(value)
+    const nextArr = exists ? currentArr.filter((v) => v !== value) : [...currentArr, value]
+    setQueryFilters({ [queryKey]: nextArr.length > 0 ? nextArr : null })
   }
 
   return {
     products: filteredProducts,
     allProducts: productsList,
+    dimensions,
     filters,
     isLoading,
     activeFilterCount,

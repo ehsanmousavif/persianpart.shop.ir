@@ -26,10 +26,26 @@ const list = base.user.list.handler(async ({ input }) => {
   return result.docs
 })
 
+const deleteUser = base.user.delete.handler(async ({ input }) => {
+  return payload.crud.users.delete({ id: input.id })
+})
+
+const userCustomerTypes = base.user.customerTypes.handler(async ({ input }) => {
+  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
+  const res = await payload.crud['customer-types'].find({
+    where,
+    limit: 100,
+    sort: 'name',
+  })
+  return res.docs
+})
+
 export const user = base.user.router({
   profile,
   list,
   update,
+  delete: deleteUser,
+  customerTypes: userCustomerTypes,
 })
 
 const customerProfile = base.customer.profile.handler(async ({ context }) => {
@@ -54,7 +70,18 @@ const customerUpdateProfile = base.customer.updateProfile.handler(async ({ input
   })
 })
 
+const customerTypes = base.customer.types.handler(async ({ input }) => {
+  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
+  const res = await payload.crud['customer-types'].find({
+    where,
+    limit: 100,
+    sort: 'name',
+  })
+  return res.docs
+})
+
 export const customer = base.customer.router({
   profile: customerProfile,
   updateProfile: customerUpdateProfile,
+  types: customerTypes,
 })

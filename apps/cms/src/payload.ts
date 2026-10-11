@@ -26,7 +26,18 @@ export interface CrudOperations<T = any> {
   delete: (args: { id: string | number }) => Promise<T>
 }
 
-type CollectionSlugs = 'orders' | 'products' | 'categories' | 'brands' | 'tags' | 'users' | 'admins' | 'media' | 'plans'
+type CollectionSlugs =
+  | 'orders'
+  | 'products'
+  | 'categories'
+  | 'brands'
+  | 'tags'
+  | 'users'
+  | 'admins'
+  | 'media'
+  | 'plans'
+  | 'dimensions'
+  | 'customer-types'
 
 export const payload = {
   get client(): Promise<Payload> {

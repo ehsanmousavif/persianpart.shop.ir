@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Slider, NumberField, I18nProvider } from '@heroui/react'
 import { useCatalog } from '../../features/catalog/catalog-store'
+import { useProductSelection } from '../../features/catalog/selection-store'
 import type { Product } from '../../lib/mock-data/products'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -19,54 +20,17 @@ import {
   SolarTagIcon,
 } from '../../components/ui/icons'
 
-interface ProductNewSearch {
-  selected?: string
-}
-
 export const Route = createFileRoute('/product/new')({
-  validateSearch: (search: Record<string, unknown>): ProductNewSearch => {
-    return {
-      selected: typeof search.selected === 'string' ? search.selected : undefined,
-    }
-  },
   component: ProductNewConfigurationPage,
 })
 
 function ProductNewConfigurationPage() {
-  const searchParams = Route.useSearch()
-  const navigate = useNavigate({ from: Route.fullPath })
+  const navigate = useNavigate()
   const { allProducts } = useCatalog()
+  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection } = useProductSelection()
 
   // Modal state for Pre-Invoice
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
-
-  // Selected product IDs parsed from query params with localStorage fallback
-  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
-    if (searchParams.selected) {
-      const parsed = searchParams.selected
-        .split(',')
-        .map((s) => s.replace(/["']/g, '').trim())
-        .filter(Boolean)
-      try {
-        localStorage.setItem('persianpart_selected_products', JSON.stringify(parsed))
-      } catch {
-        // Ignore localStorage errors
-      }
-      return parsed
-    }
-    try {
-      const saved = localStorage.getItem('persianpart_selected_products')
-      if (saved) {
-        const parsed = JSON.parse(saved)
-        if (Array.isArray(parsed)) {
-          return parsed.map((s: any) => String(s).replace(/["']/g, '').trim()).filter(Boolean)
-        }
-      }
-    } catch {
-      // Ignore localStorage errors
-    }
-    return []
-  })
 
   // Selected products resolved from live catalog database
   const selectedProducts = useMemo(() => {
@@ -83,60 +47,28 @@ function ProductNewConfigurationPage() {
       .filter((p): p is Product => p !== undefined)
   }, [selectedIds, allProducts])
 
-  // Quantities state mapping productId -> area in sqm
-  const [quantities, setQuantities] = useState<Record<string, number>>({})
-
-  // Automatically initialize quantities when products are resolved
+  // Automatically initialize quantities for new products in selection
   useEffect(() => {
-    if (selectedProducts.length > 0) {
-      setQuantities((prev) => {
-        const next = { ...prev }
-        selectedProducts.forEach((prod) => {
-          if (!next[prod.id]) {
-            next[prod.id] = Math.max(prod.sqmPerCarton || 1, 10)
-          }
-        })
-        return next
-      })
-    }
-  }, [selectedProducts])
+    selectedProducts.forEach((prod) => {
+      if (quantities[prod.id] === undefined) {
+        setQuantity(prod.id, Math.max(prod.sqmPerCarton || 1, 10))
+      }
+    })
+  }, [selectedProducts, quantities, setQuantity])
 
   const handleAreaChange = (productId: string, val: number, inventorySqm: number) => {
     const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10
     const clampedVal = Math.min(rawVal, inventorySqm)
-    setQuantities((prev) => ({
-      ...prev,
-      [productId]: clampedVal,
-    }))
+    setQuantity(productId, clampedVal)
   }
 
   const handleRemoveProduct = (productId: string) => {
-    const updated = selectedIds.filter((id) => id !== productId)
-    setSelectedIds(updated)
-    try {
-      localStorage.setItem('persianpart_selected_products', JSON.stringify(updated))
-    } catch {
-      // Ignore localStorage errors
-    }
-    setQuantities((prev) => {
-      const next = { ...prev }
-      delete next[productId]
-      return next
-    })
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        selected: updated.length > 0 ? updated.join(',') : undefined,
-      }),
-    })
+    unselectProduct(productId)
   }
 
   const handleBackToCatalog = () => {
     navigate({
       to: '/product',
-      search: {
-        selected: selectedIds.length > 0 ? selectedIds.join(',') : undefined,
-      },
     })
   }
 
@@ -245,11 +177,13 @@ function ProductNewConfigurationPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
                     <img
-                      src={product.images[0] || '/assets/images/tile-sample-1.jpg'}
+                      src={product.images[0] || '/assets/images/placeholder.svg'}
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                        if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                          e.currentTarget.src = '/assets/images/placeholder.svg'
+                        }
                       }}
                     />
                   </div>
@@ -261,9 +195,6 @@ function ProductNewConfigurationPage() {
                       </span>
                       <span className="text-xs font-semibold text-slate-600">
                         {product.brand}
-                      </span>
-                      <span className="text-xs text-slate-400 font-normal">
-                        {product.finish}
                       </span>
                     </div>
 
@@ -450,11 +381,7 @@ function ProductNewConfigurationPage() {
         quantities={quantities}
         onSuccess={(orderId) => {
           setIsInvoiceOpen(false)
-          try {
-            localStorage.removeItem('persianpart_selected_products')
-          } catch {
-            // Ignore localStorage errors
-          }
+          clearSelection()
           toast.success(
             'ثبت قطعی سفارش',
             `سفارش شما با موفقیت ثبت شد.`

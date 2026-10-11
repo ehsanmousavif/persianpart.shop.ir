@@ -11,8 +11,8 @@ const shippingMethods = base.shopping.shippingMethods.handler(async () => {
       isExpress: true,
     },
     {
-      id: 'barbari',
-      title: 'باربری بین‌شهری (شوش / پایانه)',
+      id: 'freight',
+      title: 'ارسال بین‌شهری (پایانه)',
       description: 'مناسب سفارش‌های حجیم و عمده قطعات سنگین بدنه، موتور و گیربکس',
       estimatedDays: '۲ الی ۳ روز کاری',
       isExpress: false,
@@ -225,7 +225,7 @@ export const shopping = base.shopping.router({
 
 // Unified Catalog router
 export const catalog = base.catalog.router({
-  list: base.catalog.list.handler(async ({ input }) => {
+  list: base.catalog.list.handler(async ({ input, context }) => {
     try {
       const where: Record<string, any> = {}
       if (input?.onlyActive !== false) {
@@ -248,8 +248,38 @@ export const catalog = base.catalog.router({
         depth: 2,
       })
 
+      // Calculate customer-specific markup if customer is logged in
+      let markupPercent = 0
+      if (context?.user?.id) {
+        try {
+          const userDoc: any = await payload.crud.users.findByID({
+            id: context.user.id,
+            depth: 1,
+          })
+          const ct = userDoc?.customerType
+          if (ct && typeof ct === 'object') {
+            markupPercent = Number(ct.markupPercent) || 0
+          } else if (ct) {
+            const ctDoc: any = await (payload.crud as any).customerTypes.findByID({ id: ct })
+            markupPercent = Number(ctDoc?.markupPercent) || 0
+          }
+        } catch {
+          // fallback
+        }
+      }
+
+      const mappedDocs = res.docs.map((prod: any) => {
+        const basePrice = Number(prod.basePricePerSqm) || 0
+        const finalPrice = Math.round(basePrice * (1 + markupPercent / 100))
+        return {
+          ...prod,
+          finalCustomerPricePerSqm: finalPrice,
+          appliedMarkupPercent: markupPercent,
+        }
+      })
+
       return {
-        items: res.docs,
+        items: mappedDocs,
         total: res.totalDocs,
       }
     } catch (err) {
@@ -257,12 +287,44 @@ export const catalog = base.catalog.router({
       throw err
     }
   }),
-  getById: base.catalog.getById.handler(async ({ input }) => {
-    return payload.crud.products.findByID({
+
+  getById: base.catalog.getById.handler(async ({ input, context }) => {
+    const prod: any = await payload.crud.products.findByID({
       id: input.id,
       depth: 2,
     })
+
+    if (!prod) return null
+
+    let markupPercent = 0
+    if (context?.user?.id) {
+      try {
+        const userDoc: any = await payload.crud.users.findByID({
+          id: context.user.id,
+          depth: 1,
+        })
+        const ct = userDoc?.customerType
+        if (ct && typeof ct === 'object') {
+          markupPercent = Number(ct.markupPercent) || 0
+        } else if (ct) {
+          const ctDoc: any = await payload.crud['customer-types'].findByID({ id: ct })
+          markupPercent = Number(ctDoc?.markupPercent) || 0
+        }
+      } catch {
+        // fallback
+      }
+    }
+
+    const basePrice = Number(prod.basePricePerSqm) || 0
+    const finalPrice = Math.round(basePrice * (1 + markupPercent / 100))
+
+    return {
+      ...prod,
+      finalCustomerPricePerSqm: finalPrice,
+      appliedMarkupPercent: markupPercent,
+    }
   }),
+
   categories: base.catalog.categories.handler(async ({ input }) => {
     const where = input?.onlyActive ? { isActive: { equals: true } } : {}
     const res = await payload.crud.categories.find({
@@ -272,6 +334,7 @@ export const catalog = base.catalog.router({
     })
     return res.docs
   }),
+
   brands: base.catalog.brands.handler(async ({ input }) => {
     const where = input?.onlyActive ? { isActive: { equals: true } } : {}
     const res = await payload.crud.brands.find({
@@ -281,6 +344,7 @@ export const catalog = base.catalog.router({
     })
     return res.docs
   }),
+
   tags: base.catalog.tags.handler(async ({ input }) => {
     const where = input?.onlyActive ? { isActive: { equals: true } } : {}
     const res = await payload.crud.tags.find({
@@ -290,6 +354,25 @@ export const catalog = base.catalog.router({
     })
     return res.docs
   }),
+
+  dimensions: base.catalog.dimensions.handler(async ({ input }) => {
+    const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
+    const res = await (payload.crud as any).dimensions.find({
+      where,
+      limit: 100,
+      sort: 'width',
+    })
+    return res.docs
+  }),
+
+  deleteProduct: base.catalog.deleteProduct.handler(async ({ input }) => {
+    return await payload.crud.products.delete({ id: input.id })
+  }),
+
+  deleteCategory: base.catalog.deleteCategory.handler(async ({ input }) => {
+    return await payload.crud.categories.delete({ id: input.id })
+  }),
+
   calculateCartons: base.catalog.calculateCartons.handler(async ({ input }) => {
     return await calcHelper(input)
   }),

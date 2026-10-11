@@ -13,12 +13,11 @@ export interface FilterDrawerProps {
 const AVAILABLE_DIMENSIONS = ['30×90', '60×120', '80×160', '100×100', '60×60', '30×60', '20×120', '120×240']
 const AVAILABLE_BRANDS = ['تکسرام', 'کاشی تبریز', 'سینا کاشی', 'سرامیک پالرمو', 'پارس سرام']
 const AVAILABLE_COLORS = ['سفید کلکته', 'سفید مرمری', 'خاکستری تیره', 'کرم روشن', 'مشکی مارکینا', 'طوسی تیره']
-const AVAILABLE_FINISHES = ['پولیش', 'مات', 'براق', 'شوگر', 'رستیک'] as const
-const AVAILABLE_GRADES = ['صادراتی', 'درجه ۱', 'درجه ۲'] as const
+const AVAILABLE_GRADES = ['درجه ۱', 'درجه ۲', 'درجه ۳', 'درجه ۴', 'صادراتی'] as const
 const AVAILABLE_TAGS = ['نانو پولیش', 'رکتیفاید', 'بدون بند', 'صادراتی', 'ضد لغزش (R10)', 'اقتصادی', 'سوپر نانو پولیش', 'مگا اسلب']
 
 export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps) {
-  const { filters, toggleArrayFilter, setFilter, resetFilters, activeFilterCount } = catalogHook
+  const { filters, toggleArrayFilter, setFilter, resetFilters, activeFilterCount, dimensions } = catalogHook
 
   const FilterSection = ({
     title,
@@ -96,7 +95,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
         >
           همه ابعاد
         </button>
-        {AVAILABLE_DIMENSIONS.map((dim) => {
+        {(dimensions && dimensions.length > 0 ? dimensions : AVAILABLE_DIMENSIONS).map((dim) => {
           const isSelected = filters.selectedDimension === dim
           return (
             <button
@@ -136,27 +135,6 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
         })}
       </FilterSection>
 
-      {/* Finishes */}
-      <FilterSection title="پوشش لعاب (Finish)">
-        {AVAILABLE_FINISHES.map((finish) => {
-          const isSelected = filters.selectedFinishes.includes(finish)
-          return (
-            <button
-              key={finish}
-              type="button"
-              onClick={() => toggleArrayFilter('selectedFinishes', finish)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                isSelected
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
-              }`}
-            >
-              {finish}
-            </button>
-          )
-        })}
-      </FilterSection>
-
       {/* Colors */}
       <FilterSection title="طیف رنگی">
         {AVAILABLE_COLORS.map((col) => {
@@ -179,7 +157,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
       </FilterSection>
 
       {/* Grades */}
-      <FilterSection title="درجه کیفی (Grade)">
+      <FilterSection title="درجه کیفی">
         {AVAILABLE_GRADES.map((grade) => {
           const isSelected = filters.selectedGrades.includes(grade)
           return (

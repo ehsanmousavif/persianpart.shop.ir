@@ -134,6 +134,44 @@ export const UpdateTagInputSchema = z.object({
 export type UpdateTagInput = z.infer<typeof UpdateTagInputSchema>
 
 // ============================================================================
+// 4.5 Dimension Schemas
+// ============================================================================
+
+export const DimensionSchema = z.object({
+  id: EntityIdSchema,
+  name: z.string().min(1, 'عنوان بعد الزامی است'),
+  width: z.number().positive('عرض باید عددی مثبت باشد'),
+  height: z.number().positive('طول باید عددی مثبت باشد'),
+  slug: SlugSchema,
+  isActive: z.boolean().default(true),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+})
+
+export type Dimension = z.infer<typeof DimensionSchema>
+
+export const CreateDimensionInputSchema = z.object({
+  name: z.string().min(1, 'عنوان بعد الزامی است'),
+  width: z.number().positive('عرض باید عددی مثبت باشد'),
+  height: z.number().positive('طول باید عددی مثبت باشد'),
+  slug: SlugSchema,
+  isActive: z.boolean().default(true),
+})
+
+export type CreateDimensionInput = z.infer<typeof CreateDimensionInputSchema>
+
+export const UpdateDimensionInputSchema = z.object({
+  id: EntityIdSchema,
+  name: z.string().min(1).optional(),
+  width: z.number().positive().optional(),
+  height: z.number().positive().optional(),
+  slug: SlugSchema.optional(),
+  isActive: z.boolean().optional(),
+})
+
+export type UpdateDimensionInput = z.infer<typeof UpdateDimensionInputSchema>
+
+// ============================================================================
 // 5. Internal/Staff Product Schemas
 // ============================================================================
 
@@ -163,7 +201,6 @@ export const ProductSchema = z.object({
   brandId: EntityIdSchema.optional().nullable(),
 
   color: z.string().optional().nullable(),
-  finish: z.string().optional().nullable(),
   grade: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
 
@@ -196,7 +233,6 @@ export const CreateProductInputSchema = z.object({
   categoryId: EntityIdSchema.optional().nullable(),
   brandId: EntityIdSchema.optional().nullable(),
   color: z.string().optional().nullable(),
-  finish: z.string().optional().nullable(),
   grade: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),
   width: z.number().positive('عرض الزامی است'),
@@ -220,7 +256,6 @@ export const UpdateProductInputSchema = z.object({
   categoryId: EntityIdSchema.optional().nullable(),
   brandId: EntityIdSchema.optional().nullable(),
   color: z.string().optional().nullable(),
-  finish: z.string().optional().nullable(),
   grade: z.string().optional().nullable(),
   tags: z.array(z.string()).optional(),
   width: z.number().positive().optional(),
@@ -242,7 +277,6 @@ export const ProductFilterInputSchema = PaginationInputSchema.extend({
   categoryId: EntityIdSchema.optional(),
   brandId: EntityIdSchema.optional(),
   color: z.string().optional(),
-  finish: z.string().optional(),
   grade: z.string().optional(),
   isActive: z.coerce.boolean().optional(),
 })
@@ -289,7 +323,6 @@ export const CatalogProductSchema = z.object({
   brandName: z.string().optional(),
 
   color: z.string().optional().nullable(),
-  finish: z.string().optional().nullable(),
   grade: z.string().optional().nullable(),
   tags: z.array(z.string()),
 
@@ -314,7 +347,6 @@ export const CatalogFilterInputSchema = PaginationInputSchema.extend({
   categoryId: EntityIdSchema.optional(),
   brandId: EntityIdSchema.optional(),
   color: z.string().optional(),
-  finish: z.string().optional(),
   grade: z.string().optional(),
   tag: z.string().optional(),
   width: z.coerce.number().positive().optional(),

@@ -233,7 +233,7 @@ function CartPage() {
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1 text-start">
-              توضیحات و هماهنگی بارگیری (اختیاری):
+              توضیحات و هماهنگی تحویل (اختیاری):
             </label>
             <textarea
               rows={2}

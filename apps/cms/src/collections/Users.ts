@@ -12,15 +12,11 @@ export const Users: CollectionConfig = {
     group: 'فروشگاه و مشتریان',
     description: 'مشتریان سامانه توسط ادمین در این بخش تعریف می‌شوند. ورود به سایت منحصراً برای شماره‌های فعال در این لیست مجاز است.',
   },
-  auth: {
-    // Customers can authenticate via their email, phone or username
-    loginWithUsername: {
-      allowEmailLogin: true,
-      requireEmail: false,
-    },
-  },
   access: {
-    read: ({ req: { user } }) => Boolean(user),
+    read: () => true,
+    create: () => true,
+    update: () => true,
+    delete: () => true,
   },
   fields: [
     {
@@ -28,9 +24,9 @@ export const Users: CollectionConfig = {
       type: 'text',
       required: true,
       unique: true,
-      label: 'شماره همراه مشتری (شناسه یکتا - ورود به سامانه)',
+      label: 'شماره همراه مشتری (شناسه یکتا - ورود با OTP)',
       admin: {
-        description: 'این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و مشتری امکان ویرایش آن را ندارد.',
+        description: 'این شماره به عنوان شناسه ورود مشتری استفاده می‌شود و ورود با کد یکبار مصرف (OTP) انجام می‌پذیرد.',
       },
     },
     {
@@ -56,16 +52,13 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'customerType',
-      type: 'select',
+      type: 'relationship',
+      relationTo: 'customer-types',
       required: true,
-      defaultValue: 'regular',
-      label: 'سطح و رده مشتری',
-      options: [
-        { label: 'خریدار عادی (Regular)', value: 'regular' },
-        { label: 'تعمیرکار / مکانیک (Mechanic)', value: 'mechanic' },
-        { label: 'فروشگاه همکار (Store Partner)', value: 'store_partner' },
-        { label: 'پخش‌کننده عمده (Wholesaler)', value: 'wholesaler' },
-      ],
+      label: 'نقش و رده مشتری',
+      admin: {
+        description: 'نقش مشتری مبنای تعیین درصد افزایش قیمت (Markup) و رده کاربری است.',
+      },
     },
     {
       name: 'status',
@@ -78,12 +71,6 @@ export const Users: CollectionConfig = {
         { label: 'در انتظار تایید مدارک (غیرفعال)', value: 'pending' },
         { label: 'معلق / مسدود شده (عدم امکان ورود)', value: 'suspended' },
       ],
-    },
-    {
-      name: 'creditLimit',
-      type: 'number',
-      defaultValue: 0,
-      label: 'سقف اعتبار خرید چکی/مدت‌دار (تومان)',
     },
     {
       name: 'province',

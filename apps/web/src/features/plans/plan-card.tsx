@@ -152,11 +152,13 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
                     <img
-                      src={prod.images[0] || '/assets/images/tile-sample-1.jpg'}
+                      src={prod.images[0] || '/assets/images/placeholder.svg'}
                       alt={prod.name}
                       className="w-11 h-11 rounded-xl object-cover border border-slate-200 shrink-0"
                       onError={(e) => {
-                        e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                        if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                          e.currentTarget.src = '/assets/images/placeholder.svg'
+                        }
                       }}
                     />
                     <div className="min-w-0">

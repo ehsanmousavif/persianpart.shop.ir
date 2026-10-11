@@ -16,14 +16,37 @@ export const Products: CollectionConfig = {
     read: () => true,
     create: () => true,
     update: () => true,
+    delete: () => true,
   },
   hooks: {
     beforeValidate: [
-      ({ data }) => {
+      async ({ data, req }) => {
         if (!data) return data
         // Auto-generate slug if not specified
         if (!data.slug && data.sku) {
           data.slug = String(data.sku).toLowerCase().replace(/[^a-z0-9-]/g, '-')
+        }
+        // Sync width and height from dimension relationship
+        if (data.dimension) {
+          const dimensionId =
+            typeof data.dimension === 'object' && data.dimension !== null
+              ? (data.dimension as any).id
+              : data.dimension
+          if (dimensionId) {
+            try {
+              const dimDoc = await req.payload.findByID({
+                collection: 'dimensions',
+                id: dimensionId,
+                depth: 0,
+              })
+              if (dimDoc) {
+                data.width = (dimDoc as any).width
+                data.height = (dimDoc as any).height
+              }
+            } catch {
+              // fallback
+            }
+          }
         }
         return data
       },
@@ -88,27 +111,13 @@ export const Products: CollectionConfig = {
           name: 'color',
           type: 'text',
           label: 'رنگ کالا',
-          admin: { width: '33.3%' },
-        },
-        {
-          name: 'finish',
-          type: 'select',
-          label: 'فینیش / لعاب',
-          admin: { width: '33.3%' },
-          options: [
-            { label: 'مات', value: 'matte' },
-            { label: 'براق', value: 'glossy' },
-            { label: 'پولیش', value: 'polished' },
-            { label: 'سمی‌پولیش', value: 'semi_polished' },
-            { label: 'شوگر', value: 'sugar' },
-            { label: 'رستیک', value: 'rustic' },
-          ],
+          admin: { width: '50%' },
         },
         {
           name: 'grade',
           type: 'select',
           label: 'درجه کیفی',
-          admin: { width: '33.3%' },
+          admin: { width: '50%' },
           options: [
             { label: 'درجه ۱', value: 'grade_1' },
             { label: 'درجه ۲', value: 'grade_2' },
@@ -133,34 +142,46 @@ export const Products: CollectionConfig = {
           type: 'row',
           fields: [
             {
-              name: 'width',
-              type: 'number',
+              name: 'dimension',
+              type: 'relationship',
+              relationTo: 'dimensions',
               required: true,
-              label: 'عرض کاشی (سانتی‌متر)',
-              admin: { width: '25%' },
-            },
-            {
-              name: 'height',
-              type: 'number',
-              required: true,
-              label: 'طول کاشی (سانتی‌متر)',
-              admin: { width: '25%' },
-            },
-            {
-              name: 'piecesPerCarton',
-              type: 'number',
-              required: true,
-              label: 'تعداد قطعه در هر کارتن',
-              admin: { width: '25%' },
+              label: 'بُعد / سایز کاشی',
+              admin: {
+                width: '50%',
+                description: 'انتخاب سایز از پیش تعریف‌شده (مانند ۱۰۰×۱۰۰ یا ۶۰×۱۲۰)',
+              },
             },
             {
               name: 'sqmPerCarton',
               type: 'number',
               required: true,
-              label: 'متراژ رسمی هر کارتن (متر مربع)',
+              label: 'ضریب متراژ هر کارتن (متر مربع)',
               admin: {
-                width: '25%',
-                description: 'مبنای اصلی محاسبه کارتن و هزینه سفارش',
+                width: '50%',
+                description: 'مبنای محاسبه تعداد کارتن = متراژ ÷ ضریب. ضرایب پرکاربرد: ۱.۴۴، ۱.۰۸، ۲.۱۶، ۱.۹۲، ۱.۴',
+              },
+            },
+            {
+              name: 'width',
+              type: 'number',
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'height',
+              type: 'number',
+              admin: {
+                hidden: true,
+              },
+            },
+            {
+              name: 'piecesPerCarton',
+              type: 'number',
+              defaultValue: 4,
+              admin: {
+                hidden: true,
               },
             },
           ],

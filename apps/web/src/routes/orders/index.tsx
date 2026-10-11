@@ -40,13 +40,17 @@ function OrdersListPage() {
   }, [selectedStatusTab])
 
   const isCancelledStatus = (s: string) =>
-    s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
+    s === 'cancel' || s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
 
   const filteredOrders =
     selectedStatusTab === 'all'
       ? orders
-      : selectedStatusTab === 'cancelled'
+      : selectedStatusTab === 'cancel' || selectedStatusTab === 'cancelled'
       ? orders.filter((o) => isCancelledStatus(o.status))
+      : selectedStatusTab === 'approve' || selectedStatusTab === 'approved'
+      ? orders.filter((o) => o.status === 'approve' || o.status === 'approved' || o.status === 'completed')
+      : selectedStatusTab === 'pending'
+      ? orders.filter((o) => o.status === 'pending' || o.status === 'checking')
       : orders.filter((o) => o.status === selectedStatusTab)
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE))
@@ -69,13 +73,9 @@ function OrdersListPage() {
 
   const TABS = [
     { key: 'all', label: 'همه سفارش‌ها' },
-    { key: 'pending', label: 'در انتظار تأیید اولیه' },
-    { key: 'checking', label: 'در حال بررسی بازرگانی' },
-    { key: 'approved', label: 'تأیید شده' },
-    { key: 'preparing', label: 'در حال آماده‌سازی' },
-    { key: 'shipping', label: 'در حال ارسال' },
-    { key: 'completed', label: 'تکمیل شده' },
-    { key: 'cancelled', label: 'لغو شده' },
+    { key: 'pending', label: 'در حال بررسی بازرگانی' },
+    { key: 'approve', label: 'حواله ثبت شده (تکمیل شده)' },
+    { key: 'cancel', label: 'لغو شده' },
   ] as const
 
   return (
@@ -87,7 +87,7 @@ function OrdersListPage() {
           <span>سفارش‌ها و سوابق خرید</span>
         </h1>
         <p className="text-xs text-slate-500 mt-1">
-          پیگیری وضعیت بارگیری، بارنامه‌ها و ثبت مجدد سفارش‌ها
+          پیگیری وضعیت پردازش، ارسال و تحویل سفارش‌ها
         </p>
       </div>
 
@@ -99,9 +99,11 @@ function OrdersListPage() {
             const count =
               tab.key === 'all'
                 ? orders.length
-                : tab.key === 'cancelled'
+                : tab.key === 'cancel'
                 ? orders.filter((o) => isCancelledStatus(o.status)).length
-                : orders.filter((o) => o.status === tab.key).length
+                : tab.key === 'approve'
+                ? orders.filter((o) => o.status === 'approve' || o.status === 'approved' || o.status === 'completed').length
+                : orders.filter((o) => o.status === 'pending' || o.status === 'checking').length
 
             return (
               <button
@@ -150,7 +152,10 @@ function OrdersListPage() {
       ) : (
         <div className="space-y-2.5">
           {pagedOrders.map((order) => {
-            const statusConfig = ORDER_STATUS_MAP[order.status]
+            const statusConfig = ORDER_STATUS_MAP[order.status] || {
+              label: order.statusLabel || 'در حال بررسی واحد بازرگانی',
+              color: 'warning' as const,
+            }
             const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
             const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
 
@@ -167,7 +172,7 @@ function OrdersListPage() {
                       <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
                     </span>
                     <Badge variant={statusConfig.color} size="sm">
-                      {statusConfig.label}
+                      {order.statusLabel || statusConfig.label}
                     </Badge>
                   </div>
 
@@ -186,11 +191,13 @@ function OrdersListPage() {
                         title={item.productName}
                       >
                         <img
-                          src={item.productImage || '/assets/images/tile-sample-1.jpg'}
+                          src={item.productImage || '/assets/images/placeholder.svg'}
                           alt={item.productName}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                            if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                              e.currentTarget.src = '/assets/images/placeholder.svg'
+                            }
                           }}
                         />
                       </div>

@@ -80,7 +80,7 @@ export const OrderingConfigSchema = z.object({
 export type OrderingConfig = z.infer<typeof OrderingConfigSchema>
 
 export const CatalogConfigSchema = z.object({
-  activeFilters: z.array(z.string()).default(['dimensions', 'brand', 'color', 'finish', 'grade', 'category']),
+  activeFilters: z.array(z.string()).default(['dimensions', 'brand', 'color', 'grade', 'category']),
   inventoryDisplayBehavior: z.enum(['badge_only', 'show_exact']).default('badge_only'),
 })
 

@@ -17,6 +17,38 @@ interface TagSeed {
   slug: string
 }
 
+interface DimensionSeed {
+  name: string
+  width: number
+  height: number
+  slug: string
+}
+
+interface CustomerTypeSeed {
+  name: string
+  slug: string
+  markupPercent: number
+  description: string
+}
+
+const DIMENSIONS: DimensionSeed[] = [
+  { name: '100×100', width: 100, height: 100, slug: '100x100' },
+  { name: '60×120', width: 60, height: 120, slug: '60x120' },
+  { name: '80×160', width: 80, height: 160, slug: '80x160' },
+  { name: '60×60', width: 60, height: 60, slug: '60x60' },
+  { name: '30×90', width: 30, height: 90, slug: '30x90' },
+  { name: '30×60', width: 30, height: 60, slug: '30x60' },
+  { name: '20×120', width: 20, height: 120, slug: '20x120' },
+  { name: '120×240', width: 120, height: 240, slug: '120x240' },
+]
+
+const CUSTOMER_TYPES: CustomerTypeSeed[] = [
+  { name: 'عمده‌فروش', slug: 'wholesaler', markupPercent: -10, description: 'پخش‌کنندگان عمده استانی با خرید متراژ بالا' },
+  { name: 'فروشگاه همکار', slug: 'store_partner', markupPercent: -5, description: 'فروشگاه‌ها و شوروم‌های همکار' },
+  { name: 'خریدار عادی', slug: 'regular', markupPercent: 0, description: 'خریداران عادی و مصرف‌کنندگان نهایی' },
+  { name: 'تعمیرکار / مهندس پروژه', slug: 'mechanic', markupPercent: 0, description: 'مهندسان و پیمانکاران ساختمانی' },
+]
+
 interface ProductSeed {
   sku: string
   name: string
@@ -24,7 +56,6 @@ interface ProductSeed {
   categorySlug: string
   brandSlug: string
   color: string
-  finish: 'matte' | 'glossy' | 'polished' | 'semi_polished' | 'sugar' | 'rustic'
   grade: 'grade_1' | 'grade_2' | 'grade_3' | 'grade_4'
   tagSlugs: string[]
   width: number
@@ -64,7 +95,7 @@ const TAGS: TagSeed[] = [
   { name: 'مقاوم در برابر یخ‌زدگی و رطوبت', slug: 'frost-resistant' },
   { name: 'کالیبره دقیق', slug: 'calibrated' },
   { name: 'پرسلان فول بادی', slug: 'full-body-porcelain' },
-  { name: 'لعاب مات ابریشمی', slug: 'silk-matte' },
+  { name: 'مات ابریشمی', slug: 'silk-matte' },
   { name: 'مناسب گرمایش از کف', slug: 'underfloor-heating' },
   { name: 'ضد لغزش (R11)', slug: 'anti-slip-r11' },
 ]
@@ -77,7 +108,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'tabriz-tile',
     color: 'سفید با رگه طلایی',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['bestseller', 'nano-polished', 'rectified', 'underfloor-heating'],
     width: 60,
@@ -94,7 +124,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-slab',
     brandSlug: 'rak-ceramics',
     color: 'مشکی رگه‌دار سفید',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['nano-polished', 'full-body-porcelain', 'rectified'],
     width: 120,
@@ -111,7 +140,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'teceram',
     color: 'طوسی بتنی روشن',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'abrasion-resistant', 'underfloor-heating'],
     width: 100,
@@ -128,7 +156,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'persepolis-tile',
     color: 'قهوه‌ای روشن عسلی',
-    finish: 'rustic',
     grade: 'grade_1',
     tagSlugs: ['bestseller', 'anti-slip-r11', 'rectified'],
     width: 20,
@@ -145,7 +172,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-slab',
     brandSlug: 'tabriz-tile',
     color: 'سفید شفاف ابری',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['nano-polished', 'rectified'],
     width: 80,
@@ -162,7 +188,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'luxury-wall',
     brandSlug: 'alvand-tile',
     color: 'سفید با رگه مشکی پهن',
-    finish: 'glossy',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'bestseller'],
     width: 30,
@@ -179,7 +204,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'marjan-tile',
     color: 'دودی طوسی تیره',
-    finish: 'matte',
     grade: 'grade_2',
     tagSlugs: ['calibrated', 'abrasion-resistant'],
     width: 60,
@@ -196,7 +220,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'facade-outdoor',
     brandSlug: 'persepolis-tile',
     color: 'کرم بژ طرح سنگ',
-    finish: 'rustic',
     grade: 'grade_1',
     tagSlugs: ['frost-resistant', 'anti-slip-r11'],
     width: 40,
@@ -213,7 +236,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'decorative-kitchen',
     brandSlug: 'alvand-tile',
     color: 'طلایی متالیک و مشکی',
-    finish: 'sugar',
     grade: 'grade_1',
     tagSlugs: ['bestseller', 'rectified'],
     width: 30,
@@ -230,7 +252,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'industrial-anti-acid',
     brandSlug: 'marjan-tile',
     color: 'زرد گرانیتی دانه دار',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['full-body-porcelain', 'abrasion-resistant', 'anti-slip-r11'],
     width: 30,
@@ -247,7 +268,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'teceram',
     color: 'سوپر وایت شفاف',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['nano-polished', 'bestseller', 'underfloor-heating'],
     width: 80,
@@ -264,7 +284,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'bathroom-waterproof',
     brandSlug: 'tabriz-tile',
     color: 'سفید رگه‌دار فیلی',
-    finish: 'semi_polished',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'silk-matte'],
     width: 30,
@@ -281,7 +300,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'sina-tile',
     color: 'قهوه‌ای تیره گردویی',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['bestseller', 'underfloor-heating', 'rectified'],
     width: 20,
@@ -298,7 +316,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-slab',
     brandSlug: 'rak-ceramics',
     color: 'طوسی گرافیتی با خطوط سفید',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['full-body-porcelain', 'rectified', 'silk-matte'],
     width: 120,
@@ -315,7 +332,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'marjan-tile',
     color: 'دودی ذغالی متالیک',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['abrasion-resistant', 'calibrated', 'underfloor-heating'],
     width: 60,
@@ -332,7 +348,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'facade-outdoor',
     brandSlug: 'persepolis-tile',
     color: 'آجری متالیک زنگار',
-    finish: 'rustic',
     grade: 'grade_2',
     tagSlugs: ['frost-resistant', 'anti-slip-r11'],
     width: 30,
@@ -349,7 +364,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'decorative-kitchen',
     brandSlug: 'pars-tile',
     color: 'نقره‌ای کروم براق',
-    finish: 'glossy',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'bestseller'],
     width: 30,
@@ -366,7 +380,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'alvand-tile',
     color: 'کرم بژ ماسه‌ای',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['calibrated', 'abrasion-resistant', 'bestseller'],
     width: 80,
@@ -383,7 +396,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'luxury-wall',
     brandSlug: 'tabriz-tile',
     color: 'برنز قهوه‌ای متالیک',
-    finish: 'sugar',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'nano-polished'],
     width: 40,
@@ -400,7 +412,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'teceram',
     color: 'مشکی براق با خطوط عنکبوتی',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['nano-polished', 'bestseller'],
     width: 60,
@@ -417,7 +428,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'facade-outdoor',
     brandSlug: 'marjan-tile',
     color: 'طوسی گرانیتی دانه‌درشت',
-    finish: 'rustic',
     grade: 'grade_1',
     tagSlugs: ['abrasion-resistant', 'anti-slip-r11', 'frost-resistant'],
     width: 60,
@@ -434,7 +444,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-slab',
     brandSlug: 'rak-ceramics',
     color: 'نقره‌ای متالیک مات',
-    finish: 'semi_polished',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'silk-matte'],
     width: 80,
@@ -451,7 +460,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'bathroom-waterproof',
     brandSlug: 'pars-tile',
     color: 'سفید زرین',
-    finish: 'glossy',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'bestseller'],
     width: 30,
@@ -468,7 +476,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'tabriz-tile',
     color: 'قهوه‌ای شکلاتی با رگه‌های طلایی',
-    finish: 'polished',
     grade: 'grade_1',
     tagSlugs: ['nano-polished', 'bestseller', 'underfloor-heating'],
     width: 100,
@@ -485,7 +492,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'decorative-kitchen',
     brandSlug: 'sina-tile',
     color: 'خاکی حنایی رستیک',
-    finish: 'rustic',
     grade: 'grade_1',
     tagSlugs: ['rectified', 'anti-slip-r11'],
     width: 30,
@@ -502,7 +508,6 @@ const PRODUCTS: ProductSeed[] = [
     categorySlug: 'porcelain-floor',
     brandSlug: 'teceram',
     color: 'طوسی بتنی با سنگریزه‌های چندرنگ',
-    finish: 'matte',
     grade: 'grade_1',
     tagSlugs: ['full-body-porcelain', 'abrasion-resistant', 'calibrated'],
     width: 60,
@@ -605,6 +610,89 @@ export async function runSeed() {
   }
   console.log(`✅ ${tagMap.size} Tags synchronized.`)
 
+  // 3.5 Seed Customer Types
+  console.log('👥 Seeding Customer Types...')
+  const customerTypeMap = new Map<string, number>()
+  for (const ct of CUSTOMER_TYPES) {
+    const existing = await payload.find({
+      collection: 'customer-types',
+      where: { slug: { equals: ct.slug } },
+      limit: 1,
+    })
+
+    let id: number
+    if (existing.docs.length > 0) {
+      id = existing.docs[0].id
+      await payload.update({
+        collection: 'customer-types',
+        id,
+        data: { name: ct.name, markupPercent: ct.markupPercent, description: ct.description, isActive: true },
+      })
+    } else {
+      const created = await payload.create({
+        collection: 'customer-types',
+        data: { name: ct.name, slug: ct.slug, markupPercent: ct.markupPercent, description: ct.description, isActive: true },
+      })
+      id = created.id
+    }
+    customerTypeMap.set(ct.slug, id)
+  }
+  console.log(`✅ ${customerTypeMap.size} Customer Types synchronized.`)
+
+  // 3.6 Seed Dimensions
+  console.log('📐 Seeding Dimensions...')
+  const dimensionMap = new Map<string, number>()
+  for (const dim of DIMENSIONS) {
+    const existing = await payload.find({
+      collection: 'dimensions',
+      where: { slug: { equals: dim.slug } },
+      limit: 1,
+    })
+
+    let id: number
+    if (existing.docs.length > 0) {
+      id = existing.docs[0].id
+      await payload.update({
+        collection: 'dimensions',
+        id,
+        data: { name: dim.name, width: dim.width, height: dim.height, isActive: true },
+      })
+    } else {
+      const created = await payload.create({
+        collection: 'dimensions',
+        data: { name: dim.name, width: dim.width, height: dim.height, slug: dim.slug, isActive: true },
+      })
+      id = created.id
+    }
+    dimensionMap.set(`${dim.width}x${dim.height}`, id)
+    dimensionMap.set(dim.slug, id)
+  }
+  console.log(`✅ ${dimensionMap.size / 2} Dimensions synchronized.`)
+
+  // Ensure all products have their dimensions seeded
+  for (const prod of PRODUCTS) {
+    const key = `${prod.width}x${prod.height}`
+    if (!dimensionMap.has(key)) {
+      const name = `${prod.width}×${prod.height}`
+      const existing = await payload.find({
+        collection: 'dimensions',
+        where: { slug: { equals: key } },
+        limit: 1,
+      })
+      let id: number
+      if (existing.docs.length > 0) {
+        id = existing.docs[0].id
+      } else {
+        const created = await payload.create({
+          collection: 'dimensions',
+          data: { name, width: prod.width, height: prod.height, slug: key, isActive: true },
+        })
+        id = created.id
+      }
+      dimensionMap.set(key, id)
+    }
+  }
+
   // 4. Retrieve available Media IDs
   const mediaList = await payload.find({
     collection: 'media',
@@ -622,6 +710,7 @@ export async function runSeed() {
     const categoryId = categoryMap.get(prod.categorySlug) || null
     const brandId = brandMap.get(prod.brandSlug) || null
     const tagIds = prod.tagSlugs.map((slug) => tagMap.get(slug)).filter((id): id is number => typeof id === 'number')
+    const dimensionId = dimensionMap.get(`${prod.width}x${prod.height}`) || null
 
     const inventorySqm = Math.round(prod.stockCartons * prod.sqmPerCarton * 100) / 100
 
@@ -632,9 +721,9 @@ export async function runSeed() {
       category: categoryId,
       brand: brandId,
       color: prod.color,
-      finish: prod.finish,
       grade: prod.grade,
       tags: tagIds,
+      dimension: dimensionId,
       width: prod.width,
       height: prod.height,
       piecesPerCarton: prod.piecesPerCarton,

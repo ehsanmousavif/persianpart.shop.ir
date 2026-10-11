@@ -15,6 +15,8 @@ import { Tags } from './collections/Tags'
 import { Products } from './collections/Products'
 import { Orders } from './collections/Orders'
 import { Plans } from './collections/Plans'
+import { Dimensions } from './collections/Dimensions'
+import { CustomerTypes } from './collections/CustomerTypes'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -31,7 +33,19 @@ export default buildConfig({
       titleSuffix: ' - پنل مدیریت پرشین‌پارت',
     },
   },
-  collections: [Admins, Users, Media, Categories, Brands, Tags, Products, Orders, Plans],
+  collections: [
+    Admins,
+    Users,
+    CustomerTypes,
+    Media,
+    Categories,
+    Brands,
+    Tags,
+    Dimensions,
+    Products,
+    Orders,
+    Plans,
+  ],
   editor: lexicalEditor(),
   graphQL: {
     disable: true,

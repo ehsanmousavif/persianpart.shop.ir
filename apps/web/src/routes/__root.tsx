@@ -4,6 +4,7 @@ import { AppHeader } from '../components/layout/app-header'
 import { MobileBottomNav } from '../components/layout/mobile-bottom-nav'
 import { ToastContainer } from '../components/feedback/toast'
 import { authStore, useAuth } from '../features/auth/auth-store'
+import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
 
 export const Route = createRootRoute({
   beforeLoad: ({ location }) => {
@@ -45,22 +46,24 @@ function RootComponent() {
   }, [isAuthenticated, isLoginPage, navigate])
 
   return (
-    <div className="min-h-screen bg-slate-200/60 flex justify-center selection:bg-slate-200 selection:text-slate-900" dir="rtl">
-      <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-xl relative border-x border-slate-200/90">
-        <AppHeader />
+    <NuqsAdapter>
+      <div className="min-h-screen bg-slate-200/60 flex justify-center selection:bg-slate-200 selection:text-slate-900" dir="rtl">
+        <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-xl relative border-x border-slate-200/90">
+          <AppHeader />
 
-        {/* Main App Content Area */}
-        <main className={`flex-1 w-full ${isLoginPage ? 'pb-6' : 'pb-24'}`}>
-          <Outlet />
-        </main>
+          {/* Main App Content Area */}
+          <main className={`flex-1 w-full ${isLoginPage ? 'pb-6' : 'pb-24'}`}>
+            <Outlet />
+          </main>
 
-        {/* Permanent Bottom Navigation Bar (Hidden on login) */}
-        {!isLoginPage && <MobileBottomNav />}
+          {/* Permanent Bottom Navigation Bar (Hidden on login) */}
+          {!isLoginPage && <MobileBottomNav />}
 
-        {/* Global Toast Notification Container */}
-        <ToastContainer />
+          {/* Global Toast Notification Container */}
+          <ToastContainer />
+        </div>
       </div>
-    </div>
+    </NuqsAdapter>
   )
 }
 

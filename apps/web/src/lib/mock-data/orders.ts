@@ -1,13 +1,15 @@
 export type OrderStatus =
   | 'pending'
-  | 'checking'
+  | 'approve'
   | 'approved'
-  | 'preparing'
-  | 'shipping'
+  | 'cancel'
+  | 'cancelled'
+  | 'checking'
   | 'completed'
   | 'cancelled_by_customer'
   | 'cancelled_by_admin'
-  | 'cancelled'
+  | 'preparing'
+  | 'shipping'
   | 'processing'
   | 'ready'
 
@@ -39,12 +41,12 @@ export interface Order {
   date: string
   createdAt?: string
   status: OrderStatus
+  cancelledBy?: 'customer' | 'admin'
   statusLabel: string
   storeName: string
   customerName: string
   customerPhone: string
   deliveryAddress: string
-  deliveryMethod: string
   notes?: string
   cancellationDeadline?: string
   items: OrderItem[]
@@ -56,20 +58,22 @@ export interface Order {
 }
 
 export const ORDER_STATUS_MAP: Record<
-  OrderStatus,
+  string,
   { label: string; color: 'warning' | 'primary' | 'secondary' | 'success' | 'danger' | 'default' }
 > = {
-  pending: { label: 'در انتظار تأیید اولیه', color: 'warning' },
-  checking: { label: 'در حال بررسی واحد بازرگانی', color: 'secondary' },
-  approved: { label: 'تأیید شده بازرگانی', color: 'secondary' },
-  preparing: { label: 'در حال آماده‌سازی و بارگیری', color: 'primary' },
-  shipping: { label: 'در حال ارسال و بارنامه', color: 'primary' },
-  completed: { label: 'تکمیل شده و تحویل نهایی', color: 'success' },
-  cancelled_by_customer: { label: 'لغو شده توسط خریدار', color: 'danger' },
-  cancelled_by_admin: { label: 'لغو شده توسط مدیریت / بازرگانی', color: 'danger' },
+  pending: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
+  approve: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
+  approved: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
+  cancel: { label: 'لغو شده', color: 'danger' },
   cancelled: { label: 'لغو شده', color: 'danger' },
-  processing: { label: 'در حال آماده‌سازی', color: 'primary' },
-  ready: { label: 'آماده تحویل و بارنامه', color: 'primary' },
+  checking: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
+  preparing: { label: 'ثبت سفارش توسط واحد بازرگانی', color: 'primary' },
+  shipping: { label: 'در حال ارسال', color: 'primary' },
+  completed: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
+  cancelled_by_customer: { label: 'لغو توسط مشتری', color: 'danger' },
+  cancelled_by_admin: { label: 'لغو توسط ادمین', color: 'danger' },
+  processing: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
+  ready: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
 }
 
 export const MOCK_ORDERS: Order[] = []

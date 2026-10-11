@@ -26,6 +26,17 @@ body {
   user-select: text;
   font-feature-settings: 'ss01' 1;
   line-height: 1.6;
+  background-color: white;
+}
+/* Prevent iOS input focus zoom */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+input,
+textarea,
+select {
+  font-size: inherit;
 }
 
 /* Persian typography: ensure cursive continuity and prevent glyph clipping */

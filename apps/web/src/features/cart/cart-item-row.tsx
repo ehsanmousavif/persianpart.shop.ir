@@ -9,7 +9,7 @@ export interface CartItemRowProps {
 }
 
 export function CartItemRow({ item }: CartItemRowProps) {
-  const { updateCartonCount, removeItem } = useCart()
+  const { updateRequestedArea, removeItem } = useCart()
 
   return (
     <div className="bg-white border border-slate-200/90 rounded-2xl p-3 transition-all shadow-xs space-y-2.5 text-start">
@@ -24,7 +24,12 @@ export function CartItemRow({ item }: CartItemRowProps) {
           </div>
           <button
             type="button"
-            onClick={() => updateCartonCount(item.productId, item.stockCartons)}
+            onClick={() =>
+              updateRequestedArea(
+                item.productId,
+                Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100
+              )
+            }
             className="text-xs font-semibold text-amber-900 underline cursor-pointer shrink-0"
           >
             اصلاح به سقف
@@ -72,11 +77,13 @@ export function CartItemRow({ item }: CartItemRowProps) {
           title="مشاهده مشخصات کالا در کاتالوگ"
         >
           <img
-            src={item.image || '/assets/images/tile-sample-1.jpg'}
+            src={item.image || '/assets/images/placeholder.svg'}
             alt={item.name}
             className="w-full h-full object-cover"
             onError={(e) => {
-              e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+              if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                e.currentTarget.src = '/assets/images/placeholder.svg'
+              }
             }}
           />
         </Link>
@@ -110,35 +117,53 @@ export function CartItemRow({ item }: CartItemRowProps) {
 
           <div className="flex items-center gap-1 text-xs text-slate-500 mt-1">
             <BoxIcon size={13} className="text-slate-400" />
-            <span>متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong></span>
-            <span className="text-xs text-slate-500">({toPersianDigits(item.cartonCount)} ک)</span>
+            <span>متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong> م²</span>
+            <span className="text-xs text-slate-500">({toPersianDigits(item.cartonCount)} کارتن بر اساس ضریب {toPersianDigits(item.sqmPerCarton)})</span>
           </div>
         </div>
       </div>
 
-      {/* Stepper & Total Price Row */}
-      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-        {/* Stepper */}
-        <div className="flex items-center border border-slate-300 rounded-xl bg-slate-50 h-8.5 overflow-hidden">
-          <button
-            type="button"
-            onClick={() => updateCartonCount(item.productId, item.cartonCount + 1)}
-            className="w-8 h-full flex items-center justify-center text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:bg-slate-300"
-            title="افزایش تعداد کارتن"
-          >
-            <PlusIcon size={14} />
-          </button>
-          <span className="px-2.5 text-xs font-bold text-slate-900 select-none min-w-[46px] text-center">
-            {toPersianDigits(item.cartonCount)} ک
+      {/* Meter Stepper & Auto-calculated Cartons & Total Price Row */}
+      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+        {/* Meter Stepper & Calculated Cartons */}
+        <div className="flex items-center gap-2">
+          <div className="flex items-center border border-slate-300 rounded-xl bg-slate-50 h-8.5 overflow-hidden">
+            <button
+              type="button"
+              onClick={() =>
+                updateRequestedArea(
+                  item.productId,
+                  Math.round(((item.requestedArea || item.deliverableArea) + 1) * 10) / 10
+                )
+              }
+              className="w-8 h-full flex items-center justify-center text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:bg-slate-300"
+              title="افزایش متراژ (متر مربع)"
+            >
+              <PlusIcon size={14} />
+            </button>
+            <span
+              className="px-2 text-xs font-bold text-slate-900 select-none min-w-[56px] text-center"
+              dir="ltr"
+            >
+              {toPersianDigits(item.requestedArea || item.deliverableArea)} م²
+            </span>
+            <button
+              type="button"
+              onClick={() =>
+                updateRequestedArea(
+                  item.productId,
+                  Math.max(1, Math.round(((item.requestedArea || item.deliverableArea) - 1) * 10) / 10)
+                )
+              }
+              className="w-8 h-full flex items-center justify-center text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:bg-slate-300"
+              title="کاهش متراژ (متر مربع)"
+            >
+              <MinusIcon size={14} />
+            </button>
+          </div>
+          <span className="text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-1 rounded-lg">
+            {toPersianDigits(item.cartonCount)} کارتن
           </span>
-          <button
-            type="button"
-            onClick={() => updateCartonCount(item.productId, item.cartonCount - 1)}
-            className="w-8 h-full flex items-center justify-center text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer active:bg-slate-300"
-            title="کاهش تعداد کارتن"
-          >
-            <MinusIcon size={14} />
-          </button>
         </div>
 
         {/* Pricing */}

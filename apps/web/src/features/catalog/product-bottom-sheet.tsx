@@ -1,8 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Modal as HeroUIModal } from '@heroui/react'
+import { Modal as HeroUIModal, Chip } from '@heroui/react'
 import type { Product } from '../../lib/mock-data/products'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { ImageViewerModal } from '../../components/ui/image-viewer-modal'
+import { formatGrade } from './catalog-store'
 import {
   XIcon,
   ZoomInIcon,
@@ -45,28 +46,37 @@ export function ProductBottomSheet({
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null)
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
 
-  // Consolidate tile angles and sample works into a unified HeroUI Pro item-card-group
+  // Consolidate tile angles and sample works into a unified gallery
   const mediaItems: GalleryMediaItem[] = useMemo(() => {
     if (!product) return []
     const items: GalleryMediaItem[] = []
+    const seen = new Set<string>()
 
-    product.images.forEach((img, idx) => {
+    const all = [
+      ...(product.images || []),
+      ...(product.gallery || []),
+    ].filter(Boolean)
+
+    all.forEach((url, idx) => {
+      if (!seen.has(url)) {
+        seen.add(url)
+        items.push({
+          id: `media-${idx}`,
+          url,
+          label: idx === 0 ? 'تصویر اصلی' : `نمونه‌کار ${toPersianDigits(idx)}`,
+          isSampleWork: idx > 0,
+        })
+      }
+    })
+
+    if (items.length === 0) {
       items.push({
-        id: `img-${idx}`,
-        url: img,
-        label: `تصویر ${toPersianDigits(idx + 1)}`,
+        id: 'placeholder',
+        url: '/assets/images/placeholder.svg',
+        label: 'تصویر شاخص',
         isSampleWork: false,
       })
-    })
-
-    product.gallery.forEach((sampleImg, idx) => {
-      items.push({
-        id: `sample-${idx}`,
-        url: sampleImg,
-        label: `نمونه‌کار ${toPersianDigits(idx + 1)}`,
-        isSampleWork: true,
-      })
-    })
+    }
 
     return items
   }, [product])
@@ -92,335 +102,349 @@ export function ProductBottomSheet({
           isDismissable
           className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end justify-center animate-backdrop-enter"
         >
-          <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-white rounded-t-3xl shadow-2xl flex flex-col max-h-[92vh] z-10 border-t border-slate-200 overflow-hidden animate-drawer-slide-up text-start">
+          <HeroUIModal.Container className="pointer-events-none w-full max-w-xl mx-auto h-auto p-0 flex flex-col items-center justify-end">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-white rounded-t-3xl shadow-2xl flex flex-col h-[67dvh] max-h-[67dvh] min-h-[67dvh] z-10 border-t border-slate-200 overflow-hidden animate-drawer-slide-up text-start">
               {/* Pull Handle Indicator */}
-              <div className="flex justify-center pt-2.5 pb-1 shrink-0">
-                <div className="w-10 h-1 rounded-full bg-slate-300" />
+              <div className="flex justify-center pt-2 pb-1 shrink-0">
+                <div className="w-8 h-1 rounded-full bg-slate-300" />
               </div>
 
-              {/* Header */}
-              <HeroUIModal.Header className="px-4 py-2.5 border-b border-slate-100 flex items-center justify-between shrink-0">
-                <div className="min-w-0 pe-2">
-                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2.5 py-0.5 rounded-md border border-blue-100">
+              {/* Header (Strictly Top-Right Aligned) */}
+              <HeroUIModal.Header className="px-3.5 py-2 border-b border-slate-100 flex items-start justify-between gap-2.5 shrink-0 text-start">
+                <div className="min-w-0 flex-1 flex flex-col items-start text-start">
+                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 self-start">
                     {product.category}
                   </span>
-                  <HeroUIModal.Heading className="text-base font-bold text-slate-900 mt-1 truncate">
+                  <HeroUIModal.Heading className="text-sm font-bold text-slate-900 mt-1 line-clamp-2 text-start leading-snug">
                     {product.name}
                   </HeroUIModal.Heading>
                 </div>
 
                 <HeroUIModal.CloseTrigger
                   onClick={onClose}
-                  className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer shrink-0"
+                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
                   aria-label="بستن پنجره جزئیات"
                 >
-                  <XIcon size={18} />
+                  <XIcon size={16} />
                 </HeroUIModal.CloseTrigger>
               </HeroUIModal.Header>
 
               {/* Scrollable Body */}
-              <HeroUIModal.Body className="p-4 overflow-y-auto overscroll-contain space-y-4 text-start">
-            {/* Unified HeroUI Pro item-card-group Gallery */}
-            <div className="space-y-2">
-              {/* 1. Main Hero Preview */}
-              <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs group">
-                <img
-                  src={currentHeroUrl || '/assets/images/tile-sample-1.jpg'}
-                  alt={product.name}
-                  className="w-full h-full object-cover transition-all duration-300"
-                  onError={(e) => {
-                    const target = e.currentTarget
-                    if (!target.src.includes('tile-sample-1.jpg') && !target.src.includes('placeholder.svg')) {
-                      target.src = '/assets/images/tile-sample-1.jpg'
-                    } else if (!target.src.includes('placeholder.svg')) {
-                      target.src = '/assets/images/placeholder.svg'
-                    }
-                  }}
-                />
+              <HeroUIModal.Body className="p-3.5 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-3 text-start">
+                {/* 1. Main Hero Preview */}
+                <div className="space-y-2">
+                  <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs group">
+                    <img
+                      src={currentHeroUrl || '/assets/images/placeholder.svg'}
+                      alt={product.name}
+                      className="w-full h-full object-cover transition-all duration-300"
+                      onError={(e) => {
+                        const target = e.currentTarget
+                        if (!target.src.endsWith('/assets/images/placeholder.svg')) {
+                          target.src = '/assets/images/placeholder.svg'
+                        }
+                      }}
+                    />
 
-                {/* Lightbox Trigger on Hero Preview */}
-                <button
-                  type="button"
-                  onClick={() => setZoomImageUrl(currentHeroUrl)}
-                  className="absolute bottom-2.5 end-2.5 px-3 py-1.5 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-xs font-semibold flex items-center gap-1.5 shadow-md cursor-pointer transition-transform active:scale-95"
-                >
-                  <ZoomInIcon size={14} />
-                  <span>بزرگ‌نمایی و زوم</span>
-                </button>
+                    {/* Lightbox Trigger on Hero Preview */}
+                    <button
+                      type="button"
+                      onClick={() => setZoomImageUrl(currentHeroUrl)}
+                      className="absolute bottom-2 end-2 px-2.5 py-1 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-[10px] font-semibold flex items-center gap-1 shadow-md cursor-pointer transition-transform active:scale-95"
+                    >
+                      <ZoomInIcon size={12} />
+                      <span>بزرگ‌نمایی و زوم</span>
+                    </button>
 
-                {/* Stock Status Badge */}
-                <div className="absolute top-2.5 start-2.5 flex items-center gap-1.5">
-                  {isOutOfStock ? (
-                    <span className="px-2.5 py-0.5 rounded-lg bg-rose-600 text-white text-xs font-semibold shadow-xs">
-                      ناموجود در انبار
-                    </span>
-                  ) : isLowStock ? (
-                    <span className="px-2.5 py-0.5 rounded-lg bg-amber-500 text-white text-xs font-semibold shadow-xs">
-                      موجودی محدود ({toPersianDigits(product.inventorySqm)})
-                    </span>
-                  ) : (
-                    <span className="px-2.5 py-0.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold shadow-xs">
-                      موجود در انبار
-                    </span>
-                  )}
+                    {/* Stock Status Badge */}
+                    <div className="absolute top-2 start-2 flex items-center gap-1">
+                      {isOutOfStock ? (
+                        <span className="px-2 py-0.5 rounded-lg bg-rose-600 text-white text-[10px] font-semibold shadow-xs">
+                          ناموجود در انبار
+                        </span>
+                      ) : isLowStock ? (
+                        <span className="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-semibold shadow-xs">
+                          موجودی محدود ({toPersianDigits(product.inventorySqm)})
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded-lg bg-emerald-600 text-white text-[10px] font-semibold shadow-xs">
+                          موجود در انبار
+                        </span>
+                      )}
 
-                  {currentMediaItem?.isSampleWork && (
-                    <span className="px-2.5 py-0.5 rounded-lg bg-blue-600 text-white text-xs font-semibold shadow-xs">
-                      نمونه‌کار اجرایی
-                    </span>
-                  )}
-                </div>
-              </div>
+                      {currentMediaItem?.isSampleWork && (
+                        <span className="px-2 py-0.5 rounded-lg bg-blue-600 text-white text-[10px] font-semibold shadow-xs">
+                          نمونه‌کار اجرایی
+                        </span>
+                      )}
+                    </div>
+                  </div>
 
-              {/* 2. Item-Card-Group Strip: Interactive Thumbnail Cards (Pure Photos) */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between text-xs text-slate-500 px-0.5">
-                  <span className="font-bold text-slate-700">تصاویر و نمونه‌کارها</span>
-                </div>
+                  {/* 2. Interactive Thumbnail Cards */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between px-0.5">
+                      <span className="text-[11px] text-slate-600 font-bold">
+                        مشاهده نمونه‌کارها
+                      </span>
 
-                <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
-                  {mediaItems.map((item) => {
-                    const isActive = item.url === currentHeroUrl
-
-                    return (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setActiveImageUrl(item.url)}
-                        aria-label={item.label}
-                        title={item.label}
-                        className={`group relative w-16 h-16 sm:w-18 sm:h-18 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer select-none active:scale-95 ${
-                          isActive
-                            ? 'border-slate-900 ring-2 ring-slate-900/20 shadow-md scale-[1.03] opacity-100'
-                            : 'border-slate-200/90 hover:border-slate-400 opacity-70 hover:opacity-100'
+                      <Chip
+                        size="sm"
+                        variant="soft"
+                        color={isOutOfStock ? 'danger' : isLowStock ? 'warning' : 'success'}
+                        className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border ${
+                          isOutOfStock
+                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            : isLowStock
+                            ? 'bg-amber-50 text-amber-800 border-amber-200'
+                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                         }`}
                       >
-                        <img
-                          src={item.url || '/assets/images/tile-sample-1.jpg'}
-                          alt=""
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250"
-                          onError={(e) => {
-                            const target = e.currentTarget
-                            if (!target.src.includes('tile-sample-1.jpg') && !target.src.includes('placeholder.svg')) {
-                              target.src = '/assets/images/tile-sample-1.jpg'
-                            } else if (!target.src.includes('placeholder.svg')) {
-                              target.src = '/assets/images/placeholder.svg'
-                            }
-                          }}
-                        />
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            </div>
+                        {isOutOfStock ? (
+                          'ناموجود در انبار'
+                        ) : (
+                          <>
+                            موجودی انبار: {toPersianDigits(product.inventorySqm)} متر ({toPersianDigits(product.stockCartons)} کارتن)
+                          </>
+                        )}
+                      </Chip>
+                    </div>
 
-            {/* Price & Selection Action Strip */}
-            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-3">
-              <div>
-                <span className="text-xs text-slate-500 font-medium block mb-0.5">
-                  {product.discountPercent ? 'قیمت با تخفیف طرح:' : 'قیمت همکاری:'}
-                </span>
-                {product.discountPercent ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-base font-bold text-rose-600">
-                      {formatToman(product.finalCustomerPricePerSqm)}
-                    </span>
-                    <span className="text-xs text-slate-400 line-through">
-                      {formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}
-                    </span>
-                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700">
-                      {toPersianDigits(product.discountPercent)}٪ تخفیف
-                    </span>
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
+                      {mediaItems.map((item) => {
+                        const isActive = item.url === currentHeroUrl
+
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => setActiveImageUrl(item.url)}
+                            aria-label={item.label}
+                            title={item.label}
+                            className={`group relative w-13 h-13 sm:w-14 sm:h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer select-none active:scale-95 ${
+                              isActive
+                                ? 'border-slate-900 ring-2 ring-slate-900/20 shadow-xs scale-[1.03] opacity-100'
+                                : 'border-slate-200 hover:border-slate-400 opacity-70 hover:opacity-100'
+                            }`}
+                          >
+                            <img
+                              src={item.url || '/assets/images/placeholder.svg'}
+                              alt=""
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250"
+                              onError={(e) => {
+                                const target = e.currentTarget
+                                if (!target.src.endsWith('/assets/images/placeholder.svg')) {
+                                  target.src = '/assets/images/placeholder.svg'
+                                }
+                              }}
+                            />
+                          </button>
+                        )
+                      })}
+                    </div>
                   </div>
-                ) : (
-                  <span className="text-base font-bold text-slate-900">
-                    {formatToman(product.finalCustomerPricePerSqm)}
-                  </span>
-                )}
-                <span className="text-xs text-slate-500 font-medium ms-1">/ هر متر مربع</span>
-              </div>
+                </div>
 
-              <div className="flex items-center gap-2">
-                {onToggleSelect && !isOutOfStock && (
-                  <button
-                    type="button"
-                    onClick={onToggleSelect}
-                    className={`px-3 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95 ${
-                      isSelected
-                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
-                        : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
-                    }`}
-                  >
-                    {isSelected ? (
+                {/* Price & Selection Action Strip (Strictly 1-Line, Cleaned per user specs) */}
+                <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2">
+                  <div className="min-w-0 flex items-baseline gap-1.5 whitespace-nowrap">
+                    {product.discountPercent ? (
                       <>
-                        <CheckIcon size={14} className="stroke-[3] text-emerald-600" />
-                        <span>انتخاب‌شده</span>
+                        <span className="text-sm font-extrabold text-rose-600">
+                          {formatToman(product.finalCustomerPricePerSqm)}
+                        </span>
+                        <span className="text-[10px] text-slate-400 line-through">
+                          {formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}
+                        </span>
+                        <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700">
+                          {toPersianDigits(product.discountPercent)}٪
+                        </span>
                       </>
                     ) : (
-                      <>
-                        <PlusIcon size={14} className="stroke-[3]" />
-                        <span>افزودن به لیست</span>
-                      </>
+                      <span className="text-sm font-extrabold text-slate-900">
+                        {formatToman(product.finalCustomerPricePerSqm)}
+                      </span>
                     )}
-                  </button>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
+                    {onToggleSelect && !isOutOfStock && (
+                      <button
+                        type="button"
+                        onClick={onToggleSelect}
+                        className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap shrink-0 ${
+                          isSelected
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
+                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                        }`}
+                      >
+                        {isSelected ? (
+                          <>
+                            <CheckIcon size={13} className="stroke-[3] text-emerald-600" />
+                            <span>انتخاب‌شده</span>
+                          </>
+                        ) : (
+                          <>
+                            <PlusIcon size={13} className="stroke-[3]" />
+                            <span>افزودن به لیست</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {onOrderDirect && !isOutOfStock && (
+                      <button
+                        type="button"
+                        onClick={() => onOrderDirect(product)}
+                        className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-blue-500/20 active:scale-95 whitespace-nowrap shrink-0"
+                      >
+                        <span>ثبت سفارش</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Structured Specifications with Solar Icons */}
+                <div className="space-y-1.5">
+                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                      <SolarLayersIcon size={13} />
+                    </span>
+                    <span>مشخصات فنی</span>
+                  </h3>
+
+                  <div className="grid grid-cols-2 gap-1.5 text-xs">
+                    {/* Dimensions (Solar Ruler) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarRulerIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">ابعاد</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Authoritative sqmPerCarton (Solar Box) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarBoxIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">متراژ در کارتن</span>
+                        <span className="font-bold text-blue-700 text-xs leading-normal truncate block">
+                          {toPersianDigits(product.sqmPerCarton)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* SKU Code (Solar Tag) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarTagIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">شناسه کالا (SKU)</span>
+                        <span className="font-mono font-bold text-slate-800 text-xs leading-normal truncate block" dir="ltr">
+                          {product.sku}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Pieces per carton (Solar Layers) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarLayersIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">تعداد در کارتن</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {toPersianDigits(product.piecesPerCarton)} برگ
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Brand & Factory (Solar Shop) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarShopIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">برند سازنده</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {product.brand}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Grade (Solar Shield Check) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarShieldCheckIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">درجه کیفی</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {formatGrade(product.grade)}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Color Spectrum (Solar Palette) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarPaletteIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">رنگ</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {product.color}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Weight (Solar Scale) */}
+                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                        <SolarScaleIcon size={14} />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">وزن کارتن</span>
+                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                          {toPersianDigits(product.cartonWeightKg)} کیلوگرم
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Optional Rich Description */}
+                {(product.richDescription || product.description) && (
+                  <div className="p-2.5 bg-slate-50/60 rounded-xl border border-slate-200/60 space-y-0.5">
+                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">
+                      توضیحات
+                    </span>
+                    <p className="text-[11px] text-slate-700 leading-relaxed">
+                      {product.richDescription || product.description}
+                    </p>
+                  </div>
                 )}
 
-                {onOrderDirect && !isOutOfStock && (
-                  <button
-                    type="button"
-                    onClick={() => onOrderDirect(product)}
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1.5 transition-all cursor-pointer shadow-md shadow-blue-500/20 active:scale-95"
-                  >
-                    <span>ثبت سفارش</span>
-                  </button>
+                {/* Tags */}
+                {product.tags.length > 0 && (
+                  <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-slate-500 font-medium">ویژگی‌ها:</span>
+                    {product.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold"
+                      >
+                        #{tag}
+                      </span>
+                    ))}
+                  </div>
                 )}
-              </div>
-            </div>
-
-            {/* Structured Specifications with Solar Icons */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
-                  <SolarLayersIcon size={14} />
-                </span>
-                <span>مشخصات فنی</span>
-              </h3>
-
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {/* Dimensions (Solar Ruler) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarRulerIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">ابعاد</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Authoritative sqmPerCarton (Solar Box) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarBoxIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ در کارتن</span>
-                    <span className="font-bold text-blue-700 text-sm leading-normal truncate block">
-                      {toPersianDigits(product.sqmPerCarton)}
-                    </span>
-                  </div>
-                </div>
-
-                {/* SKU Code (Solar Tag) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarTagIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">شناسه کالا (SKU)</span>
-                    <span className="font-mono font-bold text-slate-800 text-sm leading-normal truncate block" dir="ltr">
-                      {product.sku}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Pieces per carton (Solar Layers) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarLayersIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">تعداد در کارتن</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {toPersianDigits(product.piecesPerCarton)} برگ
-                    </span>
-                  </div>
-                </div>
-
-                {/* Brand & Factory (Solar Shop) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarShopIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">برند سازنده</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {product.brand}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Grade & Finish (Solar Shield Check) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarShieldCheckIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">درجه و لعاب</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {product.grade} · {product.finish}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Color Spectrum (Solar Palette) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarPaletteIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">رنگ</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {product.color}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Weight (Solar Scale) */}
-                <div className="p-2.5 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
-                    <SolarScaleIcon size={16} />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">وزن کارتن</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {toPersianDigits(product.cartonWeightKg)} کیلوگرم
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Optional Rich Description */}
-            {(product.richDescription || product.description) && (
-              <div className="p-3 bg-slate-50/60 rounded-xl border border-slate-200/60 space-y-1">
-                <span className="text-xs font-semibold text-slate-500 block mb-1">
-                  توضیحات
-                </span>
-                <p className="text-xs text-slate-700 leading-relaxed">
-                  {product.richDescription || product.description}
-                </p>
-              </div>
-            )}
-
-            {/* Tags */}
-            {product.tags.length > 0 && (
-              <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1.5">
-                <span className="text-xs text-slate-500 font-medium">ویژگی‌ها:</span>
-                {product.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-semibold"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            )}
               </HeroUIModal.Body>
             </HeroUIModal.Dialog>
           </HeroUIModal.Container>

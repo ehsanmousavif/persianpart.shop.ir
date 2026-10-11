@@ -243,11 +243,13 @@ export function PreInvoiceModal({
                       <div className="flex items-center gap-2.5 min-w-0">
                         <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
                           <img
-                            src={item.product.images[0] || '/assets/images/tile-sample-1.jpg'}
+                            src={item.product.images[0] || '/assets/images/placeholder.svg'}
                             alt={item.product.name}
                             className="w-full h-full object-cover"
                             onError={(e) => {
-                              e.currentTarget.src = '/assets/images/tile-sample-1.jpg'
+                              if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                                e.currentTarget.src = '/assets/images/placeholder.svg'
+                              }
                             }}
                           />
                         </div>

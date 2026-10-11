@@ -273,14 +273,14 @@ export function ProfileView() {
               <TextField name="address" className="space-y-1 text-start">
                 <Label className="text-xs font-semibold text-slate-700 flex items-center gap-1">
                   <MapPinIcon size={14} className="text-slate-400" />
-                  <span>نشانی دقیق انبار بارگیری و تخلیه بار</span>
+                  <span>نشانی دقیق انبار یا محل تحویل</span>
                 </Label>
                 <TextArea
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
                   className="w-full px-3 py-2 text-xs font-medium text-slate-800 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 outline-none transition-all leading-relaxed"
-                  placeholder="نشانی کامل انبار یا محل تخلیه بار..."
+                  placeholder="نشانی کامل انبار یا محل تحویل سفارش..."
                 />
               </TextField>
             </FieldGroup>
@@ -353,7 +353,7 @@ export function ProfileView() {
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <MapPinIcon size={17} className="text-slate-400 mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <span className="text-xs font-semibold text-slate-500 block">نشانی انبار تحویل و بارگیری</span>
+              <span className="text-xs font-semibold text-slate-500 block">نشانی انبار یا محل تحویل</span>
               <span className="text-xs sm:text-sm font-bold text-slate-800 leading-relaxed block mt-0.5">
                 {user.address}
               </span>

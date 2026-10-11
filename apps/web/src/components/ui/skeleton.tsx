@@ -5,9 +5,9 @@ export { HeroUISkeleton as Skeleton }
 export function ProductCardSkeleton({
   viewMode = 'list',
 }: {
-  viewMode?: 'list' | 'grid-2' | 'compact' | 'showcase'
+  viewMode?: 'list' | 'grid-2' | 'grid-3' | 'compact' | 'showcase'
 } = {}) {
-  if (viewMode === 'grid-2') {
+  if (viewMode === 'grid-2' || viewMode === 'grid-3') {
     return (
       <div className="flex flex-col bg-white border border-slate-200/90 rounded-2xl p-2.5 sm:p-3 shadow-xs space-y-2.5">
         <HeroUISkeleton className="w-full aspect-square rounded-xl" />

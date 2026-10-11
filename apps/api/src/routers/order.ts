@@ -181,28 +181,27 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
   }
 
   if (
+    orderDoc.status === 'cancel' ||
+    orderDoc.status === 'cancelled' ||
     orderDoc.status === 'cancelled_by_customer' ||
-    orderDoc.status === 'cancelled_by_admin' ||
-    orderDoc.status === 'cancelled'
+    orderDoc.status === 'cancelled_by_admin'
   ) {
     return orderDoc
   }
 
-  const deadline = (orderDoc as any).cancellationDeadline
-    ? new Date((orderDoc as any).cancellationDeadline).getTime()
-    : new Date(orderDoc.createdAt).getTime() + 10 * 60 * 1000
+  const deadline = new Date(orderDoc.createdAt).getTime() + 3 * 60 * 1000
 
   if (Date.now() > deadline) {
     throw errors.BAD_REQUEST({
-      message: 'مهلت ۱۰ دقیقه‌ای لغو سفارش به پایان رسیده است و امکان لغو وجود ندارد.',
-    })
+message: 'مهلت لغو سفارش توسط مشتری منقضی شده است',})
   }
 
   return await payload.crud.orders.update({
     id: input.id,
     data: {
-      status: 'cancelled_by_customer',
-      notes: input.reason ? `دلیل لغو: ${input.reason}` : 'لغو توسط خریدار در مهلت ۱۰ دقیقه',
+      status: 'cancel',
+      cancelledBy: 'customer',
+      notes: input.reason ? `دلیل لغو: ${input.reason}` : 'لغو توسط مشتری',
     },
   })
 })
@@ -294,8 +293,9 @@ const staffCancel = base.order.staffCancel.handler(async ({ input }) => {
   return await payload.crud.orders.update({
     id: input.id,
     data: {
-      status: 'cancelled_by_admin',
-      notes: input.cancellationReason || input.cancellationNote || 'لغو توسط مدیریت / واحد بازرگانی',
+      status: 'cancel',
+      cancelledBy: 'admin',
+      notes: input.cancellationReason || input.cancellationNote || 'لغو توسط ادمین',
     },
   })
 })

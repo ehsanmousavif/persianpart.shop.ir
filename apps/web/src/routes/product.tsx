@@ -7,3 +7,4 @@ export const Route = createFileRoute('/product')({
 function ProductLayout() {
   return <Outlet />
 }
+ 
