@@ -185,87 +185,88 @@ export function PreInvoiceModal({
 
             {/* Scrollable Body */}
             <HeroUIModal.Body className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
-              {/* 10-Minute Expiration Warning Banner with Live Countdown */}
-              <div className="p-3 sm:p-3.5 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-3 text-amber-950">
-                <div className="flex items-center gap-2.5 min-w-0">
+              {/* 10-Minute Expiration Warning Banner with Stable Non-Jittering Live Countdown */}
+              <div className="p-3 bg-amber-50/90 border border-amber-200/90 rounded-2xl flex items-center justify-between gap-2.5 text-amber-950">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
                   <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200">
                     <ClockIcon size={18} />
                   </div>
-                  <div className="leading-tight min-w-0">
-                    <span className="font-bold text-xs block">این فاکتور به مدت ده دقیقه اعتبار دارد و پس از آن امکان لغو توسط مشتری مقدور نمی باشد</span>
+                  <div className="flex-1 min-w-0">
+                    <span className="font-bold text-xs block leading-snug text-amber-950">
+                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو توسط مشتری مقدور نمی‌باشد
+                    </span>
                   </div>
                 </div>
 
-                {/* Countdown Badge */}
-                <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs shrink-0">
-                  <span className={`w-2 h-2 rounded-full ${secondsRemaining < 120 ? 'bg-rose-500 animate-ping' : 'bg-amber-500'}`} />
-                  <span className="font-bold text-xs sm:text-sm text-slate-900" dir="ltr">
+                {/* Countdown Badge: Invariant Fixed Width (Cannot Resize or Push Text) */}
+                <div className="w-[82px] h-8 shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs select-none">
+                  <span className={`w-2 h-2 rounded-full shrink-0 ${secondsRemaining < 120 ? 'bg-rose-500 animate-ping' : 'bg-amber-500'}`} />
+                  <span className="font-bold text-xs sm:text-sm text-slate-900 tabular-nums font-mono w-11 text-center" dir="ltr">
                     {formatTimer(secondsRemaining)}
                   </span>
                 </div>
               </div>
 
-              {/* Items Table / Detailed Breakdown */}
-              <div className="flerounded-2xl overflow-hidden shadow-2xs">
-
-                <div className=" divide-slate-100">
-                  {invoiceItems.map((item) => (
-                    <div
-                      key={item.product.id}
-                      className="p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs hover:bg-slate-50/50 transition-colors"
-                    >
-                      {/* Product Thumbnail & Details */}
-                      <div className="flex items-center gap-2.5 min-w-0">
-                        <div className="w-12 h-12 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
-                          <img
-                            src={item.product.images[0] || '/assets/images/placeholder.svg'}
-                            alt={item.product.name}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                                e.currentTarget.src = '/assets/images/placeholder.svg'
-                              }
-                            }}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h4 className="font-bold text-slate-900 truncate">
-                            {item.product.name}
-                          </h4>
-                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-0.5">
-                            <span>ابعاد: {toPersianDigits(item.product.dimensions.width)}×{toPersianDigits(item.product.dimensions.height)}</span>
-                            <span>•</span>
-                            <span>{item.product.brand}</span>
-                          </div>
-                        </div>
+              {/* Items List (Mobile-styled Cards on all viewports) */}
+              <div className="space-y-2.5">
+                {invoiceItems.map((item) => (
+                  <div
+                    key={item.product.id}
+                    className="p-3 bg-white border border-slate-200/90 rounded-2xl shadow-2xs space-y-2.5 text-xs hover:border-slate-300 transition-colors text-start"
+                  >
+                    {/* Product Thumbnail & Details */}
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-13 h-13 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
+                        <img
+                          src={item.product.images[0] || '/assets/images/placeholder.svg'}
+                          alt={item.product.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
+                              e.currentTarget.src = '/assets/images/placeholder.svg'
+                            }
+                          }}
+                        />
                       </div>
-
-                      {/* Calculation metrics */}
-                      <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-6 pt-2 sm:pt-0 border-t sm:border-t-0 border-slate-100">
-                        <div className="text-center sm:text-end">
-                          <span className="text-xs text-slate-500 block">تعداد کارتن</span>
-                          <span className="font-bold text-blue-700">
-                            {toPersianDigits(item.cartonCount)} کارتن
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-bold text-slate-900 text-xs sm:text-sm truncate leading-snug">
+                          {item.product.name}
+                        </h4>
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 flex-wrap">
+                          <span className="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold border border-slate-200/80 text-[11px]">
+                            ابعاد: {toPersianDigits(item.product.dimensions.width)} × {toPersianDigits(item.product.dimensions.height)}
                           </span>
-                        </div>
-
-                        <div className="text-center sm:text-end">
-                          <span className="text-xs text-slate-500 block">متراژ تحویلی</span>
-                          <span className="font-bold text-slate-800">
-                            {toPersianDigits(item.deliverableArea)}
-                          </span>
-                        </div>
-
-                        <div className="text-end min-w-[90px]">
-                          <span className="text-xs text-slate-500 block">مبلغ ردیف</span>
-                          <span className="font-bold text-slate-900 text-xs sm:text-sm">
-                            {formatToman(item.totalPrice)}
-                          </span>
+                          <span className="text-slate-300">•</span>
+                          <span className="text-slate-600 font-medium text-[11px]">{item.product.brand}</span>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    {/* Calculation Metrics: 3-column bottom strip like mobile */}
+                    <div className="flex items-center justify-between text-xs pt-2 border-t -mx-3 -mb-3 px-3 py-2 rounded-b-2xl ">
+                      <div className="text-start">
+                        <span className=" text-slate-400 block leading-tight">تعداد کارتن</span>
+                        <span className="font-bold text-blue-700 ">
+                          {toPersianDigits(item.cartonCount)} کارتن
+                        </span>
+                      </div>
+
+                      <div className="text-center">
+                        <span className=" text-slate-400 block leading-tight">متراژ </span>
+                        <span className="font-bold text-slate-800 ">
+                          {toPersianDigits(item.deliverableArea)} 
+                        </span>
+                      </div>
+
+                      <div className="text-end">
+                        <span className=" text-slate-400 block leading-tight">مبلغ</span>
+                        <span className="font-extrabold text-slate-900  ">
+                          {formatToman(item.totalPrice)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
 
               {/* Financial Summary without dark box */}
@@ -288,7 +289,7 @@ export function PreInvoiceModal({
 
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-bold text-slate-900">قیمت کل:</span>
-                  <span className="text-base sm:text-lg font-bold text-slate-900">
+                  <span className="text-base font-bold text-slate-900">
                     {formatToman(invoiceTotals.finalPayable)}
                   </span>
                 </div>
@@ -296,25 +297,24 @@ export function PreInvoiceModal({
             </HeroUIModal.Body>
 
             {/* Modal Footer with Two Required Action Buttons */}
-            <HeroUIModal.Footer className="p-3 sm:p-4 border-t border-slate-100 bg-slate-50/80 shrink-0">
-              <div className="grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center w-full">
+            <HeroUIModal.Footer className="p-3 sm:p-4 border-t w-full flex  border-slate-100 bg-slate-50/80 shrink-0">
+              <div className="flex items-stretch gap-2.5  w-full">
                 {/* Button 1: ویرایش مقادیر */}
                 <button
                   type="button"
                   onClick={onClose}
-                  className="sm:col-span-4 h-13 sm:h-14 px-4 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/90 shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
+                  className="sm:col-span-4 w-30 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/90 shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
                 >
                   <PencilIcon size={16} />
-                  <span>ویرایش مقادیر</span>
+                  <span>ویرایش</span>
                 </button>
 
-                {/* Button 2: تایید نهایی محصول (Hold Button با قفل چرخشی به تیک) */}
-                <div className="sm:col-span-8">
+                <div className="sm:col-span-8 flex-1">
                   <HoldConfirmButton
                     onConfirmed={handleFinalConfirm}
                     holdDurationMs={3000}
                     disabled={secondsRemaining === 0 || invoiceItems.length === 0}
-                    idleText="تایید نهایی سفارش (۳ ثانیه نگه‌دارید)"
+                    idleText="تایید نهایی سفارش"
                     holdingText="در حال تایید..."
                     confirmedText="تایید شد"
                   />

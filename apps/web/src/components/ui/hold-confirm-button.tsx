@@ -94,7 +94,7 @@ export function HoldConfirmButton({
         onPointerLeave={stopHolding}
         onPointerCancel={stopHolding}
         onContextMenu={(e) => e.preventDefault()}
-        className={`relative w-full h-13 sm:h-14 px-5 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between shadow-md cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
+        className={`relative w-full h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
           isConfirmed
             ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/25 shadow-lg'
             : isHolding
@@ -126,7 +126,7 @@ export function HoldConfirmButton({
                 ? 'درخواست شما ثبت قطعی گردید'
                 : isHolding
                 ? `${Math.round((progress / 100) * (holdDurationMs / 1000) * 10) / 10} ثانیه از ${Math.round(holdDurationMs / 1000)} ثانیه`
-                : 'انگشت خود را به مدت ۳ ثانیه نگه دارید'}
+                : 'به مدت ۳ ثانیه نگه دارید'}
             </span>
           </div>
 
