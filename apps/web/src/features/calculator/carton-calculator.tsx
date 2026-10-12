@@ -1,10 +1,10 @@
 import { useState, useId } from 'react'
-import type { Product } from '../../lib/mock-data/products'
+import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { useCart } from '../cart/cart-store'
 import { toast } from '../../components/feedback/toast'
-import { ShoppingCartIcon, BoxIcon, AlertTriangleIcon, CheckCircle2Icon } from '../../components/ui/icons'
+import { ShoppingCartIcon, BoxIcon, AlertTriangleIcon, CheckCircle2Icon, TomanIcon } from '../../components/ui/icons'
 
 export interface CartonCalculatorProps {
   product: Product
@@ -125,7 +125,12 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
             <strong className="text-amber-950 font-black underline decoration-amber-400">
               به اندازه {toPersianDigits(calc.extraArea)} متر مربع به بالا رُند شد
             </strong>{' '}
-            و معادل <strong>{toPersianDigits(calc.deliverableArea)} متر مربع</strong> ({toPersianDigits(calc.cartonCount)} کارتن پلمپ) به مبلغ کل {formatToman(calc.totalPrice)} محاسبه و ارسال خواهد شد.
+            و معادل <strong>{toPersianDigits(calc.deliverableArea)} متر مربع</strong> ({toPersianDigits(calc.cartonCount)} کارتن پلمپ) به مبلغ کل{' '}
+            <span className="inline-flex items-center gap-0.5 font-bold">
+              <span>{formatToman(calc.totalPrice)}</span>
+              <TomanIcon className="size-3" />
+            </span>{' '}
+            محاسبه و ارسال خواهد شد.
           </p>
         </div>
       )}
@@ -155,8 +160,9 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
 
         <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
           <span className="text-xs text-slate-500 font-medium block leading-tight mb-0.5">مبلغ کل برآورد</span>
-          <span className="text-sm font-bold text-emerald-700 truncate block">
-            {formatToman(calc.totalPrice)}
+          <span className="text-sm font-bold text-emerald-700 truncate inline-flex items-center gap-1">
+            <span>{formatToman(calc.totalPrice)}</span>
+            <TomanIcon className="size-3.5" />
           </span>
         </div>
       </div>

@@ -49,6 +49,246 @@ const CUSTOMER_TYPES: CustomerTypeSeed[] = [
   { name: 'تعمیرکار / مهندس پروژه', slug: 'mechanic', markupPercent: 0, description: 'مهندسان و پیمانکاران ساختمانی' },
 ]
 
+interface UserSeed {
+  phone: string
+  fullName: string
+  companyName: string
+  customerTypeSlug: string
+  address: string
+}
+
+interface OrderItemSeed {
+  productSku: string
+  requestedArea: number
+}
+
+interface OrderTimelineSeed {
+  timestamp: string
+  status: string
+  title?: string
+  description?: string
+  actorType?: 'customer' | 'staff' | 'system'
+}
+
+interface OrderSeed {
+  orderNumber: string
+  userPhone: string
+  status: 'pending' | 'approve' | 'cancel' | 'cancelled_by_customer' | 'cancelled_by_admin' | 'completed'
+  cancelledBy?: 'customer' | 'admin'
+  notes?: string
+  deliveryAddress: string
+  createdAt: string
+  items: OrderItemSeed[]
+  timeline: OrderTimelineSeed[]
+}
+
+interface PlanSeed {
+  title: string
+  userPhone: string
+  type: 'credit_terms' | 'product_discount'
+  discountPercent: number
+  status: 'active' | 'draft'
+  productSkus: string[]
+  content: string
+  notes: string
+}
+
+const USERS_SEED: UserSeed[] = [
+  {
+    phone: '09123456789',
+    fullName: 'آرش دهقان',
+    companyName: 'شرکت بازرگانی کاشی و پرسلان دهقان (تهران)',
+    customerTypeSlug: 'wholesaler',
+    address: 'تهران، خیابان ملاصدرا، پلاک ۱۴، بازرگانی دهقان',
+  },
+  {
+    phone: '09131234567',
+    fullName: 'مهندس کامران سهرابی',
+    companyName: 'شرکت ساختمانی آرمان بنا (اصفهان)',
+    customerTypeSlug: 'mechanic',
+    address: 'اصفهان، خیابان چهارباغ بالا، برج آسمان، واحد ۴۰۲',
+  },
+  {
+    phone: '09171234567',
+    fullName: 'مرتضی رضایی',
+    companyName: 'فروشگاه کاشی مدرن (شیراز)',
+    customerTypeSlug: 'store_partner',
+    address: 'شیراز، بلوار امیرکبیر، جنب مجتمع تجاری ایرانیان',
+  },
+]
+
+const ORDERS_SEED: OrderSeed[] = [
+  {
+    orderNumber: 'PP-1405-101',
+    userPhone: '09123456789',
+    status: 'pending',
+    deliveryAddress: 'تهران، پروژه ونک، خیابان ملاصدرا، پلاک ۱۴',
+    notes: 'تحویل سریع در پروژه ونک - تخلیه با لیفتراک',
+    createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+    items: [
+      { productSku: 'PP-CAL-60120-P', requestedArea: 43.2 },
+      { productSku: 'PP-CEM-100100-M', requestedArea: 40.0 },
+    ],
+    timeline: [
+      {
+        timestamp: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+        status: 'pending',
+        title: 'سفارش ثبت شده',
+        description: 'سفارش در سامانه ثبت گردید (مهلت ۱۰ دقیقه جهت لغو توسط مشتری فعال است).',
+        actorType: 'customer',
+      },
+    ],
+  },
+  {
+    orderNumber: 'PP-1405-102',
+    userPhone: '09123456789',
+    status: 'pending',
+    deliveryAddress: 'انبار مرکزی بازرگانی دهقان، شوروم اصلی',
+    notes: 'تحویل بارگیری عصرگاهی کارخانه',
+    createdAt: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+    items: [
+      { productSku: 'PP-MRQ-120240-P', requestedArea: 28.8 },
+    ],
+    timeline: [
+      {
+        timestamp: new Date(Date.now() - 45 * 60 * 1000).toISOString(),
+        status: 'pending',
+        title: 'سفارش ثبت شده',
+        description: 'سفارش با موفقیت در سامانه ثبت گردید.',
+        actorType: 'customer',
+      },
+      {
+        timestamp: new Date(Date.now() - 35 * 60 * 1000).toISOString(),
+        status: 'checking',
+        title: 'در حال بررسی واحد بازرگانی',
+        description: 'مهلت ۱۰ دقیقه‌ای کاربر به پایان رسید و سفارش در صف بررسی واحد بازرگانی قرار گرفت.',
+        actorType: 'system',
+      },
+    ],
+  },
+  {
+    orderNumber: 'PP-1405-103',
+    userPhone: '09123456789',
+    status: 'approve',
+    deliveryAddress: 'پروژه برج باغ نیاوران، تحویل مهندس کارگاه',
+    notes: 'حواله رسمی صادر شد. ارسال با تریلی کفی کارخانه تبریز.',
+    createdAt: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
+    items: [
+      { productSku: 'PP-ONX-80160-P', requestedArea: 51.2 },
+      { productSku: 'PP-WOD-20120-R', requestedArea: 36.0 },
+    ],
+    timeline: [
+      {
+        timestamp: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
+        status: 'pending',
+        title: 'سفارش ثبت شده',
+        description: 'سفارش توسط خریدار در پلتفرم ثبت شد.',
+        actorType: 'customer',
+      },
+      {
+        timestamp: new Date(Date.now() - (2 * 24 * 3600 - 600) * 1000).toISOString(),
+        status: 'checking',
+        title: 'در حال بررسی واحد بازرگانی',
+        description: 'بررسی تخصصی متراژ و هماهنگی ترابری مبدا انجام شد.',
+        actorType: 'system',
+      },
+      {
+        timestamp: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+        status: 'completed',
+        title: 'تکمیل شده',
+        description: 'حواله رسمی خروج از انبار صادر و سفارش با موفقیت نهایی گردید.',
+        actorType: 'staff',
+      },
+    ],
+  },
+  {
+    orderNumber: 'PP-1405-104',
+    userPhone: '09123456789',
+    status: 'cancelled_by_customer',
+    cancelledBy: 'customer',
+    deliveryAddress: 'انبار شماره ۲ شرکت آرمان بنا، اصفهان',
+    notes: 'دلیل لغو کاربر: تغییر در متراژ یا اقلام سفارش',
+    createdAt: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+    items: [
+      { productSku: 'PP-PAN-3090-G', requestedArea: 32.4 },
+    ],
+    timeline: [
+      {
+        timestamp: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+        status: 'pending',
+        title: 'سفارش ثبت شده',
+        description: 'سفارش ثبت گردید.',
+        actorType: 'customer',
+      },
+      {
+        timestamp: new Date(Date.now() - (5 * 3600 - 240) * 1000).toISOString(),
+        status: 'cancelled_by_customer',
+        title: 'لغو توسط کاربر',
+        description: 'سفارش در مهلت ۱۰ دقیقه توسط کاربر لغو گردید و موجودی به انبار بازگشت.',
+        actorType: 'customer',
+      },
+    ],
+  },
+  {
+    orderNumber: 'PP-1405-105',
+    userPhone: '09123456789',
+    status: 'cancelled_by_admin',
+    cancelledBy: 'admin',
+    deliveryAddress: 'فروشگاه کاشی مدرن، شیراز',
+    notes: 'دلیل لغو ادمین: عدم تأیید موجودی انبار کارخانه',
+    createdAt: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+    items: [
+      { productSku: 'PP-HEX-3060-G', requestedArea: 28.8 },
+    ],
+    timeline: [
+      {
+        timestamp: new Date(Date.now() - 12 * 3600 * 1000).toISOString(),
+        status: 'pending',
+        title: 'سفارش ثبت شده',
+        description: 'ثبت اولیه سفارش در سامانه.',
+        actorType: 'customer',
+      },
+      {
+        timestamp: new Date(Date.now() - (12 * 3600 - 600) * 1000).toISOString(),
+        status: 'checking',
+        title: 'در حال بررسی واحد بازرگانی',
+        description: 'سفارش وارد صف بررسی کارشناسان بازرگانی شد.',
+        actorType: 'system',
+      },
+      {
+        timestamp: new Date(Date.now() - 11 * 3600 * 1000).toISOString(),
+        status: 'cancelled_by_admin',
+        title: 'لغو توسط ادمین',
+        description: 'سفارش توسط مدیریت / واحد بازرگانی به علت عدم تایید موجودی انبار لغو گردید.',
+        actorType: 'staff',
+      },
+    ],
+  },
+]
+
+const PLANS_SEED: PlanSeed[] = [
+  {
+    title: 'تخفیف ویژه جشنواره فصلی بازرگانی دهقان',
+    userPhone: '09123456789',
+    type: 'product_discount',
+    discountPercent: 12,
+    status: 'active',
+    productSkus: ['PP-CAL-60120-P', 'PP-ONX-80160-P', 'PP-MRQ-120240-P'],
+    content: 'اعمال ۱۲٪ تخفیف اختصاصی برای خرید عمده پرسلان‌های لوکس کلاکاتا و اونیکس ویژه بازرگانی دهقان',
+    notes: 'اعمال ۱۲٪ تخفیف اضافه برای سفارش‌های بیش از ۱۰۰ متر اسلب و پرسلان لوکس',
+  },
+  {
+    title: 'طرح همکاری اعتباری مهندسان ساختمانی پروژه نیاوران',
+    userPhone: '09131234567',
+    type: 'credit_terms',
+    discountPercent: 8,
+    status: 'active',
+    productSkus: ['PP-CEM-100100-M', 'PP-WOD-20120-R'],
+    content: 'تسهیلات خرید اعتباری ۶۰ روزه با ضمانت بانکی و تخفیف نقدی ۸ درصدی برای تأمین سرامیک پروژه ساختمانی',
+    notes: 'تسویه اعتباری ۶۰ روزه با ضمانت بانکی',
+  },
+]
+
 interface ProductSeed {
   sku: string
   name: string
@@ -765,7 +1005,171 @@ export async function runSeed() {
     }
   }
 
-  // 6. Deactivate legacy dummy test products
+  // 6. Seed B2B Users
+  console.log('👤 Seeding B2B Users / Customers...')
+  const userMap = new Map<string, number>()
+  for (const u of USERS_SEED) {
+    const customerTypeId = customerTypeMap.get(u.customerTypeSlug) || Array.from(customerTypeMap.values())[0]
+    const existing = await payload.find({
+      collection: 'users',
+      where: { phone: { equals: u.phone } },
+      limit: 1,
+    })
+
+    let id: number
+    const userData: any = {
+      phone: u.phone,
+      fullName: u.fullName,
+      companyName: u.companyName,
+      customerType: customerTypeId,
+      status: 'active',
+      address: u.address,
+    }
+
+    if (existing.docs.length > 0) {
+      id = existing.docs[0].id
+      await payload.update({
+        collection: 'users',
+        id,
+        data: userData,
+      })
+    } else {
+      const created = await payload.create({
+        collection: 'users',
+        data: userData,
+      })
+      id = created.id
+    }
+    userMap.set(u.phone, id)
+  }
+  console.log(`✅ ${userMap.size} Users synchronized.`)
+
+  // 7. Seed Orders with rich Timelines
+  console.log(`📦 Seeding ${ORDERS_SEED.length} Orders with real typed Timelines...`)
+  let ordersCreated = 0
+  for (const ord of ORDERS_SEED) {
+    const userId = userMap.get(ord.userPhone) || Array.from(userMap.values())[0]
+
+    const itemsData: any[] = []
+    let calculatedSubtotal = 0
+
+    for (const it of ord.items) {
+      const prodExisting = await payload.find({
+        collection: 'products',
+        where: { sku: { equals: it.productSku } },
+        limit: 1,
+      })
+      if (prodExisting.docs.length > 0) {
+        const prod = prodExisting.docs[0] as any
+        const sqmPerCarton = prod.sqmPerCarton || 1.44
+        const cartonCount = Math.ceil(it.requestedArea / sqmPerCarton)
+        const deliverableArea = Math.round(cartonCount * sqmPerCarton * 100) / 100
+        const unitPrice = prod.basePricePerSqm || 600000
+        const totalPrice = Math.round(deliverableArea * unitPrice)
+
+        itemsData.push({
+          product: prod.id,
+          requestedArea: it.requestedArea,
+          cartonCount,
+          deliverableArea,
+          unitPrice,
+          totalPrice,
+        })
+        calculatedSubtotal += totalPrice
+      }
+    }
+
+    const orderData: any = {
+      orderNumber: ord.orderNumber,
+      user: userId,
+      status: ord.status,
+      cancelledBy: ord.cancelledBy || 'admin',
+      items: itemsData,
+      subtotal: calculatedSubtotal,
+      discountAmount: 0,
+      taxAmount: Math.round(calculatedSubtotal * 0.1),
+      finalTotal: Math.round(calculatedSubtotal * 1.1),
+      deliveryAddress: ord.deliveryAddress,
+      notes: ord.notes || '',
+      createdAt: ord.createdAt,
+      timeline: ord.timeline.map((t) => ({
+        timestamp: t.timestamp,
+        status: t.status,
+      })),
+    }
+
+    const existing = await payload.find({
+      collection: 'orders',
+      where: { orderNumber: { equals: ord.orderNumber } },
+      limit: 1,
+    })
+
+    if (existing.docs.length > 0) {
+      await payload.update({
+        collection: 'orders',
+        id: existing.docs[0].id,
+        data: orderData,
+      })
+    } else {
+      await payload.create({
+        collection: 'orders',
+        data: orderData,
+      })
+      ordersCreated++
+    }
+  }
+  console.log(`✅ ${ORDERS_SEED.length} Orders with Timelines synchronized.`)
+
+  // 8. Seed Plans
+  console.log(`📋 Seeding ${PLANS_SEED.length} commercial Plans...`)
+  for (const pl of PLANS_SEED) {
+    const userId = userMap.get(pl.userPhone)
+    const productIds: number[] = []
+
+    for (const sku of pl.productSkus) {
+      const prod = await payload.find({
+        collection: 'products',
+        where: { sku: { equals: sku } },
+        limit: 1,
+      })
+      if (prod.docs.length > 0) {
+        productIds.push(prod.docs[0].id)
+      }
+    }
+
+    const planData: any = {
+      title: pl.title,
+      content: pl.content,
+      users: userId ? [userId] : [],
+      type: pl.type,
+      discountPercent: pl.discountPercent,
+      status: pl.status,
+      products: productIds,
+      notes: pl.notes,
+    }
+
+    const existing = await payload.find({
+      collection: 'plans',
+      where: { title: { equals: pl.title } },
+      limit: 1,
+    })
+
+    if (existing.docs.length > 0) {
+      await payload.update({
+        collection: 'plans',
+        id: existing.docs[0].id,
+        data: planData,
+      })
+    } else {
+      await payload.create({
+        collection: 'plans',
+        data: planData,
+      })
+    }
+  }
+  console.log(`✅ ${PLANS_SEED.length} Plans synchronized.`)
+
+  // 9. Deactivate legacy dummy test products
   try {
     const all = await payload.find({ collection: 'products', limit: 100 })
     const dummies = all.docs.filter((d: any) => d.name?.includes('شومبول') || d.sku?.includes('شومبول'))
@@ -781,7 +1185,7 @@ export async function runSeed() {
     // ignore
   }
 
-  console.log(`🎉 Seeding complete! (${createdCount} created, ${updatedCount} updated, total: ${PRODUCTS.length} products)`)
+  console.log(`🎉 Seeding complete! (${createdCount} products created, ${userMap.size} users, ${ORDERS_SEED.length} orders with timelines)`)
 }
 
 // Auto-run if executed directly

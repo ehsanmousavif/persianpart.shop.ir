@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Modal as HeroUIModal, Chip } from '@heroui/react'
-import type { Product } from '../../lib/mock-data/products'
+import type { Product } from '../../types'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { ImageViewerModal } from '../../components/ui/image-viewer-modal'
-import { formatGrade } from './catalog-store'
+import { formatGrade } from './product-store'
 import {
   XIcon,
   ZoomInIcon,
@@ -17,6 +17,7 @@ import {
   SolarShieldCheckIcon,
   SolarPaletteIcon,
   SolarScaleIcon,
+  TomanIcon,
 } from '../../components/ui/icons'
 
 export interface ProductBottomSheetProps {
@@ -249,19 +250,22 @@ export function ProductBottomSheet({
                   <div className="min-w-0 flex items-baseline gap-1.5 whitespace-nowrap">
                     {product.discountPercent ? (
                       <>
-                        <span className="text-sm font-extrabold text-rose-600">
-                          {formatToman(product.finalCustomerPricePerSqm)}
+                        <span className="text-sm font-extrabold text-rose-600 inline-flex items-center gap-1">
+                          <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+                          <TomanIcon className="size-4" />
                         </span>
-                        <span className="text-[10px] text-slate-400 line-through">
-                          {formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}
+                        <span className="text-[10px] text-slate-400 line-through inline-flex items-center gap-0.5">
+                          <span>{formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}</span>
+                          <TomanIcon className="size-3" />
                         </span>
                         <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700">
                           {toPersianDigits(product.discountPercent)}٪
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm font-extrabold text-slate-900">
-                        {formatToman(product.finalCustomerPricePerSqm)}
+                      <span className="text-sm font-extrabold text-slate-900 inline-flex items-center gap-1">
+                        <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+                        <TomanIcon className="size-4" />
                       </span>
                     )}
                   </div>

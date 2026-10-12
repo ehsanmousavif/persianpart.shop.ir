@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { ScrollShadow } from '@heroui/react'
 import { usePlans } from '../features/plans/plans-store'
+import type { Plan } from '../types'
 import { PlanCard } from '../features/plans/plan-card'
 import { PlanCardSkeleton } from '../components/ui/skeleton'
 import { ClipboardListIcon, RefreshCwIcon, ArrowLeftIcon, SparklesIcon } from '../components/ui/icons'
@@ -15,7 +16,7 @@ function CustomerPlansPage() {
   const { plans, allProducts, refresh, isLoading } = usePlans()
   const [filterMode, setFilterMode] = useState<'all' | 'active'>('all')
 
-  const filteredPlans = plans.filter((p) => {
+  const filteredPlans = (plans as Plan[]).filter((p: Plan) => {
     if (filterMode === 'active') return p.status === 'active' || p.isActive
     return true
   })
@@ -95,7 +96,7 @@ function CustomerPlansPage() {
             to="/product"
             className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800"
           >
-            <span>مشاهده کاتالوگ</span>
+            <span>مشاهده محصولات</span>
             <ArrowLeftIcon size={14} />
           </Link>
         </div>

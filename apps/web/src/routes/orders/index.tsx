@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Pagination, ScrollShadow } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
-import { ORDER_STATUS_MAP, type OrderStatus } from '../../lib/mock-data/orders'
+import { ORDER_STATUS_MAP, type OrderStatus, type Order, type Product } from '../../types'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { formatPersianDate } from '../../lib/utils/date'
@@ -12,7 +12,10 @@ import {
   PackageIcon,
   RefreshCwIcon,
   ArrowLeftIcon,
+  TomanIcon,
 } from '../../components/ui/icons'
+import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
+import { useProducts } from '../../features/products/product-store'
 
 export const Route = createFileRoute('/orders/')({
   component: OrdersListPage,
@@ -30,9 +33,11 @@ function cleanOrderNumber(orderNumber: string): string {
 
 function OrdersListPage() {
   const navigate = useNavigate()
-  const { orders, reorderToCart, isLoading } = useOrders()
+  const { orders, isLoading } = useOrders()
+  const { allProducts } = useProducts()
   const [selectedStatusTab, setSelectedStatusTab] = useState<'all' | OrderStatus>('all')
   const [page, setPage] = useState(1)
+  const [reorderOrder, setReorderOrder] = useState<Order | null>(null)
   const PAGE_SIZE = 12
 
   useEffect(() => {
@@ -47,8 +52,8 @@ function OrdersListPage() {
       ? orders
       : selectedStatusTab === 'cancel' || selectedStatusTab === 'cancelled'
       ? orders.filter((o) => isCancelledStatus(o.status))
-      : selectedStatusTab === 'approve' || selectedStatusTab === 'approved'
-      ? orders.filter((o) => o.status === 'approve' || o.status === 'approved' || o.status === 'completed')
+      : selectedStatusTab === 'completed' || selectedStatusTab === 'approve' || selectedStatusTab === 'approved'
+      ? orders.filter((o) => o.status === 'completed' || o.status === 'approve' || o.status === 'approved')
       : selectedStatusTab === 'pending'
       ? orders.filter((o) => o.status === 'pending' || o.status === 'checking')
       : orders.filter((o) => o.status === selectedStatusTab)
@@ -59,22 +64,60 @@ function OrdersListPage() {
     return filteredOrders.slice(start, start + PAGE_SIZE)
   }, [filteredOrders, page])
 
-  const handleReorder = (orderId: string) => {
-    const res = reorderToCart(orderId)
-    if (res.success) {
-      if (res.warnings.length > 0) {
-        toast.warning('سفارش مجدد', res.warnings.join(' | '))
-      } else {
-        toast.success('سفارش مجدد', 'اقلام این سفارش به سبد خرید افزوده شد.')
+  // Reorder data for PreInvoiceModal
+  const { reorderProducts, reorderQuantities } = useMemo(() => {
+    if (!reorderOrder?.items) return { reorderProducts: [], reorderQuantities: {} }
+    const products: Product[] = reorderOrder.items.map((item) => {
+      const found = allProducts.find(
+        (p) => String(p.id) === String(item.productId) || p.sku === item.productSku
+      )
+      if (found) return found
+      return {
+        id: item.productId,
+        slug: item.productSlug || item.productId,
+        name: item.productName,
+        sku: item.productSku,
+        dimension: item.dimension,
+        dimensions: { width: 0, height: 0 },
+        brand: 'پرشین پارت',
+        color: '',
+        grade: 'درجه ۱' as const,
+        category: 'پرسلان کف' as const,
+        finalCustomerPricePerSqm: item.unitPrice,
+        pricePerM2: item.unitPrice,
+        sqmPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
+        areaPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
+        piecesPerCarton: 4,
+        tilesPerCarton: 4,
+        cartonWeightKg: 25,
+        inventorySqm: 9999,
+        stockCartons: 999,
+        inStock: true,
+        stockStatus: 'in_stock' as const,
+        applications: [],
+        tags: [],
+        images: [item.productImage || '/placeholder.png'],
+        gallery: [item.productImage || '/placeholder.png'],
       }
-      navigate({ to: '/cart' })
+    })
+    const quantities: Record<string, number> = {}
+    reorderOrder.items.forEach((item) => {
+      quantities[item.productId] = item.requestedArea || item.deliverableArea
+    })
+    return { reorderProducts: products, reorderQuantities: quantities }
+  }, [reorderOrder?.items, allProducts])
+
+  const handleReorder = (orderId: string) => {
+    const target = orders.find((o) => o.id === orderId)
+    if (target) {
+      setReorderOrder(target)
     }
   }
 
   const TABS = [
     { key: 'all', label: 'همه سفارش‌ها' },
     { key: 'pending', label: 'در حال بررسی' },
-    { key: 'approve', label: 'تأیید شده' },
+    { key: 'completed', label: 'تکمیل شده' },
     { key: 'cancel', label: 'لغو شده' },
   ] as const
 
@@ -101,8 +144,8 @@ function OrdersListPage() {
                 ? orders.length
                 : tab.key === 'cancel'
                 ? orders.filter((o) => isCancelledStatus(o.status)).length
-                : tab.key === 'approve'
-                ? orders.filter((o) => o.status === 'approve' || o.status === 'approved' || o.status === 'completed').length
+                : tab.key === 'completed'
+                ? orders.filter((o) => o.status === 'completed' || o.status === 'approve' || o.status === 'approved').length
                 : orders.filter((o) => o.status === 'pending' || o.status === 'checking').length
 
             return (
@@ -152,10 +195,34 @@ function OrdersListPage() {
       ) : (
         <div className="space-y-2.5">
           {pagedOrders.map((order) => {
-            const statusConfig = ORDER_STATUS_MAP[order.status] || {
-              label: order.statusLabel || 'در حال بررسی واحد بازرگانی',
-              color: 'warning' as const,
+            const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
+            const is10MinutesPassed = Date.now() >= createdAtMs + 10 * 60 * 1000
+
+            let dynamicStatusLabel = order.statusLabel
+            let dynamicStatusColor: 'primary' | 'warning' | 'success' | 'danger' = 'warning'
+
+            if (order.status === 'pending') {
+              if (is10MinutesPassed) {
+                dynamicStatusLabel = 'در حال بررسی واحد بازرگانی'
+                dynamicStatusColor = 'warning'
+              } else {
+                dynamicStatusLabel = 'سفارش ثبت شده'
+                dynamicStatusColor = 'primary'
+              }
+            } else if (order.status === 'completed' || order.status === 'approve' || order.status === 'approved') {
+              dynamicStatusLabel = 'تکمیل شده'
+              dynamicStatusColor = 'success'
+            } else if (order.status === 'cancelled_by_customer' || (isCancelledStatus(order.status) && order.cancelledBy === 'customer')) {
+              dynamicStatusLabel = 'لغو توسط کاربر'
+              dynamicStatusColor = 'danger'
+            } else if (order.status === 'cancelled_by_admin' || (isCancelledStatus(order.status) && order.cancelledBy === 'admin')) {
+              dynamicStatusLabel = 'لغو توسط ادمین'
+              dynamicStatusColor = 'danger'
+            } else {
+              dynamicStatusLabel = ORDER_STATUS_MAP[order.status]?.label || order.statusLabel || 'در حال بررسی'
+              dynamicStatusColor = (ORDER_STATUS_MAP[order.status]?.color as any) || 'warning'
             }
+
             const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
             const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
 
@@ -171,8 +238,8 @@ function OrdersListPage() {
                       <span className="text-slate-400 text-[11px] font-normal">سفارش</span>
                       <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
                     </span>
-                    <Badge variant={statusConfig.color} size="sm">
-                      {order.statusLabel || statusConfig.label}
+                    <Badge variant={dynamicStatusColor} size="sm">
+                      {dynamicStatusLabel}
                     </Badge>
                   </div>
 
@@ -204,7 +271,7 @@ function OrdersListPage() {
                     ))}
                     <div className="ps-1 text-xs text-slate-600">
                       <span className="font-bold text-slate-900 block text-xs">
-                        {toPersianDigits(order.items.length)} ردیف کالا
+                        {toPersianDigits(order.items.length)} محصول
                       </span>
                       <span className="text-xs text-slate-500">
                         {toPersianDigits(totalCartons)} کارتن ({toPersianDigits(totalArea)})
@@ -216,8 +283,9 @@ function OrdersListPage() {
                   <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100">
                     <div>
                       <span className="text-xs text-slate-500 block font-medium leading-tight mb-0.5">مبلغ کل:</span>
-                      <span className="text-sm font-bold text-slate-900">
-                        {formatToman(order.finalTotal)}
+                      <span className="text-sm font-bold text-slate-900 inline-flex items-center gap-1">
+                        <span>{formatToman(order.finalTotal)}</span>
+                        <TomanIcon className="size-3.5" />
                       </span>
                     </div>
 
@@ -286,6 +354,25 @@ function OrdersListPage() {
           )}
         </div>
       )}
+
+      {/* Pre-Invoice Modal for Reordering */}
+      <PreInvoiceModal
+        isOpen={Boolean(reorderOrder)}
+        onClose={() => setReorderOrder(null)}
+        products={reorderProducts}
+        quantities={reorderQuantities}
+        onSuccess={(newOrderId) => {
+          setReorderOrder(null)
+          toast.success(
+            'ثبت قطعی سفارش مجدد',
+            'سفارش مجدد شما با موفقیت ثبت شد.'
+          )
+          navigate({
+            to: '/orders/$id',
+            params: { id: newOrderId },
+          })
+        }}
+      />
     </div>
   )
 }

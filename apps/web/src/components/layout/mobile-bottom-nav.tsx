@@ -13,7 +13,7 @@ export function MobileBottomNav() {
   const navItems = [
     {
       to: '/product',
-      label: 'کاتالوگ',
+      label: 'محصولات',
       icon: GridIcon,
       isActive: pathname.startsWith('/product') || pathname === '/',
     },

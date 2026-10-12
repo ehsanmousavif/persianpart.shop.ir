@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react'
-import type { Plan, B2BCustomer } from '../../lib/mock-data/plans'
-import type { Product } from '../../lib/mock-data/products'
+import type { Plan, B2BCustomer, Product } from '../../types'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { Modal } from '../../components/ui/modal'
-import { CheckIcon } from '../../components/ui/icons'
+import { CheckIcon, TomanIcon } from '../../components/ui/icons'
 
 export interface PlanModalProps {
   isOpen: boolean
@@ -216,7 +215,7 @@ export function PlanModal({
               </div>
             </div>
             <p className="text-[11px] text-emerald-700 leading-tight">
-              این تخفیف در کاتالوگ و سبد خرید خریدار منتخب اعمال شده و قیمت‌های کالا با نشان تخفیف ویژه به روز می‌شوند.
+              این تخفیف در لیست محصولات و سبد خرید خریدار منتخب اعمال شده و قیمت‌های کالا با نشان تخفیف ویژه به روز می‌شوند.
             </p>
           </div>
         )}
@@ -326,17 +325,20 @@ export function PlanModal({
                   </div>
                   <div className="text-end shrink-0">
                     {planType === 'product_discount' && isChecked ? (
-                      <div>
-                        <span className="text-[10px] text-slate-400 line-through block">
-                          {formatToman(originalPrice)}
+                      <div className="flex flex-col items-end">
+                        <span className="text-[10px] text-slate-400 line-through inline-flex items-center gap-0.5">
+                          <span>{formatToman(originalPrice)}</span>
+                          <TomanIcon className="size-2.5" />
                         </span>
-                        <span className="text-xs font-bold text-emerald-700 block">
-                          {formatToman(discountedPrice)}
+                        <span className="text-xs font-bold text-emerald-700 inline-flex items-center gap-0.5">
+                          <span>{formatToman(discountedPrice)}</span>
+                          <TomanIcon className="size-3" />
                         </span>
                       </div>
                     ) : (
-                      <span className="text-xs font-bold text-slate-700">
-                        {formatToman(originalPrice)}
+                      <span className="text-xs font-bold text-slate-700 inline-flex items-center gap-0.5">
+                        <span>{formatToman(originalPrice)}</span>
+                        <TomanIcon className="size-3" />
                       </span>
                     )}
                   </div>

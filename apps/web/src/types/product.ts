@@ -1,3 +1,11 @@
+import type {
+  Product as ContractProduct,
+  CatalogProduct,
+  Category,
+  Brand,
+  AvailabilityBadge,
+} from '@persianpart/contract'
+
 export interface ProductDimensions {
   width: number
   height: number
@@ -12,9 +20,16 @@ export interface Product {
   dimension: string
   brand: string
   color: string
-  grade: 'درجه ۱' | 'درجه ۲' | 'صادراتی'
-  category: 'پرسلان کف' | 'اسلب پرسلان' | 'دیوار لوکس' | 'نما و محوطه'
-  finalCustomerPricePerSqm: number // Toman per m²
+  grade: 'درجه ۱' | 'درجه ۲' | 'درجه ۳' | 'درجه ۴' | 'صادراتی'
+  category:
+    | 'پرسلان کف'
+    | 'اسلب پرسلان'
+    | 'دیوار لوکس'
+    | 'نما و محوطه'
+    | 'کاشی بین کابینتی و دکوراتیو'
+    | 'سرامیک ضد اسید و صنعتی'
+    | 'سرویس و حمام ضد آب'
+  finalCustomerPricePerSqm: number
   pricePerM2: number
   previousPricePerM2?: number
   discountPercent?: number
@@ -38,4 +53,10 @@ export interface Product {
   createdAt?: string
 }
 
-export const MOCK_PRODUCTS: Product[] = []
+export type {
+  ContractProduct,
+  CatalogProduct,
+  Category,
+  Brand,
+  AvailabilityBadge,
+}

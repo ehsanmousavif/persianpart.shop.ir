@@ -52,7 +52,7 @@ function RootComponent() {
           <AppHeader />
 
           {/* Main App Content Area */}
-          <main className={`flex-1 w-full ${isLoginPage ? 'pb-6' : 'pb-24'}`}>
+          <main className={`flex-1 w-full ${isLoginPage ? 'pb-6' : 'pb-12'}`}>
             <Outlet />
           </main>
 

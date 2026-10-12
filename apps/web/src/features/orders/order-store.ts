@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { type Order, type OrderItem, type TimelineStep } from '../../lib/mock-data/orders'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { type Order, type OrderItem, type TimelineStep } from '../../types'
 import { cartStore } from '../cart/cart-store'
 import { api } from '../../lib/api-client'
 import {
@@ -60,11 +60,12 @@ function broadcast(orders: Order[]) {
 export function buildFullOrderTimeline(
   doc: any,
   persianDate?: string,
-  force3MinutesPassed?: boolean
+  force10MinutesPassed?: boolean
 ): TimelineStep[] {
   const status = doc.status || 'pending'
   const isCancelledByCustomer = status === 'cancelled_by_customer' || doc.cancelledBy === 'customer'
-  const isCancelled = status === 'cancel' || status === 'cancelled' || isCancelledByCustomer || status === 'cancelled_by_admin'
+  const isCancelledByAdmin = status === 'cancelled_by_admin' || doc.cancelledBy === 'admin'
+  const isCancelled = status === 'cancel' || status === 'cancelled' || isCancelledByCustomer || isCancelledByAdmin
 
   const pDate = persianDate || (doc.createdAt ? formatPersianDate(doc.createdAt) : '')
 
@@ -74,35 +75,35 @@ export function buildFullOrderTimeline(
   }
 
   const createdAtMs = doc.createdAt ? new Date(doc.createdAt).getTime() : Date.now()
-  const deadlineMs = createdAtMs + 3 * 60 * 1000
+  const deadlineMs = createdAtMs + 10 * 60 * 1000
 
-  const is3MinutesPassed = force3MinutesPassed ?? (Date.now() >= deadlineMs)
-  const isApproved = status === 'approve' || status === 'approved' || status === 'completed'
+  const is10MinutesPassed = force10MinutesPassed ?? (Date.now() >= deadlineMs)
+  const isApproved = status === 'completed' || status === 'approve' || status === 'approved'
 
   // Cancellation Flow
   if (isCancelled) {
-    const cancelTitle = isCancelledByCustomer ? 'لغو توسط مشتری' : 'لغو توسط ادمین'
+    const cancelTitle = isCancelledByCustomer ? 'لغو توسط کاربر' : 'لغو توسط ادمین'
 
     const cancelDesc = isCancelledByCustomer
-      ? doc.notes || 'لغو توسط مشری'
-      : doc.notes || "لغو توسط واحد. بازرگانی"
+      ? doc.notes || 'سفارش در مهلت ۱۰ دقیقه توسط کاربر لغو گردید.'
+      : doc.notes || 'سفارش توسط واحد بازرگانی / ادمین لغو گردید.'
 
     const steps: TimelineStep[] = [
       {
         id: 'step-1',
-        title: 'در حال بررسی واحد بازرگانی',
-        description: 'سفارش در سامانه ثبت شده و در صف بررسی واحد بازرگانی قرار داشت.',
+        title: 'سفارش ثبت شده',
+        description: 'سفارش با موفقیت در سامانه ثبت گردید (مهلت ۱۰ دقیقه جهت لغو توسط کاربر).',
         timestamp: formatTs(doc.createdAt) || pDate,
         status: 'completed',
       },
     ]
 
-    if (is3MinutesPassed) {
+    if (is10MinutesPassed) {
       steps.push({
         id: 'step-2',
-        title: 'ثبت سفارش توسط واحد بازرگانی',
-        description: 'سفارش توسط واحد بازرگانی بررسی اولیه شده بود.',
-        timestamp: formatTs(new Date(createdAtMs + 3 * 60 * 1000).toISOString()),
+        title: 'در حال بررسی واحد بازرگانی',
+        description: 'مهلت ۱۰ دقیقه سپری شده و سفارش در صف بررسی واحد بازرگانی قرار گرفته بود.',
+        timestamp: formatTs(new Date(createdAtMs + 10 * 60 * 1000).toISOString()),
         status: 'completed',
       })
     }
@@ -119,17 +120,17 @@ export function buildFullOrderTimeline(
   }
 
   // Active / Normal Flow (3 stages)
-  // Stage 1: در حال بررسی واحد بازرگانی (تایید اولیه ثبت)
-  // Stage 2: ثبت سفارش توسط واحد بازرگانی (خودکار ۳ دقیقه بعد تایید می‌شود)
-  // Stage 3: حواله ثبت شده (تکمیل شده) (با وضعیت approve تایید می‌شود)
+  // Stage 1: سفارش ثبت شده (تایمر ۱۰ دقیقه)
+  // Stage 2: در حال بررسی واحد بازرگانی (پس از اتمام ۱۰ دقیقه)
+  // Stage 3: تکمیل شده (صدور حواله نهایی)
   const step1Status: 'completed' = 'completed'
-  const step2Status: 'completed' | 'current' = (isApproved || is3MinutesPassed) ? 'completed' : 'current'
-  const step3Status: 'completed' | 'current' | 'pending' = isApproved ? 'completed' : is3MinutesPassed ? 'current' : 'pending'
+  const step2Status: 'completed' | 'current' = (isApproved || is10MinutesPassed) ? 'completed' : 'current'
+  const step3Status: 'completed' | 'current' | 'pending' = isApproved ? 'completed' : is10MinutesPassed ? 'current' : 'pending'
 
   const step1Timestamp = formatTs(doc.createdAt) || pDate
-  const step2Timestamp = (isApproved || is3MinutesPassed)
-    ? formatTs(new Date(createdAtMs + 3 * 60 * 1000).toISOString())
-    : '۳ دقیقه پس از بررسی اولیه'
+  const step2Timestamp = (isApproved || is10MinutesPassed)
+    ? formatTs(new Date(createdAtMs + 10 * 60 * 1000).toISOString())
+    : '۱۰ دقیقه پس از ثبت سفارش'
   const step3Timestamp = isApproved
     ? formatTs(doc.updatedAt || doc.createdAt) || pDate
     : undefined
@@ -137,25 +138,25 @@ export function buildFullOrderTimeline(
   return [
     {
       id: 'step-1',
-      title: 'در حال بررسی واحد بازرگانی',
-      description: 'سفارش در سامانه ثبت شده و در صف بررسی واحد بازرگانی قرار دارد.',
+      title: 'سفارش ثبت شده',
+      description: 'سفارش در سامانه ثبت شد و کاربر تا ۱۰ دقیقه امکان لغو آن را دارد.',
       timestamp: step1Timestamp,
       status: step1Status,
     },
     {
       id: 'step-2',
-      title: 'ثبت سفارش توسط واحد بازرگانی',
-      description: (isApproved || is3MinutesPassed)
-        ? 'سفارش با موفقیت توسط واحد بازرگانی تایید و در سیستم انبارداری ثبت شد.'
-        : 'در حال پردازش و ثبت سفارش توسط واحد بازرگانی (مهلت ۳ دقیقه)...',
+      title: 'در حال بررسی واحد بازرگانی',
+      description: (isApproved || is10MinutesPassed)
+        ? 'مهلت ۱۰ دقیقه به پایان رسید و سفارش در دست بررسی کارشناسان واحد بازرگانی قرار گرفت.'
+        : 'پس از اتمام مهلت ۱۰ دقیقه‌ای کاربر، سفارش وارد بررسی واحد بازرگانی خواهد شد.',
       timestamp: step2Timestamp,
       status: step2Status,
     },
     {
       id: 'step-3',
-      title: 'حواله ثبت شده (تکمیل شده)',
+      title: 'تکمیل شده',
       description: isApproved
-        ? 'حواله رسمی خروج از انبار صادر گردیده و فرآیند سفارش با موفقیت تکمیل شد.'
+        ? 'حواله رسمی خروج از انبار صادر گردیده و سفارش با موفقیت تکمیل شد.'
         : 'در انتظار تایید نهایی و صدور حواله رسمی توسط واحد بازرگانی.',
       timestamp: step3Timestamp,
       status: step3Status,
@@ -169,16 +170,20 @@ export function mapDocToOrder(doc: any): Order {
   const normalizedStatus = doc.status === 'processing' ? 'pending' : (doc.status || 'pending')
 
   const createdAtMs = new Date(createdAt).getTime()
-  const deadlineMs = createdAtMs + 3 * 60 * 1000
-  const is3MinutesPassed = Date.now() >= deadlineMs
+  const deadlineMs = createdAtMs + 10 * 60 * 1000
+  const is10MinutesPassed = Date.now() >= deadlineMs
 
-  let statusLabel = 'در حال بررسی واحد بازرگانی'
+  let statusLabel = 'سفارش ثبت شده'
   if (normalizedStatus === 'pending') {
-    statusLabel = is3MinutesPassed ? 'ثبت سفارش توسط واحد بازرگانی' : 'در حال بررسی واحد بازرگانی'
-  } else if (normalizedStatus === 'approve' || normalizedStatus === 'approved') {
-    statusLabel = 'حواله ثبت شده (تکمیل شده)'
+    statusLabel = is10MinutesPassed ? 'در حال بررسی واحد بازرگانی' : 'سفارش ثبت شده'
+  } else if (normalizedStatus === 'completed' || normalizedStatus === 'approve' || normalizedStatus === 'approved') {
+    statusLabel = 'تکمیل شده'
+  } else if (normalizedStatus === 'cancelled_by_customer') {
+    statusLabel = 'لغو توسط کاربر'
+  } else if (normalizedStatus === 'cancelled_by_admin') {
+    statusLabel = 'لغو توسط ادمین'
   } else if (normalizedStatus === 'cancel' || normalizedStatus === 'cancelled') {
-    statusLabel = doc.cancelledBy === 'customer' ? 'لغو توسط مشتری' : 'لغو توسط ادمین'
+    statusLabel = doc.cancelledBy === 'customer' ? 'لغو توسط کاربر' : 'لغو توسط ادمین'
   }
 
   const items: OrderItem[] = (doc.items || []).map((i: any) => {
@@ -205,7 +210,7 @@ export function mapDocToOrder(doc: any): Order {
     }
   })
 
-  const timeline = buildFullOrderTimeline(doc, persianDate, is3MinutesPassed)
+  const timeline = buildFullOrderTimeline(doc, persianDate, is10MinutesPassed)
 
   const userObj = typeof doc.user === 'object' && doc.user !== null ? doc.user : null
 
@@ -222,7 +227,7 @@ export function mapDocToOrder(doc: any): Order {
     customerPhone: userObj?.phone || '',
     deliveryAddress: doc.deliveryAddress || userObj?.address || 'انبار مرکزی بازرگانی دهقان',
     notes: doc.notes || '',
-    cancellationDeadline: new Date(createdAtMs + 3 * 60 * 1000).toISOString(),
+    cancellationDeadline: new Date(createdAtMs + 10 * 60 * 1000).toISOString(),
     items,
     subtotal: doc.subtotal || 0,
     discountAmount: doc.discountAmount || 0,
@@ -283,7 +288,7 @@ export const orderStore = {
     const now = new Date()
     const isoString = now.toISOString()
     const persianDate = formatPersianDate(now)
-    const deadlineIso = new Date(now.getTime() + 3 * 60 * 1000).toISOString()
+    const deadlineIso = new Date(now.getTime() + 10 * 60 * 1000).toISOString()
     const timeline = buildFullOrderTimeline(
       {
         status: 'pending',
@@ -300,7 +305,7 @@ export const orderStore = {
       createdAt: isoString,
       cancellationDeadline: deadlineIso,
       status: 'pending',
-      statusLabel: 'در حال بررسی واحد بازرگانی',
+      statusLabel: 'سفارش ثبت شده',
       storeName: 'بازرگانی دهقان (پرشین پارت تهران)',
       customerName: 'آرش دهقان',
       customerPhone: '۰۹۱۲۳۴۵۶۷۸۹',
@@ -332,9 +337,10 @@ export const orderStore = {
       if (order.id === orderId || order.orderNumber === orderId) {
         return mapDocToOrder({
           ...order,
-          status: 'cancel',
+          status: 'cancelled_by_customer',
           cancelledBy: 'customer',
-          notes: reason ? `دلیل لغو: ${reason}` : 'لغو توسط خریدار ',
+          statusLabel: 'لغو توسط کاربر',
+          notes: reason ? `دلیل لغو کاربر: ${reason}` : 'لغو توسط کاربر',
           updatedAt: new Date().toISOString(),
         })
       }
@@ -356,9 +362,10 @@ export const orderStore = {
       if (order.id === orderId || order.orderNumber === orderId) {
         return mapDocToOrder({
           ...order,
-          status: 'cancel',
+          status: 'cancelled_by_admin',
           cancelledBy: 'admin',
-          notes: reason || 'لغو توسط مدیریت / واحد بازرگانی',
+          statusLabel: 'لغو توسط ادمین',
+          notes: reason ? `دلیل لغو ادمین: ${reason}` : 'لغو توسط مدیریت / واحد بازرگانی',
           updatedAt: new Date().toISOString(),
         })
       }
@@ -429,37 +436,60 @@ export const orderStore = {
   },
 }
 
+import { queryKeys, mutationKeys } from '../../lib/query-keys'
+
 export function useOrders() {
-  const [orders, setOrders] = useState<Order[]>(orderStore.getOrders())
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    let isMounted = true
-    Promise.all([
-      orderStore.syncFromApi(),
-      new Promise((resolve) => setTimeout(resolve, 1000)), // 1s visible skeleton delay
-    ]).finally(() => {
-      if (isMounted) {
-        setIsLoading(false)
+  const { data: orders = orderStore.getOrders(), isLoading, refetch } = useQuery({
+    queryKey: queryKeys.orders.list(),
+    queryFn: async () => {
+      const res = await api.order.list()
+      if (res.items && res.items.length > 0) {
+        const liveMapped: Order[] = res.items.map(mapDocToOrder)
+        broadcast(liveMapped)
+        return liveMapped
       }
-    })
+      return orderStore.getOrders()
+    },
+    staleTime: 30 * 1000,
+  })
 
-    listeners.add(setOrders)
-    return () => {
-      isMounted = false
-      listeners.delete(setOrders)
-    }
-  }, [])
+  const cancelMutation = useMutation({
+    mutationKey: mutationKeys.orders.cancel,
+    mutationFn: async ({ orderId, reason }: { orderId: string; reason?: string }) => {
+      return await orderStore.cancelOrder(orderId, reason)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
 
   return {
     orders,
     isLoading,
+    refetch,
     getOrderById: orderStore.getOrderById,
     fetchOrderById: orderStore.fetchOrderById,
-    createOrder: orderStore.createOrder,
-    cancelOrder: orderStore.cancelOrder,
-    staffCancelOrder: orderStore.staffCancelOrder,
-    updateOrderStatus: orderStore.updateOrderStatus,
+    createOrder: (payload: any) => {
+      const created = orderStore.createOrder(payload)
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+      return created
+    },
+    cancelOrder: async (orderId: string, reason?: string) => {
+      const res = await cancelMutation.mutateAsync({ orderId, reason })
+      return res
+    },
+    staffCancelOrder: async (orderId: string, reason?: string) => {
+      const res = await orderStore.staffCancelOrder(orderId, reason)
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+      return res
+    },
+    updateOrderStatus: async (orderId: string, newStatus: string, note?: string) => {
+      const res = await orderStore.updateOrderStatus(orderId, newStatus, note)
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+      return res
+    },
     reorderToCart: orderStore.reorderToCart,
   }
 }

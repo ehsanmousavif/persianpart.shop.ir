@@ -1,5 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { api, type ValidateCartOutput } from '../lib/api-client'
+import { queryKeys } from '../lib/query-keys'
 
 export interface CartItemDraft {
   productId: string
@@ -21,9 +23,6 @@ export function useCart() {
     return []
   })
 
-  const [validation, setValidation] = useState<ValidateCartOutput | null>(null)
-  const [isValidating, setIsValidating] = useState(false)
-
   // Save to localStorage
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -31,27 +30,24 @@ export function useCart() {
     }
   }, [items])
 
-  // Validate cart against server pricing engine
-  const validateCart = useCallback(async () => {
-    if (items.length === 0) {
-      setValidation(null)
-      return
-    }
-
-    setIsValidating(true)
-    try {
-      const res = await api.order.pricing.validateCart({ items })
-      setValidation(res)
-    } catch {
-      setValidation(null)
-    } finally {
-      setIsValidating(false)
-    }
-  }, [items])
-
-  useEffect(() => {
-    validateCart()
-  }, [validateCart])
+  // Validate cart against server pricing engine using TanStack Query
+  const {
+    data: validation = null,
+    isLoading: isValidating,
+    refetch: refreshValidation,
+  } = useQuery({
+    queryKey: queryKeys.cart.validate(items),
+    queryFn: async (): Promise<ValidateCartOutput | null> => {
+      if (items.length === 0) return null
+      try {
+        return await api.order.pricing.validateCart({ items })
+      } catch {
+        return null
+      }
+    },
+    enabled: items.length > 0,
+    staleTime: 10 * 1000,
+  })
 
   const addItem = (productId: string, requestedSqm: number) => {
     setItems((prev) => {
@@ -81,7 +77,6 @@ export function useCart() {
 
   const clearCart = () => {
     setItems([])
-    setValidation(null)
   }
 
   return {
@@ -97,6 +92,6 @@ export function useCart() {
     updateItemQuantity,
     removeItem,
     clearCart,
-    refreshValidation: validateCart,
+    refreshValidation,
   }
 }

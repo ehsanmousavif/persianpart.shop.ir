@@ -1,13 +1,13 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
 import { ScrollShadow, TagGroup, Tag } from '@heroui/react'
-import { useCatalog } from '../../features/catalog/catalog-store'
-import { ProductCard } from '../../features/catalog/product-card'
-import { ProductBottomSheet } from '../../features/catalog/product-bottom-sheet'
-import { FilterDrawer } from '../../features/catalog/filter-drawer'
-import type { Product } from '../../lib/mock-data/products'
+import { useProducts } from '../../features/products/product-store'
+import { ProductCard } from '../../features/products/product-card'
+import { ProductBottomSheet } from '../../features/products/product-bottom-sheet'
+import { FilterDrawer } from '../../features/products/filter-drawer'
+import type { Product } from '../../types'
 import { useCart } from '../../features/cart/cart-store'
-import { useProductSelection } from '../../features/catalog/selection-store'
+import { useProductSelection } from '../../features/products/selection-store'
 import { toPersianDigits } from '../../lib/utils/currency'
 import { ProductCardSkeleton } from '../../components/ui/skeleton'
 import {
@@ -20,10 +20,10 @@ import {
 } from '../../components/ui/icons'
 
 export const Route = createFileRoute('/product/')({
-  component: ProductCatalogPage,
+  component: ProductListPage,
 })
 
-const CATALOG_DIMENSIONS = [
+const PRODUCT_DIMENSIONS = [
   '30×90',
   '60×120',
   '80×160',
@@ -34,27 +34,27 @@ const CATALOG_DIMENSIONS = [
   '20×120',
 ] as const
 
-function ProductCatalogPage() {
+function ProductListPage() {
   const navigate = useNavigate()
-  const catalogHook = useCatalog()
-  const { products, allProducts, dimensions, filters, setFilter, resetFilters, activeFilterCount, isLoading } = catalogHook
+  const productHook = useProducts()
+  const { products, allProducts, dimensions, filters, setFilter, resetFilters, activeFilterCount, isLoading } = productHook
   const { isProductInCart } = useCart()
-  const { selectedIds, toggleProduct, isProductSelected, selectProduct, reconcileWithCatalog } = useProductSelection()
+  const { selectedIds, toggleProduct, isProductSelected, selectProduct, reconcileWithProducts } = useProductSelection()
 
-  // Reconcile selected IDs with live catalog products to eliminate any phantom/ghost IDs
+  // Reconcile selected IDs with live products to eliminate any phantom/ghost IDs
   useEffect(() => {
     if (!isLoading && allProducts && allProducts.length > 0) {
-      reconcileWithCatalog(allProducts.map((p) => p.id))
+      reconcileWithProducts(allProducts.map((p) => p.id))
     }
-  }, [isLoading, allProducts, reconcileWithCatalog])
+  }, [isLoading, allProducts, reconcileWithProducts])
 
   // Count only valid selected products
   const selectedCount = useMemo(() => {
     if (!allProducts || allProducts.length === 0) {
       return selectedIds.length
     }
-    const catalogSet = new Set(allProducts.map((p) => String(p.id).replace(/["']/g, '').trim()))
-    return selectedIds.filter((id) => catalogSet.has(String(id).replace(/["']/g, '').trim())).length
+    const productSet = new Set(allProducts.map((p) => String(p.id).replace(/["']/g, '').trim()))
+    return selectedIds.filter((id) => productSet.has(String(id).replace(/["']/g, '').trim())).length
   }, [allProducts, selectedIds])
 
   const INITIAL_BATCH_SIZE = 12
@@ -83,11 +83,9 @@ function ProductCatalogPage() {
     toggleProduct(product.id)
   }
 
-
   const activeContainerClass = 'flex flex-col gap-2'
 
-  // Normal in-place selection: Products stay in their original catalog order.
-  // When selected, their card highlights and adds to the checkout FAB without moving or pinning.
+  // Normal in-place selection: Products stay in their original order.
   const displayedProducts = useMemo(() => {
     return products.slice(0, displayLimit)
   }, [products, displayLimit])
@@ -127,7 +125,7 @@ function ProductCatalogPage() {
 
   return (
     <div className="w-full px-3 py-3 space-y-3 text-start pb-32 bg-white">
-      {/* 1. Search Bar & Advanced Filters Trigger (Directly on Canvas Background) */}
+      {/* 1. Search Bar & Advanced Filters Trigger */}
       <div className="flex items-stretch gap-2">
         <div className="relative flex-1">
           <input
@@ -136,7 +134,7 @@ function ProductCatalogPage() {
             onChange={(e) => setFilter('searchQuery', e.target.value)}
             placeholder="جستجوی کالا، کد یا برند..."
             className="w-full h-13 px-3 ps-9 placeholder:font-bold placeholder:text-[12px] rounded-[12px] bg-white border border-slate-200/90 focus:border-slate-800 text-xs font-semibold text-slate-900 transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
-            aria-label="جستجوی سریع کاتالوگ"
+            aria-label="جستجوی سریع محصولات"
           />
           <SearchIcon size={16} className="absolute start-3 top-4 text-slate-400 pointer-events-none" />
           {filters.searchQuery && (
@@ -150,7 +148,7 @@ function ProductCatalogPage() {
             </button>
           )}
         </div>
-        {/* 3. Advanced Filter Button (Opens FilterDrawer with sorting, brands, etc.) */}
+        {/* 2. Advanced Filter Button */}
         <button
           type="button"
           onClick={() => setIsFilterOpen(true)}
@@ -161,7 +159,6 @@ function ProductCatalogPage() {
           }`}
         >
           <FilterIcon size={15} />
-          {/* <span className="sm:hidden"></span> */}
           {activeFilterCount > 0 && (
             <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shadow-xs">
               {toPersianDigits(activeFilterCount)}
@@ -170,7 +167,7 @@ function ProductCatalogPage() {
         </button>
       </div>
 
-      {/* 2. Dimensions Filter Strip (with ScrollShadow and HeroUI TagGroup) */}
+      {/* 3. Dimensions Filter Strip */}
       <ScrollShadow orientation="horizontal" className="w-full overflow-x-auto pb-1 pt-0.5 scrollbar-none">
         <TagGroup
           aria-label="فیلتر ابعاد کاشی و سرامیک"
@@ -196,7 +193,7 @@ function ProductCatalogPage() {
             >
               همه
             </Tag>
-            {(dimensions && dimensions.length > 0 ? dimensions : CATALOG_DIMENSIONS).map((dim) => {
+            {(dimensions && dimensions.length > 0 ? dimensions : PRODUCT_DIMENSIONS).map((dim) => {
               const isSelected = filters.selectedDimension === dim
               return (
                 <Tag
@@ -220,14 +217,13 @@ function ProductCatalogPage() {
       <FilterDrawer
         isOpen={isFilterOpen}
         onClose={() => setIsFilterOpen(false)}
-        catalogHook={catalogHook}
+        productHook={productHook}
       />
 
-      {/* Status, Top Badge & View Mode Switcher Bar */}
+      {/* Status & Active Count */}
       <div className="flex items-center justify-between gap-2 px-1 py-1 flex-wrap sm:flex-nowrap">
-        {/* Right: Top Badge & Active Count */}
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-slate-900">کاتالوگ محصولات</span>
+          <span className="text-sm font-bold text-slate-900">لیست محصولات</span>
         
           {activeFilterCount > 0 && (
             <button
@@ -241,7 +237,7 @@ function ProductCatalogPage() {
         </div>
       </div>
 
-      {/* Product Items Display with Selected View Mode Container */}
+      {/* Product Items Display */}
       {isLoading ? (
         <div className={activeContainerClass}>
           {Array.from({ length: 6 }).map((_, idx) => (
@@ -270,7 +266,6 @@ function ProductCatalogPage() {
         </div>
       ) : (
         <div className="space-y-2">
-          {/* Products in standard unpinned catalog order */}
           <div className={activeContainerClass}>
             {displayedProducts.map((product) => {
               const inCart = isProductInCart(product.id)
@@ -289,7 +284,7 @@ function ProductCatalogPage() {
             })}
           </div>
 
-          {/* Infinite Scroll Sentinel & Progressive Loading Indicator */}
+          {/* Infinite Scroll Sentinel */}
           {hasMore && (
             <div ref={observerTargetRef} className="pt-2 space-y-2">
               {isLoadingMore ? (
@@ -326,7 +321,7 @@ function ProductCatalogPage() {
         </div>
       )}
 
-      {/* Prominent Floating Action Bar (FAB) - Positioned Safely ABOVE MobileBottomNav */}
+      {/* Floating Action Bar (FAB) */}
       {selectedCount > 0 && (
         <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-22 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
           <Link
@@ -361,4 +356,3 @@ function ProductCatalogPage() {
     </div>
   )
 }
-

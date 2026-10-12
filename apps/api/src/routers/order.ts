@@ -189,19 +189,20 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
     return orderDoc
   }
 
-  const deadline = new Date(orderDoc.createdAt).getTime() + 3 * 60 * 1000
+  const deadline = new Date(orderDoc.createdAt).getTime() + 10 * 60 * 1000
 
   if (Date.now() > deadline) {
     throw errors.BAD_REQUEST({
-message: 'مهلت لغو سفارش توسط مشتری منقضی شده است',})
+      message: 'مهلت لغو سفارش توسط کاربر منقضی شده است',
+    })
   }
 
   return await payload.crud.orders.update({
     id: input.id,
     data: {
-      status: 'cancel',
+      status: 'cancelled_by_customer',
       cancelledBy: 'customer',
-      notes: input.reason ? `دلیل لغو: ${input.reason}` : 'لغو توسط مشتری',
+      notes: input.reason ? `دلیل لغو: ${input.reason}` : 'لغو توسط کاربر',
     },
   })
 })

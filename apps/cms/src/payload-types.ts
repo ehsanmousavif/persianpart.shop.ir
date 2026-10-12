@@ -360,7 +360,7 @@ export interface Order {
   id: number;
   orderNumber: string;
   user: number | User;
-  status: 'pending' | 'approve' | 'cancel';
+  status: 'pending' | 'approve' | 'completed' | 'cancelled_by_customer' | 'cancelled_by_admin' | 'cancel';
   cancelledBy?: ('customer' | 'admin') | null;
   items: {
     product: number | Product;

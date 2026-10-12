@@ -1,101 +1,88 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api, type Order, type OrderStatus } from '../lib/api-client'
+import { queryKeys, mutationKeys } from '../lib/query-keys'
 
 export function useCustomerOrders(status?: OrderStatus) {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchOrders = useCallback(async () => {
-    setIsLoading(true)
-    setError(null)
-    try {
+  const { data, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.orders.list(status ? { status } : undefined),
+    queryFn: async () => {
       const res = await api.order.list({ status })
-      setOrders(res.items)
-      setTotal(res.total)
-    } catch (err: any) {
-      setError(err.message || 'خطا در دریافت لیست سفارش‌ها')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [status])
-
-  useEffect(() => {
-    fetchOrders()
-  }, [fetchOrders])
+      return res
+    },
+    staleTime: 30 * 1000,
+  })
 
   return {
-    orders,
-    total,
+    orders: (data?.items || []) as Order[],
+    total: data?.total || 0,
     isLoading,
-    error,
-    refetch: fetchOrders,
+    error: error ? (error as Error).message : null,
+    refetch,
   }
 }
 
 export function useOrderDetail(orderId: string | null) {
-  const [order, setOrder] = useState<Order | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const fetchOrder = useCallback(async () => {
-    if (!orderId) return
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await api.order.getById({ id: orderId })
-      setOrder(res)
-    } catch (err: any) {
-      setError(err.message || 'خطا در دریافت جزییات سفارش')
-    } finally {
-      setIsLoading(false)
-    }
-  }, [orderId])
-
-  useEffect(() => {
-    fetchOrder()
-  }, [fetchOrder])
+  const { data: order = null, isLoading, error, refetch } = useQuery({
+    queryKey: queryKeys.orders.detail(orderId || ''),
+    queryFn: async () => {
+      if (!orderId) return null
+      return await api.order.getById({ id: orderId })
+    },
+    enabled: !!orderId,
+    staleTime: 30 * 1000,
+  })
 
   return {
-    order,
+    order: order as Order | null,
     isLoading,
-    error,
-    refetch: fetchOrder,
+    error: error ? (error as Error).message : null,
+    refetch,
   }
 }
 
 export function useOrderActions() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isCancelling, setIsCancelling] = useState(false)
+  const queryClient = useQueryClient()
 
-  const submitOrder = async (items: Array<{ productId: string; requestedSqm: number }>, notes?: string) => {
-    setIsSubmitting(true)
-    try {
+  const submitMutation = useMutation({
+    mutationKey: mutationKeys.orders.submit,
+    mutationFn: async ({
+      items,
+      notes,
+    }: {
+      items: Array<{ productId: string; requestedSqm: number }>
+      notes?: string
+    }) => {
       return await api.order.submit({ items, notes })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
 
-  const cancelOrder = async (orderId: string, reason?: string) => {
-    setIsCancelling(true)
-    try {
+  const cancelMutation = useMutation({
+    mutationKey: mutationKeys.orders.cancel,
+    mutationFn: async ({ orderId, reason }: { orderId: string; reason?: string }) => {
       return await api.order.cancel({ id: orderId, reason })
-    } finally {
-      setIsCancelling(false)
-    }
-  }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
 
-  const prepareReorder = async (orderId: string) => {
-    return await api.order.prepareReorder({ id: orderId })
-  }
+  const prepareReorderMutation = useMutation({
+    mutationKey: mutationKeys.orders.prepareReorder,
+    mutationFn: async (orderId: string) => {
+      return await api.order.prepareReorder({ id: orderId })
+    },
+  })
 
   return {
-    submitOrder,
-    cancelOrder,
-    prepareReorder,
-    isSubmitting,
-    isCancelling,
+    submitOrder: (items: Array<{ productId: string; requestedSqm: number }>, notes?: string) =>
+      submitMutation.mutateAsync({ items, notes }),
+    cancelOrder: (orderId: string, reason?: string) =>
+      cancelMutation.mutateAsync({ orderId, reason }),
+    prepareReorder: (orderId: string) => prepareReorderMutation.mutateAsync(orderId),
+    isSubmitting: submitMutation.isPending,
+    isCancelling: cancelMutation.isPending,
   }
 }

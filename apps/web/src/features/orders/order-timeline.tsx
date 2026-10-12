@@ -1,4 +1,4 @@
-import type { TimelineStep } from '../../lib/mock-data/orders'
+import type { TimelineStep } from '../../types'
 import { CheckIcon, ClockIcon, XIcon } from '../../components/ui/icons'
 
 export interface OrderTimelineProps {
@@ -7,7 +7,7 @@ export interface OrderTimelineProps {
 
 export function OrderTimeline({ steps }: OrderTimelineProps) {
   return (
-    <div className="relative ps-6 space-y-6 before:absolute before:start-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
+    <div className="relative ps-6 space-y-6 before:absolute h-50 sm:h-46 before:start-2.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-200">
       {steps.map((step) => {
         const isCompleted = step.status === 'completed'
         const isCurrent = step.status === 'current'
@@ -42,7 +42,7 @@ export function OrderTimeline({ steps }: OrderTimelineProps) {
             <div
               className={`flex-1 text-start transition-all ${
                 isCancelled
-                  ? 'p-2.5 rounded-2xl bg-rose-50/60 border border-rose-200/80 shadow-xs'
+                  ? ''
                   : 'py-0.5'
               }`}
             >
@@ -55,7 +55,7 @@ export function OrderTimeline({ steps }: OrderTimelineProps) {
                         : isCompleted
                         ? 'text-slate-900 font-semibold'
                         : isCancelled
-                        ? 'text-rose-700 font-bold'
+                        ? 'text-rose-700 font-bold mt-1'
                         : 'text-slate-400 font-medium'
                     }`}
                   >
@@ -66,11 +66,7 @@ export function OrderTimeline({ steps }: OrderTimelineProps) {
                       موقعیت کنونی
                     </span>
                   )}
-                  {isCancelled && (
-                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-rose-600 text-white shadow-2xs">
-                      لغو نهایی
-                    </span>
-                  )}
+                 
                 </div>
 
                 {step.timestamp && (

@@ -1,8 +1,8 @@
 import React from "react";
-import type { Product } from "../../lib/mock-data/products";
+import type { Product } from "../../types";
 import { formatToman, toPersianDigits } from "../../lib/utils/currency";
-import { ZoomInIcon } from "../../components/ui/icons";
-import { formatGrade } from "./catalog-store";
+import TomanIcon, { ZoomInIcon } from "../../components/ui/icons";
+import { formatGrade } from "./product-store";
 
 export interface ProductCardProps {
   product: Product;
@@ -42,7 +42,7 @@ export function ProductCard({
       onClick={handleCardClick}
       className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[12px] border transition-all duration-150 cursor-pointer overflow-hidden text-start select-none ${
         isSelected
-        ? "border-emerald-600/60 scale-[0.98] shadow-[0_1px_3px_rgba(16,185,129,0.22)] bg-emerald-50/25"
+          ? "border-emerald-600/60 scale-[0.985] shadow-[0_1px_3px_rgba(16,185,129,0.22)] bg-emerald-50/25"
           : "border-slate-200/90 hover:border-slate-300 shadow-none bg-white"
       }`}
       role="button"
@@ -112,8 +112,6 @@ export function ProductCard({
               {formatGrade(product.grade)}
             </span>
           </div>
-
-          
         </div>
       </div>
 
@@ -130,25 +128,36 @@ export function ProductCard({
             <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-0.5">
               {toPersianDigits(product.discountPercent)}٪ تخفیف
             </span>
-            <span className="text-[11px] text-slate-400 line-through">
-              {formatToman(
-                product.originalPricePerSqm || product.finalCustomerPricePerSqm,
-              )}
+            <span className="text-[11px] text-slate-400 line-through inline-flex items-center gap-0.5">
+              <span>
+                {formatToman(
+                  product.originalPricePerSqm || product.finalCustomerPricePerSqm,
+                )}
+              </span>
+              <TomanIcon className="size-2.5" />
             </span>
-            <span className="text-sm font-bold text-rose-600">
-              {formatToman(product.finalCustomerPricePerSqm)}
+            <span className="text-sm font-bold text-rose-600 inline-flex items-center gap-1">
+              <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+              <TomanIcon className="size-3" />
             </span>
           </>
         ) : (
-          <span className="text-sm font-bold text-slate-900">
-            {formatToman(product.finalCustomerPricePerSqm)}
+          <span className="text-sm font-bold text-slate-900 inline-flex items-center gap-1">
+            <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+            <TomanIcon className="size-3.5" />
           </span>
         )}
-        
-         <span className="px-2 py-0.5 mt-1 rounded-[12px] flex text-[10px] font-semibold bg-blue-50 text-green-700 border border-blue-100">
-            <span className="">
-{Math.floor(Number.isFinite(Number(product.inventorySqm)) ? Number(product.inventorySqm) : 1).toLocaleString("fa-IR")} متر            </span>
-            </span>
+
+        <span className="px-2 py-0.5 mt-1 rounded-[12px] flex text-[10px] font-semibold bg-blue-50 text-green-700 border border-blue-100">
+          <span className="">
+            {Math.floor(
+              Number.isFinite(Number(product.inventorySqm))
+                ? Number(product.inventorySqm)
+                : 1,
+            ).toLocaleString("fa-IR")}{" "}
+            متر{" "}
+          </span>
+        </span>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api-client'
-import { INITIAL_PLANS, type Plan, type B2BCustomer } from '../../lib/mock-data/plans'
-import { MOCK_PRODUCTS, type Product } from '../../lib/mock-data/products'
+import type { Plan, B2BCustomer, Product } from '../../types'
 import { formatPersianDate } from '../../lib/utils/date'
 
 const STORAGE_KEY = 'persianpart_plans_v1'
@@ -135,7 +135,7 @@ async function fetchFromBackend() {
 export const plansStore = {
   getPlans: () => currentPlans,
   getCustomers: () => currentCustomers,
-  getProducts: () => MOCK_PRODUCTS,
+  getProducts: () => [] as Product[],
   isLoading: () => isLoadingPlans,
 
   refresh: () => fetchFromBackend(),
@@ -242,51 +242,97 @@ export const plansStore = {
   },
 
   resetToDefault: () => {
-    currentPlans = INITIAL_PLANS
+    currentPlans = []
     broadcast()
     fetchFromBackend()
   },
 }
 
+import { queryKeys, mutationKeys } from '../../lib/query-keys'
+
 export function usePlans() {
-  const [plans, setPlans] = useState<Plan[]>(plansStore.getPlans())
-  const [customers, setCustomers] = useState<B2BCustomer[]>(plansStore.getCustomers())
-  const [allProducts] = useState<Product[]>(plansStore.getProducts())
-  const [isLoading, setIsLoading] = useState<boolean>(plansStore.isLoading())
+  const queryClient = useQueryClient()
 
-  useEffect(() => {
-    const handleUpdate = () => {
-      setPlans([...plansStore.getPlans()])
-      setCustomers([...plansStore.getCustomers()])
-      setIsLoading(plansStore.isLoading())
-    }
-    listeners.add(handleUpdate)
-    handleUpdate()
-    plansStore.refresh()
-    return () => {
-      listeners.delete(handleUpdate)
-    }
-  }, [])
+  const { data: plansData = plansStore.getPlans(), isLoading: isLoadingPlans, refetch: refetchPlans } = useQuery<Plan[]>({
+    queryKey: queryKeys.plans.list(),
+    queryFn: async () => {
+      const res = await api.plan.list({})
+      if (res?.items && res.items.length > 0) {
+        const mapped = res.items.map(mapApiPlanToPlan)
+        currentPlans = mapped
+        broadcast()
+        return mapped
+      }
+      return plansStore.getPlans()
+    },
+    staleTime: 60 * 1000,
+  })
 
-  const getProductById = (id: string): Product | undefined => {
-    return allProducts.find((p) => p.id === id)
-  }
+  const { data: customers = plansStore.getCustomers() } = useQuery<B2BCustomer[]>({
+    queryKey: queryKeys.plans.customers(),
+    queryFn: async () => {
+      const res = await api.user.list({ limit: 100 })
+      if (Array.isArray(res)) {
+        const mapped: B2BCustomer[] = res.map((u: any) => ({
+          id: String(u.id),
+          name: u.fullName || u.phone || `کاربر #${u.id}`,
+          company: u.companyName || 'فروشگاه / همکار',
+          phone: u.phone || '',
+          tier: 'تجاری ممتاز' as const,
+        }))
+        currentCustomers = mapped
+        return mapped
+      }
+      return plansStore.getCustomers()
+    },
+    staleTime: 5 * 60 * 1000,
+  })
 
-  const getCustomerById = (id: string): B2BCustomer | undefined => {
-    return customers.find((c) => c.id === id)
-  }
+  const toggleMutation = useMutation({
+    mutationKey: mutationKeys.plans.update,
+    mutationFn: async (id: string) => {
+      plansStore.togglePlanStatus(id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.plans.all })
+    },
+  })
+
+  const saveMutation = useMutation({
+    mutationKey: mutationKeys.plans.create,
+    mutationFn: async (plan: Plan) => {
+      plansStore.savePlan(plan)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.plans.all })
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      plansStore.deletePlan(id)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.plans.all })
+    },
+  })
+
+  const allProducts = useMemo(() => plansStore.getProducts(), [])
 
   return {
-    plans,
+    plans: plansData,
     customers,
     allProducts,
-    isLoading,
-    refresh: plansStore.refresh,
-    togglePlanStatus: plansStore.togglePlanStatus,
-    savePlan: plansStore.savePlan,
-    deletePlan: plansStore.deletePlan,
+    isLoading: isLoadingPlans,
+    refresh: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.plans.all })
+      return refetchPlans()
+    },
+    togglePlanStatus: (id: string) => toggleMutation.mutate(id),
+    savePlan: (plan: Plan) => saveMutation.mutate(plan),
+    deletePlan: (id: string) => deleteMutation.mutate(id),
     resetToDefault: plansStore.resetToDefault,
-    getProductById,
-    getCustomerById,
+    getProductById: (id: string) => allProducts.find((p) => p.id === id),
+    getCustomerById: (id: string) => customers.find((c) => c.id === id),
   }
 }

@@ -137,7 +137,11 @@ export const authStore = {
   },
 }
 
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { queryKeys, mutationKeys } from '../../lib/query-keys'
+
 export function useAuth() {
+  const queryClient = useQueryClient()
   const [state, setState] = useState<AuthState>(authStore.getState())
 
   useEffect(() => {
@@ -147,11 +151,35 @@ export function useAuth() {
     }
   }, [])
 
+  const sendOtpMutation = useMutation({
+    mutationKey: mutationKeys.auth.requestOtp,
+    mutationFn: (phone: string) => authStore.sendOtp(phone),
+  })
+
+  const verifyOtpMutation = useMutation({
+    mutationKey: mutationKeys.auth.verifyOtp,
+    mutationFn: (code: string) => authStore.verifyOtp(code),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all })
+    },
+  })
+
+  const updateProfileMutation = useMutation({
+    mutationKey: mutationKeys.auth.updateProfile,
+    mutationFn: (updated: Partial<UserProfile>) => authStore.updateProfile(updated),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all })
+    },
+  })
+
   return {
     ...state,
-    sendOtp: authStore.sendOtp,
-    verifyOtp: authStore.verifyOtp,
-    logout: authStore.logout,
-    updateProfile: authStore.updateProfile,
+    sendOtp: (phone: string) => sendOtpMutation.mutateAsync(phone),
+    verifyOtp: (code: string) => verifyOtpMutation.mutateAsync(code),
+    logout: () => {
+      authStore.logout()
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all })
+    },
+    updateProfile: (updated: Partial<UserProfile>) => updateProfileMutation.mutateAsync(updated),
   }
 }

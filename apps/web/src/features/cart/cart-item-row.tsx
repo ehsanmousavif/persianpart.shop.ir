@@ -2,7 +2,7 @@ import { Link } from '@tanstack/react-router'
 import type { CartItem } from './cart-store'
 import { useCart } from './cart-store'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
-import { PlusIcon, MinusIcon, Trash2Icon, AlertTriangleIcon, AlertCircleIcon, BoxIcon } from '../../components/ui/icons'
+import { PlusIcon, MinusIcon, Trash2Icon, AlertTriangleIcon, AlertCircleIcon, BoxIcon, TomanIcon } from '../../components/ui/icons'
 
 export interface CartItemRowProps {
   item: CartItem
@@ -57,8 +57,10 @@ export function CartItemRow({ item }: CartItemRowProps) {
         <div className="p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-blue-600 shrink-0" />
-            <span className="text-xs">
-              قیمت به‌روزرسانی شد ({formatToman(item.oldUnitPrice || 0)}).
+            <span className="text-xs inline-flex items-center gap-1">
+              <span>قیمت به‌روزرسانی شد ({formatToman(item.oldUnitPrice || 0)}</span>
+              <TomanIcon className="size-3" />
+              <span>).</span>
             </span>
           </div>
           <span className="text-xs font-semibold text-blue-700 bg-white px-2 py-0.5 rounded border border-blue-200">
@@ -74,7 +76,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
           to="/products"
           search={{ productname: item.slug }}
           className="w-18 h-18 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/80 block hover:opacity-90 transition-opacity"
-          title="مشاهده مشخصات کالا در کاتالوگ"
+          title="مشاهده مشخصات کالا در لیست محصولات"
         >
           <img
             src={item.image || '/assets/images/placeholder.svg'}
@@ -168,10 +170,14 @@ export function CartItemRow({ item }: CartItemRowProps) {
         {/* Pricing */}
         <div className="text-end">
           <span className="text-xs text-slate-500 block font-medium leading-tight">
-            {formatToman(item.unitPrice)}
+            <span className="inline-flex items-center gap-0.5">
+              <span>{formatToman(item.unitPrice)}</span>
+              <TomanIcon className="size-3" />
+            </span>
           </span>
-          <span className="text-sm font-bold text-slate-900 leading-normal">
-            {formatToman(item.totalPrice)}
+          <span className="text-sm font-bold text-slate-900 leading-normal inline-flex items-center gap-1">
+            <span>{formatToman(item.totalPrice)}</span>
+            <TomanIcon className="size-4" />
           </span>
         </div>
       </div>

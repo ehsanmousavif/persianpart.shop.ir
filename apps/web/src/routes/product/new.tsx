@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect } from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { Slider, NumberField, I18nProvider } from '@heroui/react'
-import { useCatalog } from '../../features/catalog/catalog-store'
-import { useProductSelection } from '../../features/catalog/selection-store'
-import type { Product } from '../../lib/mock-data/products'
+import { useProducts } from '../../features/products/product-store'
+import { useProductSelection } from '../../features/products/selection-store'
+import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
@@ -17,6 +17,7 @@ import {
   SolarBoxIcon,
   SolarLayersIcon,
   SolarTagIcon,
+  TomanIcon,
 } from '../../components/ui/icons'
 
 export const Route = createFileRoute('/product/new')({
@@ -25,20 +26,20 @@ export const Route = createFileRoute('/product/new')({
 
 function ProductNewConfigurationPage() {
   const navigate = useNavigate()
-  const { allProducts } = useCatalog()
-  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection, reconcileWithCatalog } = useProductSelection()
+  const { allProducts } = useProducts()
+  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection, reconcileWithProducts } = useProductSelection()
 
   // Modal state for Pre-Invoice
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
 
-  // Reconcile selected IDs with live catalog products
+  // Reconcile selected IDs with live products
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
-      reconcileWithCatalog(allProducts.map((p) => p.id))
+      reconcileWithProducts(allProducts.map((p) => p.id))
     }
-  }, [allProducts, reconcileWithCatalog])
+  }, [allProducts, reconcileWithProducts])
 
-  // Selected products resolved from live catalog database
+  // Selected products resolved from live products database
   const selectedProducts = useMemo(() => {
     return selectedIds
       .map((id) => {
@@ -72,7 +73,7 @@ function ProductNewConfigurationPage() {
     unselectProduct(productId)
   }
 
-  const handleBackToCatalog = () => {
+  const handleBackToProducts = () => {
     navigate({
       to: '/product',
     })
@@ -124,7 +125,7 @@ function ProductNewConfigurationPage() {
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
-          <span>بازگشت به کاتالوگ محصولات</span>
+          <span>بازگشت به لیست محصولات</span>
         </button>
       </div>
     )
@@ -136,11 +137,11 @@ function ProductNewConfigurationPage() {
       <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
         <button
           type="button"
-          onClick={handleBackToCatalog}
+          onClick={handleBackToProducts}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
         >
           <ArrowRightIcon size={14} />
-          <span>بازگشت به کاتالوگ</span>
+          <span>بازگشت به لیست محصولات</span>
         </button>
 
         <div className="flex items-center gap-1.5 text-xs">
@@ -199,7 +200,10 @@ function ProductNewConfigurationPage() {
 
                     <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
                       {/* <span className="font-mono text-slate-700 font-bold" dir="ltr">{product.sku}</span> */}
-                      <span><strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong></span>
+                      <span className="inline-flex items-center gap-1">
+                        <strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong>
+                        <TomanIcon className="size-4" />
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -343,8 +347,9 @@ function ProductNewConfigurationPage() {
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">مبلغ برآورد</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
-                      {formatToman(calc.totalPrice)}
+                    <span className="font-bold text-slate-900 text-sm leading-normal truncate inline-flex items-center gap-1">
+                      <span>{formatToman(calc.totalPrice)}</span>
+                      <TomanIcon className="size-4" />
                     </span>
                   </div>
                 </div>

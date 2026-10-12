@@ -1,3 +1,10 @@
+import type {
+  OrderStatus as ContractOrderStatus,
+  OrderTimelineEvent as ContractTimelineEvent,
+  TimelineActorType,
+  TimelineEventType,
+} from '@persianpart/contract'
+
 export type OrderStatus =
   | 'pending'
   | 'approve'
@@ -40,6 +47,7 @@ export interface Order {
   orderNumber: string
   date: string
   createdAt?: string
+  updatedAt?: string
   status: OrderStatus
   cancelledBy?: 'customer' | 'admin'
   statusLabel: string
@@ -61,19 +69,19 @@ export const ORDER_STATUS_MAP: Record<
   string,
   { label: string; color: 'warning' | 'primary' | 'secondary' | 'success' | 'danger' | 'default' }
 > = {
-  pending: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
-  approve: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
-  approved: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
+  pending: { label: 'سفارش ثبت شده', color: 'primary' },
+  completed: { label: 'تکمیل شده', color: 'success' },
+  cancelled_by_customer: { label: 'لغو توسط کاربر', color: 'danger' },
+  cancelled_by_admin: { label: 'لغو توسط ادمین', color: 'danger' },
+  approve: { label: 'تکمیل شده', color: 'success' },
+  approved: { label: 'تکمیل شده', color: 'success' },
   cancel: { label: 'لغو شده', color: 'danger' },
   cancelled: { label: 'لغو شده', color: 'danger' },
   checking: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
-  preparing: { label: 'ثبت سفارش توسط واحد بازرگانی', color: 'primary' },
+  preparing: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
   shipping: { label: 'در حال ارسال', color: 'primary' },
-  completed: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
-  cancelled_by_customer: { label: 'لغو توسط مشتری', color: 'danger' },
-  cancelled_by_admin: { label: 'لغو توسط ادمین', color: 'danger' },
   processing: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
-  ready: { label: 'حواله ثبت شده (تکمیل شده)', color: 'success' },
+  ready: { label: 'تکمیل شده', color: 'success' },
 }
 
-export const MOCK_ORDERS: Order[] = []
+export type { ContractOrderStatus, ContractTimelineEvent, TimelineActorType, TimelineEventType }

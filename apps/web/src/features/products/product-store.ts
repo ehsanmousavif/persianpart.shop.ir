@@ -1,10 +1,13 @@
-import { useState, useMemo, useEffect } from 'react'
-import type { Product } from '../../lib/mock-data/products'
+import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import type { Product } from '../../types'
 import { api } from '../../lib/api-client'
 import { plansStore } from '../plans/plans-store'
 import { toPersianDigits } from '../../lib/utils/currency'
 import { useQueryStates } from 'nuqs'
-import { catalogFilterParsers, type SortOption } from './catalog-filters'
+import { productFilterParsers, type SortOption } from './product-filters'
+import { queryKeys } from '../../lib/query-keys'
+
 export type { SortOption }
 
 export function resolveMediaUrl(media: any): string {
@@ -69,13 +72,12 @@ export interface FilterState {
   sortBy: SortOption
 }
 
-export function useCatalog() {
-  const [queryFilters, setQueryFilters] = useQueryStates(catalogFilterParsers, { shallow: true })
+export function useProducts() {
+  const [queryFilters, setQueryFilters] = useQueryStates(productFilterParsers, { shallow: true })
   const [viewMode, setViewMode] = useState<ViewMode>('list')
-  const [productsList, setProductsList] = useState<Product[]>([])
-  const [isLiveConnected, setIsLiveConnected] = useState<boolean>(false)
-  const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [dimensions, setDimensions] = useState<string[]>([
+
+  // Fetch dimensions via TanStack Query using queryKeys.products.dimensions()
+  const { data: dimensions = [
     '30×90',
     '60×120',
     '80×160',
@@ -84,7 +86,44 @@ export function useCatalog() {
     '60×60',
     '30×60',
     '20×120',
-  ])
+  ] } = useQuery({
+    queryKey: queryKeys.products.dimensions(),
+    queryFn: async () => {
+      const dims = await api.catalog.dimensions({ onlyActive: true })
+      if (Array.isArray(dims) && dims.length > 0) {
+        const list = dims.map((d: any) => d.name || `${d.width}×${d.height}`)
+        return Array.from(new Set(list))
+      }
+      return [
+        '30×90',
+        '60×120',
+        '80×160',
+        '100×100',
+        '120×240',
+        '60×60',
+        '30×60',
+        '20×120',
+      ]
+    },
+    staleTime: 5 * 60 * 1000,
+  })
+
+  // Fetch products via TanStack Query using queryKeys.products.list(...)
+  const {
+    data: rawProducts = [],
+    isLoading,
+    isError,
+    refetch,
+  } = useQuery({
+    queryKey: queryKeys.products.list({ page: 1, limit: 100 }),
+    queryFn: async () => {
+      const res = await api.catalog.list({ page: 1, limit: 100 })
+      return res.items || []
+    },
+    staleTime: 60 * 1000,
+  })
+
+  const isLiveConnected = !isError
 
   const filters: FilterState = useMemo(() => ({
     searchQuery: queryFilters.q,
@@ -99,137 +138,90 @@ export function useCatalog() {
     sortBy: queryFilters.sort,
   }), [queryFilters, viewMode])
 
-  // Fetch dimensions from live CMS API
-  useEffect(() => {
-    let isMounted = true
-    api.catalog.dimensions({ onlyActive: true })
-      .then((dims: any) => {
-        if (isMounted && Array.isArray(dims) && dims.length > 0) {
-          const list = dims.map((d: any) => d.name || `${d.width}×${d.height}`)
-          setDimensions(Array.from(new Set(list)))
-        }
-      })
-      .catch(() => {})
+  const productsList = useMemo<Product[]>(() => {
+    if (!rawProducts || rawProducts.length === 0) return []
+    return rawProducts.map((item: any) => {
+      const dimObj = typeof item.dimension === 'object' ? item.dimension : null
+      const width = dimObj?.width || item.width || 60
+      const height = dimObj?.height || item.height || 120
+      const dimStr = dimObj?.name || `${width}×${height}`
+      const brandName = typeof item.brand === 'object' && item.brand !== null ? item.brand.name : (item.brandName || 'پرشین پارت')
+      const categoryName = typeof item.category === 'object' && item.category !== null ? item.category.name : (item.categoryName || 'عمومی')
+      const basePrice = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
+      const rawGallery = Array.isArray(item.gallery) ? item.gallery : []
+      const galleryUrls = rawGallery
+        .map((g: any) => resolveMediaUrl(g?.image || g))
+        .filter(Boolean)
 
-    return () => {
-      isMounted = false
-    }
-  }, [])
+      const rawCoverUrl = resolveMediaUrl(item.cover)
+      const primaryImage = rawCoverUrl || galleryUrls[0] || '/assets/images/placeholder.svg'
+      const imagesList = [primaryImage, ...galleryUrls.filter((u: string) => u !== primaryImage)]
 
-  // Fetch from live backend API on mount with 1-second delay to display skeleton
-  useEffect(() => {
-    let isMounted = true
-    Promise.all([
-      api.catalog.list({ page: 1, limit: 100 }),
-      new Promise((resolve) => setTimeout(resolve, 1000)), // 1s visible skeleton delay
-    ])
-      .then(([res]) => {
-        if (isMounted) {
-          if (res.items && res.items.length > 0) {
-            const liveMapped: Product[] = res.items.map((item: any) => {
-              const dimObj = typeof item.dimension === 'object' ? item.dimension : null
-              const width = dimObj?.width || item.width || 60
-              const height = dimObj?.height || item.height || 120
-              const dimStr = dimObj?.name || `${width}×${height}`
-              const brandName = typeof item.brand === 'object' && item.brand !== null ? item.brand.name : (item.brandName || 'پرشین پارت')
-              const categoryName = typeof item.category === 'object' && item.category !== null ? item.category.name : (item.categoryName || 'عمومی')
-              const basePrice = item.finalCustomerPricePerSqm || item.basePricePerSqm || 1250000
-              const rawGallery = Array.isArray(item.gallery) ? item.gallery : []
-              const galleryUrls = rawGallery
-                .map((g: any) => resolveMediaUrl(g?.image || g))
-                .filter(Boolean)
+      // Check if any active product_discount plan covers this product
+      const activeDiscountPlans = plansStore
+        .getPlans()
+        .filter((p) => (p.status === 'active' || p.isActive) && p.type === 'product_discount')
 
-              const rawCoverUrl = resolveMediaUrl(item.cover)
-              const primaryImage = rawCoverUrl || galleryUrls[0] || '/assets/images/placeholder.svg'
-              const imagesList = [primaryImage, ...galleryUrls.filter((u: string) => u !== primaryImage)]
+      const matchedPlan = activeDiscountPlans.find(
+        (p) =>
+          p.productIds.includes(String(item.id)) ||
+          p.productIds.includes(`prod-${item.id}`) ||
+          p.productIds.includes(item.slug)
+      )
 
-              // Check if any active product_discount plan covers this product
-              const activeDiscountPlans = plansStore
-                .getPlans()
-                .filter((p) => (p.status === 'active' || p.isActive) && p.type === 'product_discount')
+      let finalPrice = basePrice
+      let discountPercent: number | undefined = undefined
+      let originalPricePerSqm: number | undefined = undefined
+      let discountPlanTitle: string | undefined = undefined
 
-              const matchedPlan = activeDiscountPlans.find(
-                (p) =>
-                  p.productIds.includes(String(item.id)) ||
-                  p.productIds.includes(`prod-${item.id}`) ||
-                  p.productIds.includes(item.slug)
-              )
+      if (matchedPlan) {
+        discountPercent = matchedPlan.discountPercent || 10
+        originalPricePerSqm = basePrice
+        finalPrice = Math.round(basePrice * (1 - discountPercent / 100))
+        discountPlanTitle = matchedPlan.title
+      }
 
-              let finalPrice = basePrice
-              let discountPercent: number | undefined = undefined
-              let originalPricePerSqm: number | undefined = undefined
-              let discountPlanTitle: string | undefined = undefined
-
-              if (matchedPlan) {
-                discountPercent = matchedPlan.discountPercent || 10
-                originalPricePerSqm = basePrice
-                finalPrice = Math.round(basePrice * (1 - discountPercent / 100))
-                discountPlanTitle = matchedPlan.title
-              }
-
-              return {
-                id: String(item.id),
-                slug: item.slug || `product-${item.id}`,
-                name: item.name,
-                sku: item.sku,
-                dimensions: { width, height },
-                dimension: dimStr,
-                brand: brandName,
-                color: item.color || 'استاندارد',
-                grade: formatGrade(item.grade) as any,
-                category: categoryName,
-                finalCustomerPricePerSqm: finalPrice,
-                pricePerM2: finalPrice,
-                originalPricePerSqm,
-                discountPercent,
-                discountPlanTitle,
-                sqmPerCarton: item.sqmPerCarton || 1,
-                areaPerCarton: item.sqmPerCarton || 1,
-                piecesPerCarton: item.piecesPerCarton || 1,
-                tilesPerCarton: item.piecesPerCarton || 1,
-                cartonWeightKg: 28,
-                inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
-                stockCartons:
-                  item.availability === 'out_of_stock'
-                    ? 0
-                    : Math.floor(500 / (item.sqmPerCarton || 1)),
-                inStock: item.availability !== 'out_of_stock',
-                stockStatus:
-                  item.availability === 'out_of_stock'
-                    ? 'out_of_stock'
-                    : item.availability === 'limited'
-                      ? 'low_stock'
-                      : 'in_stock',
-                description: item.richDescription || undefined,
-                applications: ['خودرو سواری', 'سفارش عمده'],
-                tags: Array.isArray(item.tags) ? item.tags.map((t: any) => typeof t === 'object' ? t.name : t) : [],
-                images: imagesList,
-                gallery: galleryUrls.length > 0 ? galleryUrls : [primaryImage],
-              }
-            })
-            setProductsList(liveMapped)
-          } else {
-            setProductsList([])
-          }
-          setIsLiveConnected(true)
-        }
-      })
-      .catch(() => {
-        if (isMounted) {
-          setProductsList([])
-          setIsLiveConnected(false)
-        }
-      })
-      .finally(() => {
-        if (isMounted) {
-          setIsLoading(false)
-        }
-      })
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
+      return {
+        id: String(item.id),
+        slug: item.slug || `product-${item.id}`,
+        name: item.name,
+        sku: item.sku,
+        dimensions: { width, height },
+        dimension: dimStr,
+        brand: brandName,
+        color: item.color || 'استاندارد',
+        grade: formatGrade(item.grade) as any,
+        category: categoryName,
+        finalCustomerPricePerSqm: finalPrice,
+        pricePerM2: finalPrice,
+        originalPricePerSqm,
+        discountPercent,
+        discountPlanTitle,
+        sqmPerCarton: item.sqmPerCarton || 1,
+        areaPerCarton: item.sqmPerCarton || 1,
+        piecesPerCarton: item.piecesPerCarton || 1,
+        tilesPerCarton: item.piecesPerCarton || 1,
+        cartonWeightKg: 28,
+        inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
+        stockCartons:
+          item.availability === 'out_of_stock'
+            ? 0
+            : Math.floor(500 / (item.sqmPerCarton || 1)),
+        inStock: item.availability !== 'out_of_stock',
+        stockStatus:
+          item.availability === 'out_of_stock'
+            ? 'out_of_stock'
+            : item.availability === 'limited'
+              ? 'low_stock'
+              : 'in_stock',
+        description: item.richDescription || undefined,
+        applications: ['خودرو سواری', 'سفارش عمده'],
+        tags: Array.isArray(item.tags) ? item.tags.map((t: any) => typeof t === 'object' ? t.name : t) : [],
+        images: imagesList,
+        gallery: galleryUrls.length > 0 ? galleryUrls : [primaryImage],
+      }
+    })
+  }, [rawProducts])
 
   const activeFilterCount = useMemo(() => {
     let count = 0
@@ -402,8 +394,12 @@ export function useCatalog() {
     isLoading,
     activeFilterCount,
     isLiveConnected,
+    refetch,
     setFilter,
     toggleArrayFilter,
     resetFilters,
   }
 }
+
+// Temporary alias for smooth migration
+export const useCatalog = useProducts

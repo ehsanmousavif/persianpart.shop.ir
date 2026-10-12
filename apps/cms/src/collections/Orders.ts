@@ -176,6 +176,19 @@ export const Orders: CollectionConfig = {
           }
         }
 
+        // C. Normalize cancellation status & initiator
+        if (data.status === 'cancelled_by_customer') {
+          data.cancelledBy = 'customer'
+        } else if (data.status === 'cancelled_by_admin') {
+          data.cancelledBy = 'admin'
+        } else if (data.status === 'cancel') {
+          if (data.cancelledBy === 'customer') {
+            data.status = 'cancelled_by_customer'
+          } else {
+            data.status = 'cancelled_by_admin'
+          }
+        }
+
         return data
       },
     ],
@@ -202,8 +215,11 @@ export const Orders: CollectionConfig = {
       defaultValue: 'pending',
       label: 'وضعیت سفارش',
       options: [
-        { label: 'در حال بررسی واحد بازرگانی', value: 'pending' },
+        { label: 'سفارش ثبت شده (در حال بررسی)', value: 'pending' },
         { label: 'حواله ثبت شده (تکمیل شده)', value: 'approve' },
+        { label: 'تکمیل شده', value: 'completed' },
+        { label: 'لغو توسط کاربر', value: 'cancelled_by_customer' },
+        { label: 'لغو توسط ادمین', value: 'cancelled_by_admin' },
         { label: 'لغو شده', value: 'cancel' },
       ],
     },
@@ -212,7 +228,7 @@ export const Orders: CollectionConfig = {
       type: 'select',
       label: 'لغو شده توسط',
       options: [
-        { label: 'مشتری', value: 'customer' },
+        { label: 'کاربر', value: 'customer' },
         { label: 'ادمین', value: 'admin' },
       ],
       defaultValue: 'admin',

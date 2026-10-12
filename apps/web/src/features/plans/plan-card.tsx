@@ -1,9 +1,8 @@
 import { Link } from '@tanstack/react-router'
-import type { Plan } from '../../lib/mock-data/plans'
-import type { Product } from '../../lib/mock-data/products'
+import type { Plan, Product } from '../../types'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { formatPersianDate } from '../../lib/utils/date'
-import { BoxIcon, ArrowLeftIcon, SparklesIcon, ClockIcon } from '../../components/ui/icons'
+import { BoxIcon, ArrowLeftIcon, SparklesIcon, ClockIcon, TomanIcon } from '../../components/ui/icons'
 
 export interface PlanCardProps {
   plan: Plan
@@ -165,16 +164,19 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                       </span>
                       {isActive && plan.type === 'product_discount' ? (
                         <div className="flex items-center gap-1.5 mt-0.5">
-                          <span className="text-[11px] text-slate-400 line-through">
-                            {formatToman(originalPrice)}
+                          <span className="text-[11px] text-slate-400 line-through inline-flex items-center gap-0.5">
+                            <span>{formatToman(originalPrice)}</span>
+                            <TomanIcon className="size-2.5" />
                           </span>
-                          <span className="text-xs font-bold text-rose-600">
-                            {formatToman(discountedPrice)}
+                          <span className="text-xs font-bold text-rose-600 inline-flex items-center gap-0.5">
+                            <span>{formatToman(discountedPrice)}</span>
+                            <TomanIcon className="size-3" />
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-slate-500 block">
-                          {toPersianDigits(prod.dimension)} · {formatToman(originalPrice)}
+                        <span className="text-xs text-slate-500 inline-flex items-center gap-1">
+                          <span>{toPersianDigits(prod.dimension)} · {formatToman(originalPrice)}</span>
+                          <TomanIcon className="size-3" />
                         </span>
                       )}
                     </div>
@@ -201,7 +203,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
         </div>
       )}
 
-      {/* CTA Button to order from catalog */}
+      {/* CTA Button to order from products */}
       {isActive ? (
         <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
           <span className="text-xs text-slate-500">
@@ -211,7 +213,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             to="/product"
             className="h-9 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer active:scale-95"
           >
-            <span>مشاهده کاتالوگ و ثبت سفارش</span>
+            <span>مشاهده محصولات و ثبت سفارش</span>
             <ArrowLeftIcon size={14} />
           </Link>
         </div>

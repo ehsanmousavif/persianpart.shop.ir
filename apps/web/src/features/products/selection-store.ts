@@ -62,51 +62,36 @@ function persistAndNotify(nextState: SelectionState) {
       localStorage.setItem(SELECTED_STORAGE_KEY, JSON.stringify(nextState.selectedIds))
       localStorage.setItem(QUANTITIES_STORAGE_KEY, JSON.stringify(nextState.quantities))
     } catch {
-      // Ignore localStorage quotas / private browsing errors
+      // Ignore storage quota errors
     }
   }
   listeners.forEach((listener) => listener())
 }
 
-if (typeof window !== 'undefined') {
-  window.addEventListener('storage', (e) => {
-    if (e.key === SELECTED_STORAGE_KEY || e.key === QUANTITIES_STORAGE_KEY) {
-      memoryState = getStoredState()
-      listeners.forEach((listener) => listener())
-    }
-  })
-}
-
-function subscribe(listener: () => void) {
-  listeners.push(listener)
-  return () => {
-    listeners = listeners.filter((l) => l !== listener)
-  }
-}
-
-function getSnapshot(): SelectionState {
-  return memoryState
-}
-
 export const selectionStore = {
-  subscribe,
-  getSnapshot,
+  subscribe: (listener: () => void) => {
+    listeners.push(listener)
+    return () => {
+      listeners = listeners.filter((l) => l !== listener)
+    }
+  },
 
-  getSelectedIds: () => memoryState.selectedIds,
-  getQuantities: () => memoryState.quantities,
+  getSnapshot: (): SelectionState => memoryState,
 
-  toggleProduct: (productId: unknown) => {
-    const cleanId = normalizeId(productId)
+  toggleProduct: (id: unknown) => {
+    const cleanId = normalizeId(id)
     if (!cleanId) return
-    const current = memoryState.selectedIds.map(normalizeId)
-    const isSelected = current.includes(cleanId)
-    const nextIds = isSelected
-      ? current.filter((id) => id !== cleanId)
-      : [...current, cleanId]
+
+    const exists = memoryState.selectedIds.some((s) => normalizeId(s) === cleanId)
+    const nextIds = exists
+      ? memoryState.selectedIds.filter((s) => normalizeId(s) !== cleanId)
+      : [...memoryState.selectedIds, cleanId]
 
     const nextQuantities = { ...memoryState.quantities }
-    if (isSelected) {
+    if (exists) {
       delete nextQuantities[cleanId]
+    } else if (!nextQuantities[cleanId]) {
+      nextQuantities[cleanId] = 35 // Default batch area
     }
 
     persistAndNotify({
@@ -115,36 +100,42 @@ export const selectionStore = {
     })
   },
 
-  selectProduct: (productId: unknown) => {
-    const cleanId = normalizeId(productId)
+  selectProduct: (id: unknown) => {
+    const cleanId = normalizeId(id)
     if (!cleanId) return
-    const current = memoryState.selectedIds.map(normalizeId)
-    if (!current.includes(cleanId)) {
+
+    if (!memoryState.selectedIds.some((s) => normalizeId(s) === cleanId)) {
+      const nextQuantities = { ...memoryState.quantities }
+      if (!nextQuantities[cleanId]) {
+        nextQuantities[cleanId] = 35
+      }
       persistAndNotify({
-        selectedIds: Array.from(new Set([...current, cleanId])),
-        quantities: memoryState.quantities,
+        selectedIds: [...memoryState.selectedIds, cleanId],
+        quantities: nextQuantities,
       })
     }
   },
 
-  unselectProduct: (productId: unknown) => {
-    const cleanId = normalizeId(productId)
+  unselectProduct: (id: unknown) => {
+    const cleanId = normalizeId(id)
     if (!cleanId) return
+
     const nextQuantities = { ...memoryState.quantities }
     delete nextQuantities[cleanId]
 
     persistAndNotify({
-      selectedIds: memoryState.selectedIds.map(normalizeId).filter((id) => id !== cleanId),
+      selectedIds: memoryState.selectedIds.filter((s) => normalizeId(s) !== cleanId),
       quantities: nextQuantities,
     })
   },
 
-  setQuantity: (productId: unknown, quantity: number) => {
-    const cleanId = normalizeId(productId)
+  setQuantity: (id: unknown, qty: number) => {
+    const cleanId = normalizeId(id)
     if (!cleanId) return
+
     const nextQuantities = {
       ...memoryState.quantities,
-      [cleanId]: Math.max(0, quantity),
+      [cleanId]: qty,
     }
 
     persistAndNotify({
@@ -153,7 +144,7 @@ export const selectionStore = {
     })
   },
 
-  reconcileWithCatalog: (validIds: unknown[]) => {
+  reconcileWithProducts: (validIds: unknown[]) => {
     const validSet = new Set(validIds.map(normalizeId).filter(Boolean))
     const current = memoryState.selectedIds.map(normalizeId).filter(Boolean)
     const nextIds = current.filter((id) => validSet.has(id))
@@ -198,7 +189,8 @@ export function useProductSelection() {
     selectProduct: selectionStore.selectProduct,
     unselectProduct: selectionStore.unselectProduct,
     setQuantity: selectionStore.setQuantity,
-    reconcileWithCatalog: selectionStore.reconcileWithCatalog,
+    reconcileWithProducts: selectionStore.reconcileWithProducts,
+    reconcileWithCatalog: selectionStore.reconcileWithProducts,
     clearSelection: selectionStore.clearSelection,
   }
 }

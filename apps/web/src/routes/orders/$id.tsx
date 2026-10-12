@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { Modal as HeroUIModal } from '@heroui/react'
 import { useOrders, buildFullOrderTimeline } from '../../features/orders/order-store'
-import { ORDER_STATUS_MAP, type Order, type OrderItem } from '../../lib/mock-data/orders'
+import { ORDER_STATUS_MAP, type Order, type OrderItem, type Product } from '../../types'
 import { OrderTimeline } from '../../features/orders/order-timeline'
 import { Badge } from '../../components/ui/badge'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -18,7 +18,10 @@ import {
   PhoneIcon,
   AlertTriangleIcon,
   ClockIcon,
+  TomanIcon,
 } from '../../components/ui/icons'
+import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
+import { useProducts } from '../../features/products/product-store'
 
 export const Route = createFileRoute('/orders/$id')({
   loader: async ({ params }) => {
@@ -43,19 +46,20 @@ function OrderDetailPage() {
     getOrderById,
     fetchOrderById,
     cancelOrder,
-    reorderToCart,
     orders,
   } = useOrders()
+  const { allProducts } = useProducts()
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [cancelReason, setCancelReason] = useState('تغییر در متراژ یا اقلام سفارش')
+  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false)
   const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
   const [isLoading, setIsLoading] = useState(!order)
 
-  // 3-Minute Countdown Timer calculation (calculated purely from order createdAt)
+  // 10-Minute Countdown Timer calculation (calculated purely from order createdAt)
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
     if (!order) return 0
     const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
-    const deadline = createdAtMs + 3 * 60 * 1000
+    const deadline = createdAtMs + 10 * 60 * 1000
     return Math.max(0, Math.floor((deadline - Date.now()) / 1000))
   })
 
@@ -84,7 +88,7 @@ function OrderDetailPage() {
   useEffect(() => {
     if (!order) return
     const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
-    const deadline = createdAtMs + 3 * 60 * 1000
+    const deadline = createdAtMs + 10 * 60 * 1000
 
     const updateTimer = () => {
       const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
@@ -100,6 +104,112 @@ function OrderDetailPage() {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
     return `${toPersianDigits(mins.toString().padStart(2, '0'))}:${toPersianDigits(secs.toString().padStart(2, '0'))}`
+  }
+
+  const isCancelled =
+    order?.status === 'cancel' ||
+    order?.status === 'cancelled' ||
+    order?.status === 'cancelled_by_customer' ||
+    order?.status === 'cancelled_by_admin'
+
+  const isCompleted = order?.status === 'completed' || order?.status === 'approved' || order?.status === 'approve'
+  const isWithin10Minutes = timeLeftSeconds > 0
+  const is10MinutesPassed = timeLeftSeconds <= 0
+  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin10Minutes
+
+  const timeline = useMemo(() => {
+    if (!order) return []
+    return buildFullOrderTimeline(
+      order,
+      formatPersianDate(order.createdAt || order.date),
+      is10MinutesPassed
+    )
+  }, [order, is10MinutesPassed])
+
+  const displayStatusLabel = useMemo(() => {
+    if (!order) return ''
+    if (order.status === 'pending') {
+      return is10MinutesPassed ? 'در حال بررسی واحد بازرگانی' : 'سفارش ثبت شده'
+    }
+    if (order.status === 'approve' || order.status === 'approved' || order.status === 'completed') {
+      return 'تکمیل شده'
+    }
+    if (isCancelled) {
+      return order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
+        ? 'لغو توسط کاربر'
+        : 'لغو توسط ادمین'
+    }
+    return ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.label || order.statusLabel
+  }, [order, is10MinutesPassed, isCancelled])
+
+  const statusConfig = order
+    ? {
+        label: displayStatusLabel,
+        color: isCancelled
+          ? ('danger' as const)
+          : isCompleted
+          ? ('success' as const)
+          : is10MinutesPassed
+          ? ('warning' as const)
+          : ('primary' as const),
+      }
+    : { label: '', color: 'warning' as const }
+
+  // Reorder data for PreInvoiceModal
+  const { reorderProducts, reorderQuantities } = useMemo(() => {
+    if (!order?.items) return { reorderProducts: [], reorderQuantities: {} }
+    const products: Product[] = order.items.map((item) => {
+      const found = allProducts.find(
+        (p) => String(p.id) === String(item.productId) || p.sku === item.productSku
+      )
+      if (found) return found
+      return {
+        id: item.productId,
+        slug: item.productSlug || item.productId,
+        name: item.productName,
+        sku: item.productSku,
+        dimension: item.dimension,
+        dimensions: { width: 0, height: 0 },
+        brand: 'پرشین پارت',
+        color: '',
+        grade: 'درجه ۱' as const,
+        category: 'پرسلان کف' as const,
+        finalCustomerPricePerSqm: item.unitPrice,
+        pricePerM2: item.unitPrice,
+        sqmPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
+        areaPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
+        piecesPerCarton: 4,
+        tilesPerCarton: 4,
+        cartonWeightKg: 25,
+        inventorySqm: 9999,
+        stockCartons: 999,
+        inStock: true,
+        stockStatus: 'in_stock' as const,
+        applications: [],
+        tags: [],
+        images: [item.productImage || '/placeholder.png'],
+        gallery: [item.productImage || '/placeholder.png'],
+      }
+    })
+    const quantities: Record<string, number> = {}
+    order.items.forEach((item) => {
+      quantities[item.productId] = item.requestedArea || item.deliverableArea
+    })
+    return { reorderProducts: products, reorderQuantities: quantities }
+  }, [order?.items, allProducts])
+
+  const handleCancel = async () => {
+    if (!order) return
+    await cancelOrder(order.id, cancelReason)
+    setShowCancelModal(false)
+    toast.info('سفارش لغو شد', `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت لغو شد و موجودی به انبار بازگردانی گردید.`)
+    const fresh = await fetchOrderById(order.id)
+    if (fresh) setOrder(fresh)
+  }
+
+  const handleReorder = () => {
+    if (!order) return
+    setIsReorderModalOpen(true)
   }
 
   if (isLoading) {
@@ -120,65 +230,6 @@ function OrderDetailPage() {
         </Link>
       </div>
     )
-  }
-
-  const isCancelled =
-    order.status === 'cancel' ||
-    order.status === 'cancelled' ||
-    order.status === 'cancelled_by_customer' ||
-    order.status === 'cancelled_by_admin'
-
-  const isCompleted = order.status === 'completed' || order.status === 'approved' || order.status === 'approve'
-  const isWithin3Minutes = timeLeftSeconds > 0
-  const is3MinutesPassed = timeLeftSeconds <= 0
-  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin3Minutes
-
-  const timeline = useMemo(() => {
-    return buildFullOrderTimeline(
-      order,
-      formatPersianDate(order.createdAt || order.date),
-      is3MinutesPassed
-    )
-  }, [order, is3MinutesPassed])
-
-  const displayStatusLabel = useMemo(() => {
-    if (order.status === 'pending') {
-      return is3MinutesPassed ? 'ثبت سفارش توسط واحد بازرگانی' : 'در حال بررسی واحد بازرگانی'
-    }
-    if (order.status === 'approve' || order.status === 'approved' || order.status === 'completed') {
-      return 'حواله ثبت شده (تکمیل شده)'
-    }
-    if (isCancelled) {
-      return order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
-        ? 'لغو توسط مشتری'
-        : 'لغو توسط ادمین'
-    }
-    return ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.label || order.statusLabel
-  }, [order.status, order.statusLabel, order.cancelledBy, is3MinutesPassed, isCancelled])
-
-  const statusConfig = ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP] || {
-    label: displayStatusLabel,
-    color: isCancelled ? ('danger' as const) : isCompleted ? ('success' as const) : ('warning' as const),
-  }
-
-  const handleCancel = async () => {
-    await cancelOrder(order.id, cancelReason)
-    setShowCancelModal(false)
-    toast.info('سفارش لغو شد', `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} لغو گردید و موجودی به انبار بازگردانی شد.`)
-    const fresh = await fetchOrderById(order.id)
-    if (fresh) setOrder(fresh)
-  }
-
-  const handleReorder = () => {
-    const res = reorderToCart(order.id)
-    if (res.success) {
-      if (res.warnings.length > 0) {
-        toast.warning('سفارش مجدد با اخطار', res.warnings.join(' | '))
-      } else {
-        toast.success('سفارش مجدد', 'اقلام سفارش قبلی در سبد خرید بارگذاری شدند.')
-      }
-      navigate({ to: '/cart' })
-    }
   }
 
   return (
@@ -205,20 +256,20 @@ function OrderDetailPage() {
               {displayStatusLabel}
             </Badge>
 
-            {/* 3-Minute Customer Countdown Badge */}
+            {/* 10-Minute Customer Countdown Badge */}
             {!isCancelled && !isCompleted && (
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs ${
-                  isWithin3Minutes
+                  isWithin10Minutes
                     ? 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'
                     : 'bg-slate-100 text-slate-500 border-slate-200'
                 }`}
               >
-                <ClockIcon size={13} className={isWithin3Minutes ? 'text-amber-700' : 'text-slate-400'} />
+                <ClockIcon size={13} className={isWithin10Minutes ? 'text-amber-700' : 'text-slate-400'} />
                 <span>
-                  {isWithin3Minutes
+                  {isWithin10Minutes
                     ? `مهلت لغو خریدار: ${formatCountdown(timeLeftSeconds)}`
-                    : 'مهلت لغو به پایان رسید'}
+                    : 'مهلت ۱۰ دقیقه‌ای لغو پایان یافت'}
                 </span>
               </span>
             )}
@@ -229,12 +280,12 @@ function OrderDetailPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 flex-wrap">
           {isCancellableByCustomer && (
             <button
               type="button"
               onClick={() => setShowCancelModal(true)}
-              className="py-2.5 px-4 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
+              className="py-2.5 px-3.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <XIcon size={16} />
               <span>لغو سفارش</span>
@@ -244,13 +295,43 @@ function OrderDetailPage() {
           <button
             type="button"
             onClick={handleReorder}
-            className="py-2.5 whitespace-nowrap px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
+            className="py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
             <span>سفارش مجدد</span>
           </button>
         </div>
       </div>
+
+      {/* Cancellation Banner */}
+      {isCancelled && (
+        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-2">
+          <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
+            <AlertTriangleIcon size={18} className="text-rose-600 shrink-0" />
+            <span>
+              {order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
+                ? 'لغو توسط کاربر'
+                : 'لغو توسط ادمین'}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-rose-900 pt-1">
+            <div className="flex items-center gap-1.5">
+              <span className="text-rose-600 font-semibold">ثبت‌کننده لغو:</span>
+              <strong className="text-rose-950">
+                {order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
+                  ? 'کاربر'
+                  : 'ادمین'}
+              </strong>
+            </div>
+            {order.notes && (
+              <div className="flex items-start gap-1.5">
+                <span className="text-rose-600 font-semibold shrink-0">علت لغو:</span>
+                <span className="text-rose-950 font-medium">{order.notes}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Visual Stepper Timeline */}
       <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
@@ -265,7 +346,7 @@ function OrderDetailPage() {
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100 flex items-center justify-between">
           <span>اقلام سفارش</span>
           <span className="text-xs text-slate-400 font-normal">
-            {toPersianDigits(order.items.length)} ردیف کالا
+            {toPersianDigits(order.items.length)} کالا انتخاب شده
           </span>
         </h3>
 
@@ -308,33 +389,38 @@ function OrderDetailPage() {
                 </div>
               </div>
 
-              <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-slate-100">
-                <span className="text-xs text-slate-400 block">{formatToman(item.unitPrice)}</span>
-                <span className="text-sm font-bold text-slate-900">{formatToman(item.totalPrice)}</span>
+              <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 flex flex-col items-start sm:items-end">
+                <span className="text-xs text-slate-400 inline-flex items-center gap-1">
+                  <span>{formatToman(item.unitPrice)}</span>
+                  <TomanIcon className="size-3" />
+                </span>
+                <span className="text-sm font-bold text-slate-900 inline-flex items-center gap-1">
+                  <span>{formatToman(item.totalPrice)}</span>
+                  <TomanIcon className="size-3.5" />
+                </span>
               </div>
             </div>
           ))}
         </div>
 
         {/* Financial Summary */}
-        <div className="pt-4 border-t-2 border-slate-100 space-y-2 text-xs text-slate-600">
-          <div className="flex justify-between">
-            <span>جمع اقلام:</span>
-            <span className="font-bold text-slate-900">{formatToman(order.subtotal)}</span>
-          </div>
+        <div className="pt-4 space-y-2 text-xs text-slate-600">
           {order.discountAmount > 0 && (
-            <div className="flex justify-between text-emerald-700 font-semibold">
+            <div className="flex justify-between items-center text-emerald-700 font-semibold">
               <span>تخفیف:</span>
-              <span>- {formatToman(order.discountAmount)}</span>
+              <span className="inline-flex items-center gap-1">
+                <span>- {formatToman(order.discountAmount)}</span>
+                <TomanIcon className="size-3.5" />
+              </span>
             </div>
           )}
-          <div className="flex justify-between">
-            <span>مالیات ارزش افزوده:</span>
-            <span>{formatToman(order.taxAmount)}</span>
-          </div>
-          <div className="pt-2 border-t border-slate-200 flex justify-between text-sm font-bold text-slate-900">
+
+          <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-sm font-bold text-slate-900">
             <span>مبلغ نهایی:</span>
-            <span className="text-base font-bold text-blue-700">{formatToman(order.finalTotal)}</span>
+            <span className="text-base font-bold text-blue-700 inline-flex items-center gap-1">
+              <span>{formatToman(order.finalTotal)}</span>
+              <TomanIcon className="size-4" />
+            </span>
           </div>
         </div>
       </div>
@@ -433,13 +519,32 @@ function OrderDetailPage() {
                   onClick={handleCancel}
                   className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer transition-all"
                 >
-                  تأیید لغو
+                  تأیید لغو سفارش
                 </button>
               </div>
             </HeroUIModal.Dialog>
           </HeroUIModal.Container>
         </HeroUIModal.Backdrop>
       </HeroUIModal.Root>
+
+      {/* Pre-Invoice Modal for Reordering */}
+      <PreInvoiceModal
+        isOpen={isReorderModalOpen}
+        onClose={() => setIsReorderModalOpen(false)}
+        products={reorderProducts}
+        quantities={reorderQuantities}
+        onSuccess={(newOrderId) => {
+          setIsReorderModalOpen(false)
+          toast.success(
+            'ثبت قطعی سفارش مجدد',
+            'سفارش مجدد شما با موفقیت ثبت شد.'
+          )
+          navigate({
+            to: '/orders/$id',
+            params: { id: newOrderId },
+          })
+        }}
+      />
     </div>
   )
 }

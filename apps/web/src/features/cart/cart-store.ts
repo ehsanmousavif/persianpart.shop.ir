@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import type { Product } from '../../lib/mock-data/products'
+import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 
 export interface CartItem {

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useCart } from '../features/cart/cart-store'
 import { CartItemRow } from '../features/cart/cart-item-row'
 import { api } from '../lib/api-client'
+import { queryKeys, mutationKeys } from '../lib/query-keys'
 import { useAuth } from '../features/auth/auth-store'
 import { formatToman, toPersianDigits } from '../lib/utils/currency'
 import { toast } from '../components/feedback/toast'
@@ -16,6 +18,7 @@ import {
   RefreshCwIcon,
   StoreIcon,
   MapPinIcon,
+  TomanIcon,
 } from '../components/ui/icons'
 
 export const Route = createFileRoute('/cart')({
@@ -30,7 +33,6 @@ function CartPage() {
     totalArea,
     subtotal,
     discountAmount,
-    taxAmount,
     finalTotal,
     hasBlockingIssues,
     clearCart,
@@ -40,7 +42,19 @@ function CartPage() {
 
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
   const [deliveryNotes, setDeliveryNotes] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const queryClient = useQueryClient()
+
+  const submitOrderMutation = useMutation({
+    mutationKey: mutationKeys.orders.submit,
+    mutationFn: async (payload: any) => {
+      return await api.order.submit(payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
+
+  const isSubmitting = submitOrderMutation.isPending
 
   const handleCheckoutSubmit = async () => {
     if (!isAuthenticated || !user) {
@@ -54,7 +68,6 @@ function CartPage() {
       return
     }
 
-    setIsSubmitting(true)
     try {
       const orderPayload = {
         items: items.map((i) => ({
@@ -64,7 +77,7 @@ function CartPage() {
         notes: deliveryNotes || undefined,
       }
 
-      const newOrder = await api.order.submit(orderPayload)
+      const newOrder = await submitOrderMutation.mutateAsync(orderPayload)
 
       clearCart()
       setIsCheckoutModalOpen(false)
@@ -75,8 +88,6 @@ function CartPage() {
       navigate({ to: '/orders/$id', params: { id: newOrder.id } })
     } catch (err: any) {
       toast.error('خطا در ثبت سفارش', err.message || 'مشکلی در ارتباط با سرور رخ داد.')
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -117,7 +128,7 @@ function CartPage() {
               سبد خرید خالی است
             </h3>
             <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
-              برای مشاهده و انتخاب کالاها به کاتالوگ مراجعه کنید.
+              برای مشاهده و انتخاب کالاها به لیست محصولات مراجعه کنید.
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
@@ -125,7 +136,7 @@ function CartPage() {
               to="/product"
               className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
             >
-              مشاهده کاتالوگ
+              مشاهده محصولات
             </Link>
           </div>
         </div>
@@ -157,24 +168,34 @@ function CartPage() {
 
               <div className="pt-1.5 border-t border-slate-100 flex justify-between">
                 <span>جمع اقلام:</span>
-                <span className="font-bold text-slate-900">{formatToman(subtotal)}</span>
+                <span className="font-bold text-slate-900 inline-flex items-center gap-1">
+                  <span>{formatToman(subtotal)}</span>
+                  <TomanIcon className="size-3.5" />
+                </span>
               </div>
 
               <div className="flex justify-between text-emerald-700 font-bold">
                 <span>تخفیف (۵٪):</span>
-                <span>- {formatToman(discountAmount)}</span>
+                <span className="inline-flex items-center gap-1">
+                  <span>- {formatToman(discountAmount)}</span>
+                  <TomanIcon className="size-3.5" />
+                </span>
               </div>
 
               <div className="flex justify-between">
-                <span>مالیات ارزش افزوده (۱۰٪):</span>
-                <span className="font-medium text-slate-700">{formatToman(taxAmount)}</span>
+                {/* <span>مالیات ارزش افزوده (۱۰٪):</span> */}
+                {/* <span className="font-medium text-slate-700 inline-flex items-center gap-1">
+                  <span>{formatToman(taxAmount)}</span>
+                  <TomanIcon className="size-3.5" />
+                </span> */}
               </div>
             </div>
 
             <div className="pt-2 border-t-2 border-slate-200/80 flex items-baseline justify-between">
               <span className="text-sm font-bold text-slate-900">مبلغ نهایی:</span>
-              <span className="text-lg font-bold text-blue-700">
-                {formatToman(finalTotal)}
+              <span className="text-lg font-bold text-blue-700 inline-flex items-center gap-1">
+                <span>{formatToman(finalTotal)}</span>
+                <TomanIcon className="size-4" />
               </span>
             </div>
 
@@ -233,7 +254,10 @@ function CartPage() {
           <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs space-y-1">
             <div className="flex justify-between font-bold text-emerald-900">
               <span>مبلغ نهایی:</span>
-              <span className="text-sm font-bold">{formatToman(finalTotal)}</span>
+              <span className="text-sm font-bold inline-flex items-center gap-1">
+                <span>{formatToman(finalTotal)}</span>
+                <TomanIcon className="size-3.5" />
+              </span>
             </div>
             <div className="flex justify-between text-emerald-700 text-xs">
               <span>شیوه پرداخت:</span>

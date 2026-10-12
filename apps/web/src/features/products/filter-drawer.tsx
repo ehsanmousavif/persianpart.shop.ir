@@ -1,13 +1,14 @@
 import React from 'react'
 import { Modal } from '../../components/ui/modal'
-import { useCatalog } from './catalog-store'
+import { useProducts } from './product-store'
 import { CheckIcon, RefreshCwIcon } from '../../components/ui/icons'
 import { toPersianDigits } from '../../lib/utils/currency'
 
 export interface FilterDrawerProps {
   isOpen: boolean
   onClose: () => void
-  catalogHook: ReturnType<typeof useCatalog>
+  productHook?: ReturnType<typeof useProducts>
+  catalogHook?: ReturnType<typeof useProducts>
 }
 
 const AVAILABLE_DIMENSIONS = ['30×90', '60×120', '80×160', '100×100', '60×60', '30×60', '20×120', '120×240']
@@ -16,8 +17,9 @@ const AVAILABLE_COLORS = ['سفید کلکته', 'سفید مرمری', 'خاک�
 const AVAILABLE_GRADES = ['درجه ۱', 'درجه ۲', 'درجه ۳', 'درجه ۴', 'صادراتی'] as const
 const AVAILABLE_TAGS = ['نانو پولیش', 'رکتیفاید', 'بدون بند', 'صادراتی', 'ضد لغزش (R10)', 'اقتصادی', 'سوپر نانو پولیش', 'مگا اسلب']
 
-export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps) {
-  const { filters, toggleArrayFilter, setFilter, resetFilters, activeFilterCount, dimensions } = catalogHook
+export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: FilterDrawerProps) {
+  const hook = productHook || catalogHook!
+  const { filters, toggleArrayFilter, setFilter, resetFilters, activeFilterCount, dimensions } = hook
 
   const FilterSection = ({
     title,
@@ -223,7 +225,7 @@ export function FilterDrawer({ isOpen, onClose, catalogHook }: FilterDrawerProps
             className="py-2.5 px-4 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <CheckIcon size={14} />
-            <span>اعمال فیلتر ({toPersianDigits(catalogHook.products.length)})</span>
+            <span>اعمال فیلتر ({toPersianDigits(hook.products.length)})</span>
           </button>
         </div>
       </div>

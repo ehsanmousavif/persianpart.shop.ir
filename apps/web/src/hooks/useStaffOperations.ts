@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   api,
   type Order,
@@ -7,6 +7,7 @@ import {
   type ImportRunSummary,
   type AuditEvent,
 } from '../lib/api-client'
+import { queryKeys, mutationKeys } from '../lib/query-keys'
 
 export function useStaffOrders(filters?: {
   status?: OrderStatus
@@ -15,135 +16,147 @@ export function useStaffOrders(filters?: {
   page?: number
   limit?: number
 }) {
-  const [orders, setOrders] = useState<Order[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
+  const queryClient = useQueryClient()
 
-  const fetchOrders = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const res = await api.order.staffList(filters || {})
-      setOrders(res.items)
-      setTotal(res.total)
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters?.status, filters?.customerId, filters?.search, filters?.page, filters?.limit])
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: queryKeys.orders.list(filters),
+    queryFn: async () => {
+      return await api.order.staffList(filters || {})
+    },
+    staleTime: 30 * 1000,
+  })
 
-  useEffect(() => {
-    fetchOrders()
-  }, [fetchOrders])
+  const updateStatusMutation = useMutation({
+    mutationKey: mutationKeys.orders.staffUpdateStatus,
+    mutationFn: async ({
+      orderId,
+      newStatus,
+      note,
+    }: {
+      orderId: string
+      newStatus: OrderStatus
+      note?: string
+    }) => {
+      return await api.order.staffUpdateStatus({ id: orderId, newStatus, note })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
 
-  const updateStatus = async (orderId: string, newStatus: OrderStatus, note?: string) => {
-    const res = await api.order.staffUpdateStatus({ id: orderId, newStatus, note })
-    fetchOrders()
-    return res
-  }
-
-  const cancelOrder = async (orderId: string, reason: string, note?: string) => {
-    const res = await api.order.staffCancel({ id: orderId, cancellationReason: reason, cancellationNote: note })
-    fetchOrders()
-    return res
-  }
+  const cancelOrderMutation = useMutation({
+    mutationKey: mutationKeys.orders.staffCancel,
+    mutationFn: async ({
+      orderId,
+      reason,
+      note,
+    }: {
+      orderId: string
+      reason: string
+      note?: string
+    }) => {
+      return await api.order.staffCancel({
+        id: orderId,
+        cancellationReason: reason,
+        cancellationNote: note,
+      })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
 
   return {
-    orders,
-    total,
+    orders: (data?.items || []) as Order[],
+    total: data?.total || 0,
     isLoading,
-    refetch: fetchOrders,
-    updateStatus,
-    cancelOrder,
+    refetch,
+    updateStatus: (orderId: string, newStatus: OrderStatus, note?: string) =>
+      updateStatusMutation.mutateAsync({ orderId, newStatus, note }),
+    cancelOrder: (orderId: string, reason: string, note?: string) =>
+      cancelOrderMutation.mutateAsync({ orderId, reason, note }),
   }
 }
 
 export function useCsvPipeline() {
-  const [preview, setPreview] = useState<ImportPreviewReport | null>(null)
-  const [history, setHistory] = useState<ImportRunSummary[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const queryClient = useQueryClient()
 
-  const uploadAndPreview = async (filename: string, csvContent: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await api.system.csvImport.preview({ filename, csvContent })
-      setPreview(res)
-      return res
-    } catch (err: any) {
-      setError(err.message || 'خطا در پیش‌نمایش فایل CSV')
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const { data: runsData, refetch: refetchHistory } = useQuery({
+    queryKey: queryKeys.system.csvRuns(),
+    queryFn: async () => {
+      try {
+        const res = await api.system.csvImport.listRuns({})
+        return res.items || []
+      } catch {
+        return []
+      }
+    },
+    staleTime: 60 * 1000,
+  })
 
-  const applyPreview = async (importRunId: string) => {
-    setIsLoading(true)
-    setError(null)
-    try {
-      const res = await api.system.csvImport.apply({ importRunId })
-      setPreview(null)
-      fetchHistory()
-      return res
-    } catch (err: any) {
-      setError(err.message || 'خطا در اعمال تغییرات فایل CSV')
-      throw err
-    } finally {
-      setIsLoading(false)
-    }
-  }
+  const previewMutation = useMutation({
+    mutationKey: mutationKeys.system.csvPreview,
+    mutationFn: async ({
+      filename,
+      csvContent,
+    }: {
+      filename: string
+      csvContent: string
+    }) => {
+      return await api.system.csvImport.preview({ filename, csvContent })
+    },
+  })
 
-  const fetchHistory = useCallback(async () => {
-    try {
-      const res = await api.system.csvImport.listRuns({})
-      setHistory(res.items)
-    } catch {
-      // Ignored if not staff
-    }
-  }, [])
-
-  useEffect(() => {
-    fetchHistory()
-  }, [fetchHistory])
+  const applyMutation = useMutation({
+    mutationKey: mutationKeys.system.csvApply,
+    mutationFn: async (importRunId: string) => {
+      return await api.system.csvImport.apply({ importRunId })
+    },
+    onSuccess: () => {
+      previewMutation.reset()
+      queryClient.invalidateQueries({ queryKey: queryKeys.system.csvRuns() })
+    },
+  })
 
   return {
-    preview,
-    history,
-    isLoading,
-    error,
-    uploadAndPreview,
-    applyPreview,
-    clearPreview: () => setPreview(null),
-    refetchHistory: fetchHistory,
+    preview: (previewMutation.data || null) as ImportPreviewReport | null,
+    history: (runsData || []) as ImportRunSummary[],
+    isLoading: previewMutation.isPending || applyMutation.isPending,
+    error: previewMutation.error
+      ? (previewMutation.error as Error).message
+      : applyMutation.error
+      ? (applyMutation.error as Error).message
+      : null,
+    uploadAndPreview: (filename: string, csvContent: string) =>
+      previewMutation.mutateAsync({ filename, csvContent }),
+    applyPreview: (importRunId: string) => applyMutation.mutateAsync(importRunId),
+    clearPreview: () => previewMutation.reset(),
+    refetchHistory,
   }
 }
 
-export function useAuditEvents(filters?: { action?: any; entityType?: string; page?: number; limit?: number }) {
-  const [events, setEvents] = useState<AuditEvent[]>([])
-  const [total, setTotal] = useState(0)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const fetchEvents = useCallback(async () => {
-    setIsLoading(true)
-    try {
-      const res = await api.system.audit.list(filters || {})
-      setEvents(res.items)
-      setTotal(res.total)
-    } catch {
-      // Ignored
-    } finally {
-      setIsLoading(false)
-    }
-  }, [filters?.action, filters?.entityType, filters?.page, filters?.limit])
-
-  useEffect(() => {
-    fetchEvents()
-  }, [fetchEvents])
+export function useAuditEvents(filters?: {
+  action?: any
+  entityType?: string
+  page?: number
+  limit?: number
+}) {
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: queryKeys.system.audit(filters),
+    queryFn: async () => {
+      try {
+        return await api.system.audit.list(filters || {})
+      } catch {
+        return { items: [], total: 0 }
+      }
+    },
+    staleTime: 30 * 1000,
+  })
 
   return {
-    events,
-    total,
+    events: (data?.items || []) as AuditEvent[],
+    total: data?.total || 0,
     isLoading,
-    refetch: fetchEvents,
+    refetch,
   }
 }

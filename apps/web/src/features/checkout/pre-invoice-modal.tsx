@@ -1,16 +1,18 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Modal as HeroUIModal } from '@heroui/react'
-import type { Product } from '../../lib/mock-data/products'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import type { Product, OrderItem } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
 import { HoldConfirmButton } from '../../components/ui/hold-confirm-button'
 import { orderStore } from '../orders/order-store'
 import { api } from '../../lib/api-client'
-import type { OrderItem } from '../../lib/mock-data/orders'
+import { queryKeys, mutationKeys } from '../../lib/query-keys'
 import {
   XIcon,
   ClockIcon,
   PencilIcon,
+  TomanIcon,
 } from '../../components/ui/icons'
 
 export interface PreInvoiceModalProps {
@@ -28,6 +30,17 @@ export function PreInvoiceModal({
   quantities,
   onSuccess,
 }: PreInvoiceModalProps) {
+  const queryClient = useQueryClient()
+  const submitOrderMutation = useMutation({
+    mutationKey: mutationKeys.orders.submit,
+    mutationFn: async (payload: any) => {
+      return await api.order.submit(payload)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+    },
+  })
+
   // 10-Minute Validity Countdown (600 seconds)
   const [secondsRemaining, setSecondsRemaining] = useState(600)
 
@@ -122,12 +135,12 @@ export function PreInvoiceModal({
     let createdId = ''
     let createdOrderNumber = ''
     try {
-      const res: any = await api.order.submit({
+      const res: any = await submitOrderMutation.mutateAsync({
         items: invoiceItems.map((item) => ({
           productId: isNaN(Number(item.product.id)) ? item.product.id : Number(item.product.id),
           requestedArea: item.requestedArea,
         })),
-        notes: 'ثبت سفارش از کاتالوگ آنلاین',
+        notes: 'ثبت سفارش از لیست محصولات',
       })
       if (res?.id) {
         createdId = String(res.id)
@@ -146,7 +159,7 @@ export function PreInvoiceModal({
       taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
       finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
       deliveryAddress: 'تهران، انبار مرکزی بازرگانی دهقان',
-      notes: 'ثبت سفارش کاتالوگ آنلاین',
+      notes: 'ثبت سفارش محصولات آنلاین',
     })
 
     // Slight delay to allow the user to see the complete 360 spin & checkmark animation
@@ -193,7 +206,7 @@ export function PreInvoiceModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="font-bold text-xs block leading-snug text-amber-950">
-                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو توسط مشتری مقدور نمی‌باشد
+                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو توسط کاربر مقدور نمی‌باشد
                     </span>
                   </div>
                 </div>
@@ -245,23 +258,24 @@ export function PreInvoiceModal({
                     {/* Calculation Metrics: 3-column bottom strip like mobile */}
                     <div className="flex items-center justify-between text-xs pt-2 border-t -mx-3 -mb-3 px-3 py-2 rounded-b-2xl ">
                       <div className="text-start">
-                        <span className=" text-slate-400 block leading-tight">تعداد کارتن</span>
+                        {/* <span className=" text-slate-400 block leading-tight">تعداد کارتن</span> */}
                         <span className="font-bold text-blue-700 ">
                           {toPersianDigits(item.cartonCount)} کارتن
                         </span>
                       </div>
 
                       <div className="text-center">
-                        <span className=" text-slate-400 block leading-tight">متراژ </span>
+                        {/* <span className=" text-slate-400 block leading-tight">متراژ </span> */}
                         <span className="font-bold text-slate-800 ">
                           {toPersianDigits(item.deliverableArea)} 
                         </span>
                       </div>
 
                       <div className="text-end">
-                        <span className=" text-slate-400 block leading-tight">مبلغ</span>
-                        <span className="font-extrabold text-slate-900  ">
-                          {formatToman(item.totalPrice)}
+                        {/* <span className=" text-slate-400 block leading-tight">مبلغ</span> */}
+                        <span className="font-extrabold text-slate-900 inline-flex items-center gap-1">
+                          <span>{formatToman(item.totalPrice)}</span>
+                          <TomanIcon className="size-4" />
                         </span>
                       </div>
                     </div>
@@ -270,27 +284,38 @@ export function PreInvoiceModal({
               </div>
 
               {/* Financial Summary without dark box */}
-              <div className="pt-3 border-t border-slate-200/90 space-y-2 text-xs">
-                <div className="flex items-center justify-between text-slate-600">
+              <div className="pt-3 border-slate-200/90 space-y-2 text-xs">
+                {/* <div className="flex items-center justify-between text-slate-600">
                   <span>مجموع مبلغ اقلام:</span>
-                  <span className="font-bold text-slate-800 text-xs sm:text-sm">
-                    {formatToman(invoiceTotals.subtotal)}
+                  <span className="font-bold text-slate-800 text-xs sm:text-sm inline-flex items-center gap-1">
+                    <span>{formatToman(invoiceTotals.subtotal)}</span>
+                    <TomanIcon className="size-3.5" />
                   </span>
-                </div>
+                </div> */}
 
-                <div className="flex items-center justify-between">
+                {/* <div className="flex items-center justify-between">
                   <span className="text-slate-600">تخفیف:</span>
-                  <span className={`font-bold text-xs sm:text-sm ${invoiceTotals.discountAmount > 0 ? 'text-emerald-700' : 'text-slate-500'}`}>
-                    {invoiceTotals.discountAmount > 0 ? `- ${formatToman(invoiceTotals.discountAmount)}` : '۰ تومان'}
+                  <span className={`font-bold text-xs sm:text-sm inline-flex items-center gap-1 ${invoiceTotals.discountAmount > 0 ? 'text-emerald-700' : 'text-slate-500'}`}>
+                    {invoiceTotals.discountAmount > 0 ? (
+                      <>
+                        <span>- {formatToman(invoiceTotals.discountAmount)}</span>
+                        <TomanIcon className="size-3.5" />
+                      </>
+                    ) : (
+                      <>
+                        <span>۰</span>
+                        <TomanIcon className="size-3.5" />
+                      </>
+                    )}
                   </span>
-                </div>
+                </div> */}
 
-                <div className="h-px bg-slate-200 my-1" />
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between px-1">
                   <span className="text-sm font-bold text-slate-900">قیمت کل:</span>
-                  <span className="text-base font-bold text-slate-900">
-                    {formatToman(invoiceTotals.finalPayable)}
+                  <span className="text-base font-bold text-slate-900 inline-flex items-center gap-1">
+                    <span>{formatToman(invoiceTotals.finalPayable)}</span>
+                    <TomanIcon className="size-4" />
                   </span>
                 </div>
               </div>

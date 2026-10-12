@@ -1,9 +1,15 @@
+import type {
+  CustomerProfile,
+  CustomerStaffDetail,
+  CustomerType,
+} from '@persianpart/contract'
+
 export interface B2BCustomer {
   id: string
   name: string
   company: string
   phone: string
-  tier: 'VIP' | 'تجاری ممتاز' | 'پروژه‌ای'
+  tier: 'VIP' | 'تجاری ممتاز' | 'پروژه‌ای' | 'همکار' | 'عادی'
 }
 
 export interface Plan {
@@ -23,5 +29,8 @@ export interface Plan {
   createdAt: string
 }
 
-export const MOCK_CUSTOMERS: B2BCustomer[] = []
-export const INITIAL_PLANS: Plan[] = []
+export type {
+  CustomerProfile,
+  CustomerStaffDetail,
+  CustomerType,
+}

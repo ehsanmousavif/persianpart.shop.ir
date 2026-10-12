@@ -1,5 +1,7 @@
 // Persian digits and currency formatting utilities
 
+
+
 const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
 
 /**
@@ -18,12 +20,12 @@ export function toPersianDigits(value: string | number): string {
 export function formatNumber(value: number): string {
   return new Intl.NumberFormat('en-US').format(value)
 }
-
 /**
  * Formats a price in Toman with Persian digits and separator
  */
 export function formatToman(value: number): string {
-  return `${toPersianDigits(formatNumber(value))} تومان`
+  return `${toPersianDigits(formatNumber(value))}`
+
 }
 
 /**

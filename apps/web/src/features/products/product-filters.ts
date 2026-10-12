@@ -15,7 +15,11 @@ export const SORT_OPTIONS = [
 
 export type SortOption = (typeof SORT_OPTIONS)[number]
 
-export const catalogFilterParsers = {
+/**
+ * URL query parameter parsers exclusively for Product search & filtering.
+ * nuqs is restricted strictly to URL filter synchronization.
+ */
+export const productFilterParsers = {
   q: parseAsString.withDefault(''),
   dimension: parseAsString,
   brands: parseAsArrayOf(parseAsString, ',').withDefault([]),
