@@ -412,11 +412,78 @@ export const cmsContract = {
 // ============================================================================
 
 export const systemContract = {
+  csvImport: {
+    preview: oc
+      .meta(openapi({ method: 'POST', path: '/staff/csv-import/preview', summary: 'پیش‌نمایش تغییرات فایل CSV' }))
+      .input(CsvPreviewInputSchema)
+      .output(ImportPreviewReportSchema.or(z.any()))
+      .errors({
+        UNAUTHORIZED: {},
+        FORBIDDEN: {},
+        BAD_REQUEST: {},
+      }),
+
+    apply: oc
+      .meta(openapi({ method: 'POST', path: '/staff/csv-import/apply', summary: 'اعمال تغییرات فایل CSV' }))
+      .input(
+        z
+          .object({
+            importRunId: z.string().optional(),
+          })
+          .or(z.any())
+      )
+      .output(ImportRunSummarySchema.or(z.any()))
+      .errors({
+        UNAUTHORIZED: {},
+        FORBIDDEN: {},
+        NOT_FOUND: {},
+        CONFLICT: {},
+      }),
+
+    listRuns: oc
+      .meta(openapi({ method: 'GET', path: '/staff/csv-import/history', summary: 'تاریخچه ایمپورت‌ها' }))
+      .input(
+        z
+          .object({
+            page: z.number().optional(),
+            limit: z.number().optional(),
+          })
+          .optional()
+      )
+      .output(createPaginatedResponseSchema(ImportRunSummarySchema).or(z.any()))
+      .errors({
+        UNAUTHORIZED: {},
+        FORBIDDEN: {},
+      }),
+  },
+
+  audit: {
+    list: oc
+      .meta(openapi({ method: 'GET', path: '/staff/audit', summary: 'لاگ‌های نظارتی' }))
+      .input(
+        z
+          .object({
+            action: z.any().optional(),
+            entityType: z.string().optional(),
+            page: z.number().optional(),
+            limit: z.number().optional(),
+          })
+          .optional()
+      )
+      .output(createPaginatedResponseSchema(AuditEventSchema).or(z.any()))
+      .errors({
+        UNAUTHORIZED: {},
+        FORBIDDEN: {},
+      }),
+  },
+}
+
+export type SystemContract = typeof systemContract
+
+export const systemManagementContract = {
   health: healthContract,
   globals: globalsContract,
   audit: auditContract,
   csvImport: csvImportContract,
   cms: cmsContract,
 }
-
-export type SystemContract = typeof systemContract

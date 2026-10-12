@@ -1,26 +1,30 @@
-import { useState, useEffect, useMemo } from 'react'
-import { Modal as HeroUIModal } from '@heroui/react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import type { Product, OrderItem } from '../../types'
-import { calculateCartonRequirement } from '../../lib/utils/math'
-import { formatToman, toPersianDigits } from '../../lib/utils/currency'
-import { HoldConfirmButton } from '../../components/ui/hold-confirm-button'
-import { orderStore } from '../orders/order-store'
-import { api } from '../../lib/api-client'
-import { queryKeys, mutationKeys } from '../../lib/query-keys'
+import { useState, useEffect, useMemo } from "react";
+import { Modal as HeroUIModal } from "@heroui/react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
+import type { Product, OrderItem } from "../../types";
+import { calculateCartonRequirement } from "../../lib/utils/math";
+import { formatToman, toPersianDigits } from "../../lib/utils/currency";
+import { HoldConfirmButton } from "../../components/ui/hold-confirm-button";
+import { orderStore } from "../orders/order-store";
+import { selectionStore } from "../products/selection-store";
+import { api } from "../../lib/api-client";
+import { queryKeys, mutationKeys } from "../../lib/query-keys";
 import {
   XIcon,
   ClockIcon,
   PencilIcon,
   TomanIcon,
-} from '../../components/ui/icons'
+} from "../../components/ui/icons";
 
 export interface PreInvoiceModalProps {
-  isOpen: boolean
-  onClose: () => void
-  products: Product[]
-  quantities: Record<string, number>
-  onSuccess: (orderId: string) => void
+  isOpen: boolean;
+  onClose: () => void;
+  products: Product[];
+  quantities: Record<string, number>;
+  onSuccess: (orderId: string) => void;
+  onEdit?: () => void;
+  editOrderId?: string;
 }
 
 export function PreInvoiceModal({
@@ -29,54 +33,57 @@ export function PreInvoiceModal({
   products,
   quantities,
   onSuccess,
+  onEdit,
+  editOrderId,
 }: PreInvoiceModalProps) {
-  const queryClient = useQueryClient()
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const submitOrderMutation = useMutation({
     mutationKey: mutationKeys.orders.submit,
     mutationFn: async (payload: any) => {
-      return await api.order.submit(payload)
+      return await api.order.submit(payload);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
     },
-  })
+  });
 
   // 10-Minute Validity Countdown (600 seconds)
-  const [secondsRemaining, setSecondsRemaining] = useState(600)
+  const [secondsRemaining, setSecondsRemaining] = useState(600);
 
   useEffect(() => {
-    if (!isOpen) return
+    if (!isOpen) return;
 
-    setSecondsRemaining(600)
+    setSecondsRemaining(600);
     const interval = setInterval(() => {
       setSecondsRemaining((prev) => {
         if (prev <= 1) {
-          clearInterval(interval)
-          return 0
+          clearInterval(interval);
+          return 0;
         }
-        return prev - 1
-      })
-    }, 1000)
+        return prev - 1;
+      });
+    }, 1000);
 
-    return () => clearInterval(interval)
-  }, [isOpen])
+    return () => clearInterval(interval);
+  }, [isOpen]);
 
   const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${toPersianDigits(mins.toString().padStart(2, '0'))}:${toPersianDigits(secs.toString().padStart(2, '0'))}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${toPersianDigits(mins.toString().padStart(2, "0"))}:${toPersianDigits(secs.toString().padStart(2, "0"))}`;
+  };
 
   // Calculate detailed items and invoice totals
   const invoiceItems = useMemo(() => {
     return products.map((product) => {
-      const area = quantities[product.id] ?? 0
+      const area = quantities[product.id] ?? 0;
       const calc = calculateCartonRequirement(
         area,
         product.sqmPerCarton,
         product.finalCustomerPricePerSqm,
-        product.inventorySqm
-      )
+        product.inventorySqm,
+      );
       return {
         product,
         requestedArea: area,
@@ -84,29 +91,31 @@ export function PreInvoiceModal({
         deliverableArea: calc.deliverableArea,
         unitPrice: product.finalCustomerPricePerSqm,
         totalPrice: calc.totalPrice,
-      }
-    })
-  }, [products, quantities])
+      };
+    });
+  }, [products, quantities]);
 
   const invoiceTotals = useMemo(() => {
-    let totalCartons = 0
-    let totalDeliverableArea = 0
-    let subtotal = 0
-    let discountAmount = 0
+    let totalCartons = 0;
+    let totalDeliverableArea = 0;
+    let subtotal = 0;
+    let discountAmount = 0;
 
-    invoiceItems.forEach((item) => {
-      totalCartons += item.cartonCount
-      totalDeliverableArea += item.deliverableArea
-      
-      const originalRate = item.product.originalPricePerSqm || item.product.finalCustomerPricePerSqm
-      const itemSubtotal = originalRate * item.deliverableArea
-      subtotal += itemSubtotal
+    invoiceItems.map((item) => {
+      totalCartons += item.cartonCount;
+      totalDeliverableArea += item.deliverableArea;
+
+      const originalRate =
+        item.product.originalPricePerSqm ||
+        item.product.finalCustomerPricePerSqm;
+      const itemSubtotal = originalRate * item.deliverableArea;
+      subtotal += itemSubtotal;
       if (itemSubtotal > item.totalPrice) {
-        discountAmount += (itemSubtotal - item.totalPrice)
+        discountAmount += itemSubtotal - item.totalPrice;
       }
-    })
+    });
 
-    const finalPayable = Math.max(0, subtotal - discountAmount)
+    const finalPayable = Math.max(0, subtotal - discountAmount);
 
     return {
       totalCartons,
@@ -114,8 +123,8 @@ export function PreInvoiceModal({
       subtotal,
       discountAmount,
       finalPayable,
-    }
-  }, [invoiceItems])
+    };
+  }, [invoiceItems]);
 
   const handleFinalConfirm = async () => {
     const orderItems: OrderItem[] = invoiceItems.map((item) => ({
@@ -130,24 +139,42 @@ export function PreInvoiceModal({
       deliverableArea: item.deliverableArea,
       unitPrice: item.unitPrice,
       totalPrice: item.totalPrice,
-    }))
+    }));
 
-    let createdId = ''
-    let createdOrderNumber = ''
+    let createdId = "";
+    let createdOrderNumber = "";
     try {
       const res: any = await submitOrderMutation.mutateAsync({
         items: invoiceItems.map((item) => ({
-          productId: isNaN(Number(item.product.id)) ? item.product.id : Number(item.product.id),
+          productId: isNaN(Number(item.product.id))
+            ? item.product.id
+            : Number(item.product.id),
           requestedArea: item.requestedArea,
         })),
-        notes: 'ثبت سفارش از لیست محصولات',
-      })
+        notes: "ثبت سفارش از لیست محصولات",
+      });
       if (res?.id) {
-        createdId = String(res.id)
-        createdOrderNumber = res.orderNumber
+        createdId = String(res.id);
+        createdOrderNumber = res.orderNumber;
       }
     } catch (err) {
-      console.warn('Backend order submission fallback:', err)
+      console.warn("Backend order submission fallback:", err);
+    }
+
+    if (editOrderId) {
+      orderStore.updateOrder(editOrderId, {
+        items: orderItems,
+        subtotal: invoiceTotals.subtotal,
+        discountAmount: invoiceTotals.discountAmount,
+        taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
+        finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
+      });
+
+      // Slight delay to allow the user to see the complete 360 spin & checkmark animation
+      setTimeout(() => {
+        onSuccess(editOrderId);
+      }, 450);
+      return;
     }
 
     const newOrder = orderStore.createOrder({
@@ -158,18 +185,43 @@ export function PreInvoiceModal({
       discountAmount: invoiceTotals.discountAmount,
       taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
       finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
-      deliveryAddress: 'تهران، انبار مرکزی بازرگانی دهقان',
-      notes: 'ثبت سفارش محصولات آنلاین',
-    })
+      deliveryAddress: "تهران، انبار مرکزی بازرگانی دهقان",
+      notes: "ثبت سفارش محصولات آنلاین",
+    });
 
     // Slight delay to allow the user to see the complete 360 spin & checkmark animation
     setTimeout(() => {
-      onSuccess(newOrder.id)
-    }, 450)
-  }
+      onSuccess(newOrder.id);
+    }, 450);
+  };
+
+  const handleEditClick = () => {
+    if (onEdit) {
+      onEdit();
+      return;
+    }
+    if (typeof window !== "undefined" && !window.location.pathname.includes("/product/new")) {
+      selectionStore.setBatchSelection(
+        products.map((p) => ({
+          id: p.id,
+          quantity: quantities[p.id] ?? p.sqmPerCarton ?? 10,
+        }))
+      );
+      onClose();
+      (navigate as any)({
+        to: "/product/new",
+        search: editOrderId ? { editOrderId } : undefined,
+      });
+      return;
+    }
+    onClose();
+  };
 
   return (
-    <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <HeroUIModal.Root
+      isOpen={isOpen}
+      onOpenChange={(open) => !open && onClose()}
+    >
       <HeroUIModal.Backdrop
         isDismissable
         className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 animate-backdrop-enter"
@@ -183,7 +235,6 @@ export function PreInvoiceModal({
                   <HeroUIModal.Heading className="text-sm sm:text-base font-bold text-slate-900">
                     پیش‌فاکتور تایید سفارش
                   </HeroUIModal.Heading>
-              
                 </div>
               </div>
 
@@ -206,15 +257,21 @@ export function PreInvoiceModal({
                   </div>
                   <div className="flex-1 min-w-0">
                     <span className="font-bold text-xs block leading-snug text-amber-950">
-                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو توسط کاربر مقدور نمی‌باشد
+                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو
+                      توسط کاربر مقدور نمی‌باشد
                     </span>
                   </div>
                 </div>
 
                 {/* Countdown Badge: Invariant Fixed Width (Cannot Resize or Push Text) */}
                 <div className="w-[82px] h-8 shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-white border border-amber-300/80 shadow-2xs select-none">
-                  <span className={`w-2 h-2 rounded-full shrink-0 ${secondsRemaining < 120 ? 'bg-rose-500 animate-ping' : 'bg-amber-500'}`} />
-                  <span className="font-bold text-xs sm:text-sm text-slate-900 tabular-nums font-mono w-11 text-center" dir="ltr">
+                  <span
+                    className={`w-2 h-2 rounded-full shrink-0 ${secondsRemaining < 120 ? "bg-rose-500 animate-ping" : "bg-amber-500"}`}
+                  />
+                  <span
+                    className="font-bold text-xs sm:text-sm text-slate-900 tabular-nums font-mono w-11 text-center"
+                    dir="ltr"
+                  >
                     {formatTimer(secondsRemaining)}
                   </span>
                 </div>
@@ -231,12 +288,20 @@ export function PreInvoiceModal({
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="w-13 h-13 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
                         <img
-                          src={item.product.images[0] || '/assets/images/placeholder.svg'}
+                          src={
+                            item.product.images[0] ||
+                            "/assets/images/placeholder.svg"
+                          }
                           alt={item.product.name}
                           className="w-full h-full object-cover"
                           onError={(e) => {
-                            if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                              e.currentTarget.src = '/assets/images/placeholder.svg'
+                            if (
+                              !e.currentTarget.src.endsWith(
+                                "/assets/images/placeholder.svg",
+                              )
+                            ) {
+                              e.currentTarget.src =
+                                "/assets/images/placeholder.svg";
                             }
                           }}
                         />
@@ -247,10 +312,14 @@ export function PreInvoiceModal({
                         </h4>
                         <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 flex-wrap">
                           <span className="px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-700 font-semibold border border-slate-200/80 text-[11px]">
-                            ابعاد: {toPersianDigits(item.product.dimensions.width)} × {toPersianDigits(item.product.dimensions.height)}
+                            ابعاد:{" "}
+                            {toPersianDigits(item.product.dimensions.width)} ×{" "}
+                            {toPersianDigits(item.product.dimensions.height)}
                           </span>
                           <span className="text-slate-300">•</span>
-                          <span className="text-slate-600 font-medium text-[11px]">{item.product.brand}</span>
+                          <span className="text-slate-600 font-medium text-[11px]">
+                            {item.product.brand}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -267,7 +336,7 @@ export function PreInvoiceModal({
                       <div className="text-center">
                         {/* <span className=" text-slate-400 block leading-tight">متراژ </span> */}
                         <span className="font-bold text-slate-800 ">
-                          {toPersianDigits(item.deliverableArea)} 
+                          {toPersianDigits(item.deliverableArea)}
                         </span>
                       </div>
 
@@ -310,13 +379,24 @@ export function PreInvoiceModal({
                   </span>
                 </div> */}
 
-
-                <div className="flex items-center justify-between px-1">
-                  <span className="text-sm font-bold text-slate-900">قیمت کل:</span>
-                  <span className="text-base font-bold text-slate-900 inline-flex items-center gap-1">
-                    <span>{formatToman(invoiceTotals.finalPayable)}</span>
-                    <TomanIcon className="size-4" />
-                  </span>
+                <div className="flex flex-col w-full px-1">
+                  <div className="flex items-center justify-between ">
+                    <span className="text-sm font-bold text-slate-900">
+                      تعداد کارتون ها:
+                    </span>
+                    <span className="text-base font-bold text-slate-900">
+                      {formatToman(invoiceTotals.totalCartons)}{" "}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between ">
+                    <span className="text-sm font-bold text-slate-900">
+                      قیمت کل:
+                    </span>
+                    <span className="text-base font-bold text-slate-900 inline-flex items-center gap-1">
+                      <span>{formatToman(invoiceTotals.finalPayable)}</span>
+                      <TomanIcon className="size-4" />
+                    </span>
+                  </div>
                 </div>
               </div>
             </HeroUIModal.Body>
@@ -327,7 +407,7 @@ export function PreInvoiceModal({
                 {/* Button 1: ویرایش مقادیر */}
                 <button
                   type="button"
-                  onClick={onClose}
+                  onClick={handleEditClick}
                   className="sm:col-span-4 w-30 rounded-2xl bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/90 shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
                 >
                   <PencilIcon size={16} />
@@ -338,8 +418,10 @@ export function PreInvoiceModal({
                   <HoldConfirmButton
                     onConfirmed={handleFinalConfirm}
                     holdDurationMs={3000}
-                    disabled={secondsRemaining === 0 || invoiceItems.length === 0}
-                    idleText="تایید نهایی سفارش"
+                    disabled={
+                      secondsRemaining === 0 || invoiceItems.length === 0
+                    }
+                    idleText="برای ثبت سفارش، ۳ ثانیه نگه دارید"  
                     holdingText="در حال تایید..."
                     confirmedText="تایید شد"
                   />
@@ -350,5 +432,5 @@ export function PreInvoiceModal({
         </HeroUIModal.Container>
       </HeroUIModal.Backdrop>
     </HeroUIModal.Root>
-  )
+  );
 }

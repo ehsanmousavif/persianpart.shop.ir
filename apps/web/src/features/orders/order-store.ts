@@ -25,15 +25,18 @@ function getInitialState(): Order[] {
         const filtered = parsed.filter(
           (o) => !['ord-101', 'ord-102', 'ord-103', 'ord-104'].includes(o.id) && !o.id.startsWith('ord-fake')
         )
-        return filtered.map((o) => {
-          if (o.date && (o.date.includes('2026') || o.date.includes('2025') || o.date.includes('2024') || o.date.startsWith('20'))) {
-            return {
-              ...o,
-              date: formatPersianDate(o.createdAt || o.date),
+          return filtered.map((o) => {
+            if (o.status === 'pending' || o.status === 'completed' || o.status === 'approve' || o.status === 'approved') {
+              delete o.cancelledBy
             }
-          }
-          return o
-        })
+            if (o.date && (o.date.includes('2026') || o.date.includes('2025') || o.date.includes('2024') || o.date.startsWith('20'))) {
+              return {
+                ...o,
+                date: formatPersianDate(o.createdAt || o.date),
+              }
+            }
+            return o
+          })
       }
     }
   } catch {
@@ -63,9 +66,14 @@ export function buildFullOrderTimeline(
   force10MinutesPassed?: boolean
 ): TimelineStep[] {
   const status = doc.status || 'pending'
-  const isCancelledByCustomer = status === 'cancelled_by_customer' || doc.cancelledBy === 'customer'
-  const isCancelledByAdmin = status === 'cancelled_by_admin' || doc.cancelledBy === 'admin'
-  const isCancelled = status === 'cancel' || status === 'cancelled' || isCancelledByCustomer || isCancelledByAdmin
+  const isCancelled =
+    status === 'cancel' ||
+    status === 'cancelled' ||
+    status === 'cancelled_by_customer' ||
+    status === 'cancelled_by_admin'
+  const isCancelledByCustomer =
+    isCancelled &&
+    (status === 'cancelled_by_customer' || doc.cancelledBy === 'customer')
 
   const pDate = persianDate || (doc.createdAt ? formatPersianDate(doc.createdAt) : '')
 
@@ -112,7 +120,7 @@ export function buildFullOrderTimeline(
       id: 'step-cancel',
       title: cancelTitle,
       description: cancelDesc,
-      timestamp: formatTs(doc.updatedAt) || 'لغو نهایی',
+      timestamp: formatTs(doc.updatedAt) || '',
       status: 'cancelled',
     })
 
@@ -220,7 +228,7 @@ export function mapDocToOrder(doc: any): Order {
     date: persianDate,
     createdAt,
     status: normalizedStatus as any,
-    cancelledBy: doc.cancelledBy || (normalizedStatus === 'cancelled_by_customer' ? 'customer' : 'admin'),
+    cancelledBy: doc.cancelledBy || (normalizedStatus === 'cancelled_by_customer' ? 'customer' : normalizedStatus === 'cancelled_by_admin' ? 'admin' : undefined),
     statusLabel,
     storeName: userObj?.companyName || 'بازرگانی دهقان (پرشین پارت)',
     customerName: userObj?.fullName || 'خریدار محترم',
@@ -323,6 +331,40 @@ export const orderStore = {
     broadcast(updated)
     cartStore.clearCart()
     return newOrder
+  },
+
+  updateOrder: (
+    orderId: string,
+    payload: {
+      items: OrderItem[]
+      subtotal: number
+      discountAmount: number
+      taxAmount: number
+      finalTotal: number
+      notes?: string
+    }
+  ): Order | null => {
+    let updatedOrder: Order | null = null
+    const updated = currentOrders.map((order) => {
+      if (order.id === orderId || order.orderNumber === orderId) {
+        updatedOrder = {
+          ...order,
+          items: payload.items,
+          subtotal: payload.subtotal,
+          discountAmount: payload.discountAmount,
+          taxAmount: payload.taxAmount,
+          finalTotal: payload.finalTotal,
+          notes: payload.notes || order.notes,
+        }
+        return updatedOrder
+      }
+      return order
+    })
+    if (updatedOrder) {
+      broadcast(updated)
+      return updatedOrder
+    }
+    return null
   },
 
   cancelOrder: async (orderId: string, reason?: string): Promise<boolean> => {
@@ -475,6 +517,11 @@ export function useOrders() {
       const created = orderStore.createOrder(payload)
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
       return created
+    },
+    updateOrder: (orderId: string, payload: any) => {
+      const updated = orderStore.updateOrder(orderId, payload)
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
+      return updated
     },
     cancelOrder: async (orderId: string, reason?: string) => {
       const res = await cancelMutation.mutateAsync({ orderId, reason })

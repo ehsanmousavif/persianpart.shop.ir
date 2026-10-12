@@ -1,5 +1,5 @@
 import { implement } from '@orpc/server'
-import { contract } from './contract'
+import { appContract } from '@persianpart/contract'
 import type { Context } from './context'
 
-export const base = implement(contract).$context<Context>()
+export const base = implement(appContract).$context<Context>()

@@ -164,6 +164,22 @@ export const selectionStore = {
     }
   },
 
+  setBatchSelection: (items: Array<{ id: unknown; quantity: number }>) => {
+    const nextIds: string[] = []
+    const nextQuantities: Record<string, number> = {}
+    items.forEach((item) => {
+      const cleanId = normalizeId(item.id)
+      if (cleanId) {
+        nextIds.push(cleanId)
+        nextQuantities[cleanId] = item.quantity
+      }
+    })
+    persistAndNotify({
+      selectedIds: Array.from(new Set(nextIds)),
+      quantities: nextQuantities,
+    })
+  },
+
   clearSelection: () => {
     persistAndNotify({
       selectedIds: [],
@@ -189,6 +205,7 @@ export function useProductSelection() {
     selectProduct: selectionStore.selectProduct,
     unselectProduct: selectionStore.unselectProduct,
     setQuantity: selectionStore.setQuantity,
+    setBatchSelection: selectionStore.setBatchSelection,
     reconcileWithProducts: selectionStore.reconcileWithProducts,
     reconcileWithCatalog: selectionStore.reconcileWithProducts,
     clearSelection: selectionStore.clearSelection,

@@ -47,7 +47,7 @@ function RootComponent() {
 
   return (
     <NuqsAdapter>
-      <div className="min-h-screen bg-slate-200/60 flex justify-center selection:bg-slate-200 selection:text-slate-900" dir="rtl">
+      <div className="min-h-screen bg-black flex justify-center selection:bg-slate-200 selection:text-slate-900" dir="rtl">
         <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-xl relative border-x border-slate-200/90">
           <AppHeader />
 

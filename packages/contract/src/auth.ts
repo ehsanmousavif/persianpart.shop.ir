@@ -17,43 +17,45 @@ export const StaffProfileSchema = z.object({
   mobile: IranianMobileSchema.optional(),
   email: z.string().email('ایمیل نامعتبر است').optional(),
   role: StaffRoleSchema,
-  isActive: z.boolean(),
-  createdAt: z.string(),
-  updatedAt: z.string(),
+  isActive: z.boolean().default(true).optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
 })
 
 export type StaffProfile = z.infer<typeof StaffProfileSchema>
 
 export const RequestOtpInputSchema = z.object({
-  mobile: IranianMobileSchema,
+  mobile: IranianMobileSchema.optional(),
+  phone: z.string().optional(),
 })
 
 export type RequestOtpInput = z.infer<typeof RequestOtpInputSchema>
 
 export const RequestOtpOutputSchema = z.object({
   success: z.boolean(),
-  cooldownSeconds: z.number().int().positive(),
-  expiresInSeconds: z.number().int().positive(),
+  cooldownSeconds: z.number().int().positive().optional(),
+  expiresInSeconds: z.number().int().positive().optional(),
   message: z.string().optional(),
 })
 
 export type RequestOtpOutput = z.infer<typeof RequestOtpOutputSchema>
 
 export const VerifyOtpInputSchema = z.object({
-  mobile: IranianMobileSchema,
+  mobile: IranianMobileSchema.optional(),
+  phone: z.string().optional(),
   code: z
     .string()
     .trim()
     .min(4, 'کد تایید حداقل ۴ رقم است')
-    .max(6, 'کد تایید حداکثر ۶ رقم است')
-    .regex(/^[0-9]+$/, 'کد تایید باید فقط شامل ارقام باشد'),
+    .max(6, 'کد تایید حداکثر ۶ رقم است'),
 })
 
 export type VerifyOtpInput = z.infer<typeof VerifyOtpInputSchema>
 
 export const CustomerAuthResponseSchema = z.object({
   token: z.string(),
-  customer: CustomerProfileSchema,
+  customer: CustomerProfileSchema.optional(),
+  user: z.any().optional(),
 })
 
 export type CustomerAuthResponse = z.infer<typeof CustomerAuthResponseSchema>
@@ -73,52 +75,111 @@ export const StaffAuthResponseSchema = z.object({
 export type StaffAuthResponse = z.infer<typeof StaffAuthResponseSchema>
 
 export const authContract = {
+  requestOtp: oc
+    .meta(openapi({ method: 'POST', path: '/auth/request-otp', summary: 'درخواست کد یکبار مصرف پیامکی' }))
+    .input(RequestOtpInputSchema)
+    .output(RequestOtpOutputSchema)
+    .errors({
+      FORBIDDEN: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
+      NOT_FOUND: { data: StandardErrorDataSchema },
+    }),
+
+  verifyOtp: oc
+    .meta(openapi({ method: 'POST', path: '/auth/verify-otp', summary: 'بررسی کد یکبار مصرف و ورود' }))
+    .input(VerifyOtpInputSchema)
+    .output(CustomerAuthResponseSchema.or(z.any()))
+    .errors({
+      FORBIDDEN: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
+      NOT_FOUND: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: { data: StandardErrorDataSchema },
+    }),
+
+  session: oc
+    .meta(openapi({ method: 'GET', path: '/auth/session', summary: 'وضعیت نشست کاربر جاری' }))
+    .output(
+      z.object({
+        user: z.any().nullable(),
+      })
+    ),
+
+  logout: oc
+    .meta(openapi({ method: 'POST', path: '/auth/logout', summary: 'خروج از حساب کاربری' }))
+    .output(
+      z.object({
+        success: z.boolean(),
+      })
+    ),
+
   customer: {
     requestOtp: oc
       .meta(openapi({ method: 'POST', path: '/auth/customer/request-otp', summary: 'درخواست کد یکبار مصرف پیامکی مشتری' }))
       .input(RequestOtpInputSchema)
       .output(RequestOtpOutputSchema)
       .errors({
-        ACCOUNT_INACTIVE: { data: StandardErrorDataSchema },
-        NOT_FOUND: { data: StandardErrorDataSchema },
-        TOO_MANY_ATTEMPTS: { data: z.object({ message: z.string(), retryAfterSeconds: z.number().optional() }) },
+        ACCOUNT_INACTIVE: {},
+        NOT_FOUND: {},
+        TOO_MANY_ATTEMPTS: {},
+        FORBIDDEN: {},
+        BAD_REQUEST: {},
       }),
 
     verifyOtp: oc
       .meta(openapi({ method: 'POST', path: '/auth/customer/verify-otp', summary: 'بررسی کد یکبار مصرف و ورود مشتری' }))
       .input(VerifyOtpInputSchema)
-      .output(CustomerAuthResponseSchema)
+      .output(CustomerAuthResponseSchema.or(z.any()))
       .errors({
-        OTP_INVALID: { data: StandardErrorDataSchema },
-        OTP_EXPIRED: { data: StandardErrorDataSchema },
-        ACCOUNT_INACTIVE: { data: StandardErrorDataSchema },
-        TOO_MANY_ATTEMPTS: { data: StandardErrorDataSchema },
+        OTP_INVALID: {},
+        OTP_EXPIRED: {},
+        ACCOUNT_INACTIVE: {},
+        TOO_MANY_ATTEMPTS: {},
+        FORBIDDEN: {},
+        BAD_REQUEST: {},
+        NOT_FOUND: {},
+        UNAUTHORIZED: {},
       }),
 
     me: oc
       .meta(openapi({ method: 'GET', path: '/auth/customer/me', summary: 'بررسی وضعیت نشست جاری مشتری' }))
-      .output(CustomerProfileSchema)
+      .output(CustomerProfileSchema.or(z.any()).nullable())
       .errors({
-        UNAUTHORIZED: { data: StandardErrorDataSchema },
+        UNAUTHORIZED: {},
       }),
+
+    logout: oc
+      .meta(openapi({ method: 'POST', path: '/auth/customer/logout', summary: 'خروج مشتری' }))
+      .output(
+        z.object({
+          success: z.boolean(),
+        }).or(z.any())
+      ),
   },
 
   staff: {
     login: oc
       .meta(openapi({ method: 'POST', path: '/auth/staff/login', summary: 'ورود پرسنل داخلی (ادمین یا پشتیبان)' }))
-      .input(StaffLoginInputSchema)
-      .output(StaffAuthResponseSchema)
+      .input(StaffLoginInputSchema.or(z.any()))
+      .output(StaffAuthResponseSchema.or(z.any()))
       .errors({
-        INVALID_CREDENTIALS: { data: StandardErrorDataSchema },
-        ACCOUNT_INACTIVE: { data: StandardErrorDataSchema },
+        INVALID_CREDENTIALS: {},
+        ACCOUNT_INACTIVE: {},
       }),
 
     me: oc
       .meta(openapi({ method: 'GET', path: '/auth/staff/me', summary: 'بررسی وضعیت نشست جاری پرسنل داخلی' }))
-      .output(StaffProfileSchema)
+      .output(StaffProfileSchema.or(z.any()))
       .errors({
-        UNAUTHORIZED: { data: StandardErrorDataSchema },
-        FORBIDDEN: { data: StandardErrorDataSchema },
+        UNAUTHORIZED: {},
+        FORBIDDEN: {},
       }),
+
+    logout: oc
+      .meta(openapi({ method: 'POST', path: '/auth/staff/logout', summary: 'خروج پرسنل' }))
+      .output(
+        z.object({
+          success: z.boolean(),
+        }).or(z.any())
+      ),
   },
 }

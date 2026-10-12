@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { createFileRoute, useNavigate, useLocation } from '@tanstack/react-router'
 import { Slider, NumberField, I18nProvider } from '@heroui/react'
 import { useProducts } from '../../features/products/product-store'
 import { useProductSelection } from '../../features/products/selection-store'
@@ -19,6 +19,7 @@ import {
   SolarTagIcon,
   TomanIcon,
 } from '../../components/ui/icons'
+import { useOrders } from '../../features/orders/order-store'
 
 export const Route = createFileRoute('/product/new')({
   component: ProductNewConfigurationPage,
@@ -26,11 +27,42 @@ export const Route = createFileRoute('/product/new')({
 
 function ProductNewConfigurationPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const searchObj = (location.search || {}) as Record<string, any>
+  const editOrderId: string | undefined =
+    searchObj.editOrderId ||
+    (typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('editOrderId') || undefined
+      : undefined)
   const { allProducts } = useProducts()
-  const { selectedIds, quantities, unselectProduct, setQuantity, clearSelection, reconcileWithProducts } = useProductSelection()
+  const { getOrderById } = useOrders()
+  const {
+    selectedIds,
+    quantities,
+    unselectProduct,
+    setQuantity,
+    clearSelection,
+    setBatchSelection,
+    reconcileWithProducts,
+  } = useProductSelection()
 
   // Modal state for Pre-Invoice
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
+
+  // Hydrate from order if editOrderId is provided and selection is empty
+  useEffect(() => {
+    if (editOrderId && selectedIds.length === 0) {
+      const order = getOrderById(editOrderId)
+      if (order && order.items && order.items.length > 0) {
+        setBatchSelection(
+          order.items.map((item) => ({
+            id: item.productId,
+            quantity: item.requestedArea || item.deliverableArea,
+          }))
+        )
+      }
+    }
+  }, [editOrderId, selectedIds.length, getOrderById, setBatchSelection])
 
   // Reconcile selected IDs with live products
   useEffect(() => {
@@ -378,16 +410,17 @@ function ProductNewConfigurationPage() {
         onClose={() => setIsInvoiceOpen(false)}
         products={selectedProducts}
         quantities={quantities}
+        editOrderId={editOrderId}
         onSuccess={(orderId) => {
           setIsInvoiceOpen(false)
           clearSelection()
           toast.success(
-            'ثبت قطعی سفارش',
-            `سفارش شما با موفقیت ثبت شد.`
+            'ثبت سفارش',
+            'سفارش با موفقیت ثبت شد.'
           )
           navigate({
             to: '/orders/$id',
-            params: { id: orderId },
+            params: { id: editOrderId || orderId },
           })
         }}
       />

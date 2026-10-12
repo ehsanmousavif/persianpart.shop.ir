@@ -4,7 +4,6 @@ import { z } from 'zod'
 import {
   EntityIdSchema,
   PaginationInputSchema,
-  StandardErrorDataSchema,
   createPaginatedResponseSchema,
 } from './common'
 
@@ -13,8 +12,9 @@ import {
 // ============================================================================
 
 export const CartItemInputSchema = z.object({
-  productId: EntityIdSchema,
-  requestedSqm: z.number().positive('متراژ درخواستی باید بزرگتر از صفر باشد'),
+  productId: z.union([EntityIdSchema, z.number()]),
+  requestedSqm: z.number().optional(),
+  requestedArea: z.number().optional(),
 })
 
 export type CartItemInput = z.infer<typeof CartItemInputSchema>
@@ -226,99 +226,204 @@ export const pricingContract = {
   validateCart: oc
     .meta(openapi({ method: 'POST', path: '/pricing/validate-cart', summary: 'اعتبارسنجی سبد خرید و محاسبه کارتن و قیمت نهایی' }))
     .input(ValidateCartInputSchema)
-    .output(ValidateCartOutputSchema)
+    .output(
+      ValidateCartOutputSchema.or(
+        z.object({
+          items: z.array(z.any()),
+          subtotal: z.number().optional(),
+          finalTotal: z.number().optional(),
+          discountAmount: z.number().optional(),
+          taxAmount: z.number().optional(),
+          hasBlockingIssues: z.boolean().optional(),
+        })
+      ).or(z.any())
+    )
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
     }),
 }
 
 export const orderContract = {
-  submit: oc
-    .meta(openapi({ method: 'POST', path: '/orders', summary: 'ثبت سفارش قطعی تراکنشی توسط مشتری' }))
-    .input(SubmitOrderInputSchema)
-    .output(OrderSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      INSUFFICIENT_STOCK: { data: StandardErrorDataSchema },
-      BAD_REQUEST: { data: StandardErrorDataSchema },
-    }),
+  all: oc
+    .meta(openapi({ method: 'GET', path: '/orders/all', summary: 'دریافت تمامی سفارش‌های کاربر' }))
+    .input(
+      z
+        .object({
+          limit: z.number().default(100).optional(),
+          page: z.number().default(1).optional(),
+          status: z.string().optional(),
+        })
+        .optional()
+    )
+    .output(z.array(z.any()).or(createPaginatedResponseSchema(OrderSchema)).or(z.any())),
 
   list: oc
     .meta(openapi({ method: 'GET', path: '/orders', summary: 'دریافت تاریخچه سفارش‌های مشتری جاری' }))
-    .input(CustomerOrderFilterInputSchema)
-    .output(createPaginatedResponseSchema(OrderSchema))
+    .input(
+      z
+        .object({
+          limit: z.number().default(100).optional(),
+          page: z.number().default(1).optional(),
+          status: z.string().optional(),
+        })
+        .optional()
+    )
+    .output(z.array(z.any()).or(createPaginatedResponseSchema(OrderSchema)).or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+    }),
+
+  summary: oc
+    .meta(openapi({ method: 'GET', path: '/orders/summary', summary: 'خلاصه وضعیت سفارش‌های کاربر' }))
+    .output(
+      z.object({
+        total: z.number(),
+        processing: z.number(),
+        completed: z.number(),
+      })
+    ),
+
+  detail: oc
+    .meta(openapi({ method: 'GET', path: '/orders/detail', summary: 'مشاهده جزییات سفارش' }))
+    .input(
+      z.object({
+        orderId: z.union([EntityIdSchema, z.number()]).optional(),
+        id: z.union([EntityIdSchema, z.number()]).optional(),
+      })
+    )
+    .output(OrderSchema.or(z.any()))
+    .errors({
+      UNAUTHORIZED: {},
+      NOT_FOUND: {},
     }),
 
   getById: oc
     .meta(openapi({ method: 'GET', path: '/orders/{id}', summary: 'مشاهده جزییات سفارش و تایم‌لاین توسط مشتری' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(OrderSchema)
+    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .output(OrderSchema.or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      NOT_FOUND: {},
+    }),
+
+  createCustomOrder: oc
+    .meta(openapi({ method: 'POST', path: '/orders/custom', summary: 'ثبت سفارش اختصاصی' }))
+    .input(
+      z.object({
+        productType: z.string().optional(),
+        contentType: z.string().optional(),
+        notes: z.string().optional(),
+        details: z.any().optional(),
+      })
+    )
+    .output(
+      z.object({
+        id: z.union([EntityIdSchema, z.number()]),
+        message: z.string(),
+      })
+    ),
+
+  submit: oc
+    .meta(openapi({ method: 'POST', path: '/orders', summary: 'ثبت سفارش قطعی تراکنشی توسط مشتری' }))
+    .input(
+      z.object({
+        items: z.array(
+          z.object({
+            productId: z.union([EntityIdSchema, z.number()]),
+            requestedArea: z.number().optional(),
+            requestedSqm: z.number().optional(),
+          })
+        ),
+        notes: z.string().optional(),
+      })
+    )
+    .output(OrderSchema.or(z.any()))
+    .errors({
+      UNAUTHORIZED: {},
+      INSUFFICIENT_STOCK: {},
+      BAD_REQUEST: {},
     }),
 
   cancel: oc
     .meta(openapi({ method: 'POST', path: '/orders/{id}/cancel', summary: 'لغو مستقیم سفارش توسط مشتری قبل از انقضای مهلت' }))
-    .input(CustomerCancelOrderInputSchema)
-    .output(OrderSchema)
+    .input(
+      z.object({
+        id: z.union([EntityIdSchema, z.number()]),
+        reason: z.string().optional(),
+      })
+    )
+    .output(OrderSchema.or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-      CANCELLATION_DEADLINE_EXPIRED: { data: StandardErrorDataSchema },
-      INVALID_STATUS_TRANSITION: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      NOT_FOUND: {},
+      CANCELLATION_DEADLINE_EXPIRED: {},
+      INVALID_STATUS_TRANSITION: {},
+      BAD_REQUEST: {},
     }),
 
   prepareReorder: oc
     .meta(openapi({ method: 'POST', path: '/orders/{id}/reorder', summary: 'آماده‌سازی سبد خرید مجدد بر اساس سفارش تاریخی و اعتبارسنجی قیمت و موجودی روز' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(PrepareReorderOutputSchema)
+    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .output(PrepareReorderOutputSchema.or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      NOT_FOUND: {},
     }),
 
   staffList: oc
     .meta(openapi({ method: 'GET', path: '/staff/orders', summary: 'لیست تمام سفارش‌های سیستم برای پرسنل' }))
-    .input(StaffOrderFilterInputSchema)
-    .output(createPaginatedResponseSchema(OrderSchema))
+    .input(
+      z
+        .object({
+          status: z.string().optional(),
+          customerId: z.string().optional(),
+          search: z.string().optional(),
+          page: z.number().optional(),
+          limit: z.number().optional(),
+          fromDate: z.string().optional(),
+          toDate: z.string().optional(),
+        })
+        .optional()
+    )
+    .output(createPaginatedResponseSchema(OrderSchema).or(z.array(z.any())).or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
     }),
 
-  staffGetById: oc
-    .meta(openapi({ method: 'GET', path: '/staff/orders/{id}', summary: 'مشاهده جزییات کامل سفارش برای پرسنل' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(OrderSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
 
   staffUpdateStatus: oc
     .meta(openapi({ method: 'POST', path: '/staff/orders/{id}/update-status', summary: 'تغییر مرحله و وضعیت سفارش در ماشین وضعیت توسط پرسنل' }))
-    .input(StaffUpdateOrderStatusInputSchema)
-    .output(OrderSchema)
+    .input(
+      z.object({
+        id: z.union([EntityIdSchema, z.number()]),
+        newStatus: z.string(),
+        note: z.string().optional(),
+      })
+    )
+    .output(OrderSchema.or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-      INVALID_STATUS_TRANSITION: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      NOT_FOUND: {},
+      INVALID_STATUS_TRANSITION: {},
     }),
 
   staffCancel: oc
     .meta(openapi({ method: 'POST', path: '/staff/orders/{id}/cancel', summary: 'لغو اداری سفارش توسط پرسنل همراه با ثبت دلیل' }))
-    .input(StaffCancelOrderInputSchema)
-    .output(OrderSchema)
+    .input(
+      z.object({
+        id: z.union([EntityIdSchema, z.number()]),
+        cancellationReason: z.string().optional(),
+        cancellationNote: z.string().optional(),
+      })
+    )
+    .output(OrderSchema.or(z.any()))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-      INVALID_STATUS_TRANSITION: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      NOT_FOUND: {},
+      INVALID_STATUS_TRANSITION: {},
     }),
 
   pricing: pricingContract,

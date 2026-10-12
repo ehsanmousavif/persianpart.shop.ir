@@ -94,7 +94,7 @@ export function HoldConfirmButton({
         onPointerLeave={stopHolding}
         onPointerCancel={stopHolding}
         onContextMenu={(e) => e.preventDefault()}
-        className={`relative w-full h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
+        className={`relative w-50 whitespace-pre-wrap  h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between shadow-= cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
           isConfirmed
             ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/25 shadow-lg'
             : isHolding
@@ -118,16 +118,10 @@ export function HoldConfirmButton({
         <div className="relative z-10 w-full flex items-center justify-between gap-3">
           {/* Status Label & Micro-Prompt */}
           <div className="flex flex-col text-start min-w-0">
-            <span className="text-xs sm:text-sm font-bold truncate">
+            <span className="text-xs sm:text-sm font-bold truncate text-wrap">
               {isConfirmed ? confirmedText : isHolding ? holdingText : idleText}
             </span>
-            <span className="text-xs font-normal opacity-85 truncate leading-relaxed">
-              {isConfirmed
-                ? 'درخواست شما ثبت قطعی گردید'
-                : isHolding
-                ? `${Math.round((progress / 100) * (holdDurationMs / 1000) * 10) / 10} ثانیه از ${Math.round(holdDurationMs / 1000)} ثانیه`
-                : 'به مدت ۳ ثانیه نگه دارید'}
-            </span>
+            
           </div>
 
           {/* Morphing & Rotating Icon (App Store Confirmation Style) */}

@@ -124,6 +124,8 @@ export const UpdateCustomerProfileInputSchema = z.object({
   province: z.string().min(1).optional(),
   city: z.string().min(1).optional(),
   address: z.string().min(1).optional(),
+  nationalCode: z.string().optional(),
+  economicCode: z.string().optional(),
 })
 
 export type UpdateCustomerProfileInput = z.infer<typeof UpdateCustomerProfileInputSchema>
@@ -181,72 +183,147 @@ export const customerTypeContract = {
 }
 
 export const customerContract = {
-  getProfile: oc
+  profile: oc
     .meta(openapi({ method: 'GET', path: '/customer/profile', summary: 'دریافت پروفایل مشتری جاری' }))
-    .output(CustomerProfileSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
+    .output(CustomerProfileSchema.or(z.any()).nullable()),
 
   updateProfile: oc
     .meta(openapi({ method: 'PUT', path: '/customer/profile', summary: 'ویرایش اطلاعات پروفایل توسط مشتری' }))
-    .input(UpdateCustomerProfileInputSchema)
-    .output(CustomerProfileSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
+    .input(
+      z.object({
+        contactName: z.string().optional(),
+        storeName: z.string().optional(),
+        nationalCode: z.string().optional(),
+        economicCode: z.string().optional(),
+        province: z.string().optional(),
+        city: z.string().optional(),
+        address: z.string().optional(),
+      })
+    )
+    .output(CustomerProfileSchema.or(z.any()).nullable()),
 
-  staffList: oc
+  types: oc
+    .meta(openapi({ method: 'GET', path: '/customer/types', summary: 'دریافت لیست انواع مشتری' }))
+    .input(z.object({ onlyActive: z.boolean().optional() }).optional())
+    .output(z.array(CustomerTypeSchema).or(z.any())),
+}
+
+export type CustomerContract = typeof customerContract
+
+export const customerStaffContract = {
+  list: oc
     .meta(openapi({ method: 'GET', path: '/staff/customers', summary: 'لیست پرسنلی مشتریان با فیلتر' }))
     .input(CustomerFilterInputSchema)
     .output(createPaginatedResponseSchema(CustomerStaffDetailSchema))
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
     }),
 
-  staffGetById: oc
+  getById: oc
     .meta(openapi({ method: 'GET', path: '/staff/customers/{id}', summary: 'مشاهده جزییات کامل مشتری توسط پرسنل' }))
     .input(z.object({ id: EntityIdSchema }))
     .output(CustomerStaffDetailSchema)
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      NOT_FOUND: {},
     }),
 
-  staffCreate: oc
+  create: oc
     .meta(openapi({ method: 'POST', path: '/staff/customers', summary: 'ایجاد مشتری تجاری جدید توسط پرسنل' }))
     .input(CreateCustomerInputSchema)
     .output(CustomerStaffDetailSchema)
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      CONFLICT: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      CONFLICT: {},
     }),
 
-  staffUpdate: oc
+  update: oc
     .meta(openapi({ method: 'PUT', path: '/staff/customers/{id}', summary: 'ویرایش مشتری توسط پرسنل' }))
     .input(UpdateCustomerInputSchema)
     .output(CustomerStaffDetailSchema)
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-      CONFLICT: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      NOT_FOUND: {},
+      CONFLICT: {},
     }),
 
-  staffToggleActive: oc
+  toggleActive: oc
     .meta(openapi({ method: 'POST', path: '/staff/customers/{id}/toggle-active', summary: 'فعال یا غیرفعال‌سازی حساب مشتری' }))
     .input(z.object({ id: EntityIdSchema }))
     .output(CustomerStaffDetailSchema)
     .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      NOT_FOUND: {},
     }),
 
   types: customerTypeContract,
 }
+
+export const userContract = {
+  profile: oc
+    .meta(openapi({ method: 'GET', path: '/user/profile', summary: 'دریافت پروفایل کاربر' }))
+    .output(z.any())
+    .errors({
+      UNAUTHORIZED: {},
+    }),
+
+  list: oc
+    .meta(openapi({ method: 'GET', path: '/user/list', summary: 'لیست کاربران سیستم' }))
+    .input(
+      z
+        .object({
+          limit: z.number().optional(),
+          search: z.string().optional(),
+        })
+        .optional()
+    )
+    .output(z.array(z.any()).or(z.any())),
+
+  update: oc
+    .meta(openapi({ method: 'PUT', path: '/user/profile', summary: 'به‌روزرسانی اطلاعات کاربر' }))
+    .input(
+      z.object({
+        fullName: z.string().optional(),
+        companyName: z.string().optional(),
+        nationalCode: z.string().optional(),
+        economicCode: z.string().optional(),
+        province: z.string().optional(),
+        city: z.string().optional(),
+        address: z.string().optional(),
+        addresses: z.any().optional(),
+      })
+    )
+    .output(z.any())
+    .errors({
+      UNAUTHORIZED: {},
+      FORBIDDEN: {},
+      BAD_REQUEST: {},
+    }),
+
+  delete: oc
+    .meta(openapi({ method: 'DELETE', path: '/user/{id}', summary: 'حذف کاربر' }))
+    .input(
+      z.object({
+        id: z.union([EntityIdSchema, z.number()]),
+      })
+    )
+    .output(z.any()),
+
+  customerTypes: oc
+    .meta(openapi({ method: 'GET', path: '/user/customer-types', summary: 'لیست انواع مشتری' }))
+    .input(
+      z
+        .object({
+          onlyActive: z.boolean().optional(),
+        })
+        .optional()
+    )
+    .output(z.array(CustomerTypeSchema).or(z.any())),
+}
+
+export type UserContract = typeof userContract

@@ -10,6 +10,7 @@ const defaultBaseUrl =
 
 export const api = createApiClient({
   baseURL: import.meta.env.VITE_API_URL || defaultBaseUrl,
+  
   getToken: () => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('persianpart_token')
@@ -17,6 +18,8 @@ export const api = createApiClient({
     return null
   },
 })
+
+if(api===null) {alert('اتصال به سرور برقرار نشد. لطفا اتصال اینترنت خود را بررسی کنید و دوباره تلاش کنید.')}
 
 export type { AppRouter, ApiClient }
 export { appContract } from '@persianpart/contract'

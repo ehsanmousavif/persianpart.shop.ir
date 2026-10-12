@@ -19,9 +19,11 @@ import {
   AlertTriangleIcon,
   ClockIcon,
   TomanIcon,
+  PencilIcon,
 } from '../../components/ui/icons'
 import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
 import { useProducts } from '../../features/products/product-store'
+import { selectionStore } from '../../features/products/selection-store'
 
 export const Route = createFileRoute('/orders/$id')({
   loader: async ({ params }) => {
@@ -212,6 +214,20 @@ function OrderDetailPage() {
     setIsReorderModalOpen(true)
   }
 
+  const handleEditOrder = () => {
+    if (!order) return;
+    selectionStore.setBatchSelection(
+      order.items.map((item) => ({
+        id: item.productId,
+        quantity: item.requestedArea || item.deliverableArea,
+      }))
+    );
+    ;(navigate as any)({
+      to: '/product/new',
+      search: { editOrderId: order.id },
+    });
+  }
+
   if (isLoading) {
     return <OrderDetailSkeleton />
   }
@@ -245,7 +261,7 @@ function OrderDetailPage() {
       </nav>
 
       {/* Main Order Header Card */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
         <div>
           <div className="flex items-center gap-2.5 mb-2 flex-wrap">
             <span className="px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-sm font-extrabold text-blue-900 flex items-center gap-1.5">
@@ -268,7 +284,7 @@ function OrderDetailPage() {
                 <ClockIcon size={13} className={isWithin10Minutes ? 'text-amber-700' : 'text-slate-400'} />
                 <span>
                   {isWithin10Minutes
-                    ? `مهلت لغو خریدار: ${formatCountdown(timeLeftSeconds)}`
+                    ? `مهلت ۱۰ دقیقه‌ای لغو: ${formatCountdown(timeLeftSeconds)}`
                     : 'مهلت ۱۰ دقیقه‌ای لغو پایان یافت'}
                 </span>
               </span>
@@ -279,23 +295,34 @@ function OrderDetailPage() {
           </p>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2 flex-wrap">
+        {/* Action Buttons - زیر تاریخ */}
+        <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {isCancellableByCustomer && (
-            <button
-              type="button"
-              onClick={() => setShowCancelModal(true)}
-              className="py-2.5 px-3.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <XIcon size={16} />
-              <span>لغو سفارش</span>
-            </button>
+            <>
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(true)}
+                className="flex-1 py-2.5 px-3.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                <XIcon size={16} />
+                <span>لغو سفارش</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleEditOrder}
+                className="flex-1 py-2.5 px-3.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+              >
+                <PencilIcon size={16} />
+                <span>ویرایش فاکتور</span>
+              </button>
+            </>
           )}
 
           <button
             type="button"
             onClick={handleReorder}
-            className="py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center gap-1.5 cursor-pointer"
+            className="flex-1 py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
             <span>سفارش مجدد</span>
@@ -303,38 +330,8 @@ function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Cancellation Banner */}
-      {isCancelled && (
-        <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 sm:p-5 shadow-xs space-y-2">
-          <div className="flex items-center gap-2 text-rose-800 font-bold text-sm">
-            <AlertTriangleIcon size={18} className="text-rose-600 shrink-0" />
-            <span>
-              {order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
-                ? 'لغو توسط کاربر'
-                : 'لغو توسط ادمین'}
-            </span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-rose-900 pt-1">
-            <div className="flex items-center gap-1.5">
-              <span className="text-rose-600 font-semibold">ثبت‌کننده لغو:</span>
-              <strong className="text-rose-950">
-                {order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
-                  ? 'کاربر'
-                  : 'ادمین'}
-              </strong>
-            </div>
-            {order.notes && (
-              <div className="flex items-start gap-1.5">
-                <span className="text-rose-600 font-semibold shrink-0">علت لغو:</span>
-                <span className="text-rose-950 font-medium">{order.notes}</span>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Visual Stepper Timeline */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-white border border-slate-200 rounded-3xl p-5 pb-10 sm:p-6 shadow-xs space-y-4">
         <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
           وضعیت سفارش
         </h3>
@@ -533,6 +530,11 @@ function OrderDetailPage() {
         onClose={() => setIsReorderModalOpen(false)}
         products={reorderProducts}
         quantities={reorderQuantities}
+        editOrderId={order?.id}
+        onEdit={() => {
+          setIsReorderModalOpen(false)
+          handleEditOrder()
+        }}
         onSuccess={(newOrderId) => {
           setIsReorderModalOpen(false)
           toast.success(

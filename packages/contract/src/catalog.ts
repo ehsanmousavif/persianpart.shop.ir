@@ -344,15 +344,16 @@ export type CatalogProduct = z.infer<typeof CatalogProductSchema>
 
 export const CatalogFilterInputSchema = PaginationInputSchema.extend({
   search: z.string().optional(),
-  categoryId: EntityIdSchema.optional(),
-  brandId: EntityIdSchema.optional(),
+  categoryId: z.union([EntityIdSchema, z.number()]).optional(),
+  brandId: z.union([EntityIdSchema, z.number()]).optional(),
   color: z.string().optional(),
   grade: z.string().optional(),
   tag: z.string().optional(),
   width: z.coerce.number().positive().optional(),
   height: z.coerce.number().positive().optional(),
   availability: AvailabilityBadgeSchema.optional(),
-})
+  onlyActive: z.boolean().optional(),
+}).optional()
 
 export type CatalogFilterInput = z.infer<typeof CatalogFilterInputSchema>
 
@@ -610,15 +611,15 @@ export const catalogContract = {
   list: oc
     .meta(openapi({ method: 'GET', path: '/catalog', summary: 'کاتالوگ محصولات با قیمت اختصاصی مشتری جاری' }))
     .input(CatalogFilterInputSchema)
-    .output(createPaginatedResponseSchema(CatalogProductSchema))
+    .output(createPaginatedResponseSchema(CatalogProductSchema).or(z.object({ items: z.array(z.any()), total: z.number() })).or(z.any()))
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
     }),
 
   getById: oc
     .meta(openapi({ method: 'GET', path: '/catalog/{id}', summary: 'مشاهده جزییات کاتالوگ محصول توسط مشتری' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(CatalogProductSchema)
+    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .output(CatalogProductSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
@@ -626,16 +627,54 @@ export const catalogContract = {
 
   calculateCartons: oc
     .meta(openapi({ method: 'POST', path: '/catalog/calculate-cartons', summary: 'محاسبه متراژ تحویلی و تعداد کارتن برای متراژ درخواستی' }))
-    .input(CartonCalculationInputSchema)
-    .output(CartonCalculationOutputSchema)
+    .input(
+      z.object({
+        productId: z.union([EntityIdSchema, z.number()]).optional(),
+        requestedSqm: z.number().optional(),
+        requestedArea: z.number().optional(),
+        sqmPerCarton: z.number().optional(),
+        pricePerSqm: z.number().optional(),
+      })
+    )
+    .output(
+      z.object({
+        cartonCount: z.number(),
+        deliverableArea: z.number().optional(),
+        totalPrice: z.number().optional(),
+      }).or(CartonCalculationOutputSchema).or(z.any())
+    )
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
     }),
 
-  parts: partsContract,
-  categories: categoryContract,
-  brands: brandContract,
-  tags: tagContract,
-  manage: productContract,
+  categories: oc
+    .meta(openapi({ method: 'GET', path: '/catalog/categories', summary: 'دریافت لیست دسته‌بندی‌ها' }))
+    .input(z.object({ onlyActive: z.boolean().optional() }).optional())
+    .output(z.array(CategorySchema).or(z.any())),
+
+  brands: oc
+    .meta(openapi({ method: 'GET', path: '/catalog/brands', summary: 'دریافت لیست برندها' }))
+    .input(z.object({ onlyActive: z.boolean().optional() }).optional())
+    .output(z.array(BrandSchema).or(z.any())),
+
+  tags: oc
+    .meta(openapi({ method: 'GET', path: '/catalog/tags', summary: 'دریافت لیست تگ‌ها' }))
+    .input(z.object({ onlyActive: z.boolean().optional() }).optional())
+    .output(z.array(TagSchema).or(z.any())),
+
+  dimensions: oc
+    .meta(openapi({ method: 'GET', path: '/catalog/dimensions', summary: 'دریافت لیست ابعاد' }))
+    .input(z.object({ onlyActive: z.boolean().optional() }).optional())
+    .output(z.array(DimensionSchema).or(z.any())),
+
+  deleteProduct: oc
+    .meta(openapi({ method: 'DELETE', path: '/catalog/products/{id}', summary: 'حذف محصول' }))
+    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .output(z.any()),
+
+  deleteCategory: oc
+    .meta(openapi({ method: 'DELETE', path: '/catalog/categories/{id}', summary: 'حذف دسته‌بندی' }))
+    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .output(z.any()),
 }

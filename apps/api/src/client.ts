@@ -1,7 +1,7 @@
 import type { RouterContractClient } from '@orpc/contract'
 import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
-import { contract } from './rpc/contract'
+import { appContract } from '@persianpart/contract'
 
 export function createApiClient(options: {
   baseURL?: string
@@ -25,9 +25,9 @@ export function createApiClient(options: {
     },
   })
 
-  const client: RouterContractClient<typeof contract> = createORPCClient(link)
+  const client: RouterContractClient<typeof appContract> = createORPCClient(link)
   return client
 }
 
-export { contract }
-export type ApiClient = RouterContractClient<typeof contract>
+export { appContract, appContract as contract }
+export type ApiClient = RouterContractClient<typeof appContract>
