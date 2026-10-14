@@ -180,17 +180,17 @@ export function ImageViewerModal({
     <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
       <HeroUIModal.Backdrop
         isDismissable
-        className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex flex-col select-none touch-none animate-backdrop-enter"
+        className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col select-none touch-none animate-backdrop-enter"
       >
         <HeroUIModal.Container className="pointer-events-none w-full h-full p-0 flex flex-col items-center justify-between">
           <HeroUIModal.Dialog className="pointer-events-auto relative w-full h-full max-w-xl mx-auto flex flex-col justify-between text-white overflow-hidden animate-modal-enter">
             {/* Top Floating Control Bar */}
             <div className="w-full max-w-xl mx-auto px-3 h-12 flex items-center justify-between gap-2 z-20 shrink-0 text-white">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-bold truncate max-w-[120px] sm:max-w-xs text-slate-200">
+                <span className="text-xs font-bold truncate max-w-[120px] sm:max-w-xs text-white">
                   {title}
                 </span>
-                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 shrink-0">
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-white/10 text-white/90 shrink-0">
                   {toPersianDigits(Math.round(scale * 100))}٪
                 </span>
               </div>
@@ -200,7 +200,7 @@ export function ImageViewerModal({
                   type="button"
                   onClick={() => handleZoom(0.3)}
                   aria-label="بزرگ‌نمایی تصویر"
-                  className="w-8 h-8 rounded-lg bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer"
                   title="بزرگ‌نمایی (+)"
                 >
                   <ZoomInIcon size={16} />
@@ -210,7 +210,7 @@ export function ImageViewerModal({
                   onClick={() => handleZoom(-0.3)}
                   disabled={scale <= 1}
                   aria-label="کوچک‌نمایی تصویر"
-                  className="w-8 h-8 rounded-lg bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                   title="کوچک‌نمایی (-)"
                 >
                   <ZoomOutIcon size={16} />
@@ -219,7 +219,7 @@ export function ImageViewerModal({
                   type="button"
                   onClick={resetZoom}
                   aria-label="بازنشانی اندازه تصویر"
-                  className="w-8 h-8 rounded-lg bg-slate-800/90 hover:bg-slate-700 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer"
+                  className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer"
                   title="بازنشانی (0)"
                 >
                   <RefreshCwIcon size={14} />
@@ -228,7 +228,7 @@ export function ImageViewerModal({
                   type="button"
                   onClick={onClose}
                   aria-label="بستن گالری تصویر"
-                  className="w-8 h-8 rounded-lg bg-rose-600 hover:bg-rose-700 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer ms-0.5"
+                  className="w-8 h-8 rounded-lg bg-danger hover:bg-danger/90 active:scale-95 text-white flex items-center justify-center transition-colors cursor-pointer ms-0.5"
                   title="بستن (Esc)"
                 >
                   <XIcon size={16} />
@@ -263,7 +263,7 @@ export function ImageViewerModal({
             </div>
 
             {/* Bottom Hint */}
-            <div className="w-full text-center pb-4 pt-1 text-xs text-slate-400 z-10 shrink-0 pointer-events-none">
+            <div className="w-full text-center pb-4 pt-1 text-xs text-white/60 z-10 shrink-0 pointer-events-none">
               با انگشت بزرگ‌نمایی کنید یا دو بار ضربه بزنید (زوم فقط روی تصویر اعمال می‌شود)
             </div>
           </HeroUIModal.Dialog>

@@ -101,29 +101,29 @@ export function ProductBottomSheet({
       <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
         <HeroUIModal.Backdrop
           isDismissable
-          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end justify-center animate-backdrop-enter"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end justify-center animate-backdrop-enter"
         >
           <HeroUIModal.Container className="pointer-events-none w-full max-w-xl mx-auto h-auto p-0 flex flex-col items-center justify-end">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-white rounded-t-3xl shadow-2xl flex flex-col h-[67dvh] max-h-[67dvh] min-h-[67dvh] z-10 border-t border-slate-200 overflow-hidden animate-drawer-slide-up text-start">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-3xl shadow-2xl flex flex-col h-[67dvh] max-h-[67dvh] min-h-[67dvh] z-10 border-t border-border overflow-hidden animate-drawer-slide-up text-start">
               {/* Pull Handle Indicator */}
               <div className="flex justify-center pt-2 pb-1 shrink-0">
-                <div className="w-8 h-1 rounded-full bg-slate-300" />
+                <div className="w-8 h-1 rounded-full bg-border" />
               </div>
 
               {/* Header (Strictly Top-Right Aligned) */}
-              <HeroUIModal.Header className="px-3.5 py-2 border-b border-slate-100 flex items-start justify-between gap-2.5 shrink-0 text-start">
+              <HeroUIModal.Header className="px-3.5 py-2 border-b border-separator flex items-start justify-between gap-2.5 shrink-0 text-start">
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
-                  <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100 self-start">
+                  <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/25 self-start">
                     {product.category}
                   </span>
-                  <HeroUIModal.Heading className="text-sm font-bold text-slate-900 mt-1 line-clamp-2 text-start leading-snug">
+                  <HeroUIModal.Heading className="text-sm font-bold text-foreground mt-1 line-clamp-2 text-start leading-snug">
                     {product.name}
                   </HeroUIModal.Heading>
                 </div>
 
                 <HeroUIModal.CloseTrigger
                   onClick={onClose}
-                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
+                  className="w-7 h-7 rounded-lg text-muted hover:text-foreground hover:bg-default/15 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
                   aria-label="بستن پنجره جزئیات"
                 >
                   <XIcon size={16} />
@@ -134,7 +134,7 @@ export function ProductBottomSheet({
               <HeroUIModal.Body className="p-3.5 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-3 text-start">
                 {/* 1. Main Hero Preview */}
                 <div className="space-y-2">
-                  <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200 shadow-xs group">
+                  <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-default/15 border border-border shadow-xs group">
                     <img
                       src={currentHeroUrl || '/assets/images/placeholder.svg'}
                       alt={product.name}
@@ -151,7 +151,7 @@ export function ProductBottomSheet({
                     <button
                       type="button"
                       onClick={() => setZoomImageUrl(currentHeroUrl)}
-                      className="absolute bottom-2 end-2 px-2.5 py-1 rounded-xl bg-slate-900/80 hover:bg-slate-900 backdrop-blur-xs text-white text-[10px] font-semibold flex items-center gap-1 shadow-md cursor-pointer transition-transform active:scale-95"
+                      className="absolute bottom-2 end-2 px-2.5 py-1 rounded-xl bg-primary/90 hover:bg-primary backdrop-blur-xs text-primary-foreground text-[10px] font-semibold flex items-center gap-1 shadow-md cursor-pointer transition-transform active:scale-95"
                     >
                       <ZoomInIcon size={12} />
                       <span>بزرگ‌نمایی</span>
@@ -160,21 +160,21 @@ export function ProductBottomSheet({
                     {/* Stock Status Badge */}
                     <div className="absolute top-2 start-2 flex items-center gap-1">
                       {isOutOfStock ? (
-                        <span className="px-2 py-0.5 rounded-lg bg-rose-600 text-white text-[10px] font-semibold shadow-xs">
+                        <span className="px-2 py-0.5 rounded-lg bg-danger text-danger-foreground text-[10px] font-semibold shadow-xs">
                           ناموجود در انبار
                         </span>
                       ) : isLowStock ? (
-                        <span className="px-2 py-0.5 rounded-lg bg-amber-500 text-white text-[10px] font-semibold shadow-xs">
+                        <span className="px-2 py-0.5 rounded-lg bg-warning text-warning-foreground text-[10px] font-semibold shadow-xs">
                           موجودی محدود ({toPersianDigits(product.inventorySqm)})
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-lg bg-emerald-600 text-white text-[10px] font-semibold shadow-xs">
+                        <span className="px-2 py-0.5 rounded-lg bg-success text-success-foreground text-[10px] font-semibold shadow-xs">
                           موجود در انبار
                         </span>
                       )}
 
                       {currentMediaItem?.isSampleWork && (
-                        <span className="px-2 py-0.5 rounded-lg bg-blue-600 text-white text-[10px] font-semibold shadow-xs">
+                        <span className="px-2 py-0.5 rounded-lg bg-primary text-primary-foreground text-[10px] font-semibold shadow-xs">
                           نمونه‌کار اجرایی
                         </span>
                       )}
@@ -184,7 +184,7 @@ export function ProductBottomSheet({
                   {/* 2. Interactive Thumbnail Cards */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between px-0.5">
-                      <span className="text-[11px] text-slate-600 font-bold">
+                      <span className="text-[11px] text-foreground font-bold">
                         تصاویر کالا
                       </span>
 
@@ -194,10 +194,10 @@ export function ProductBottomSheet({
                         color={isOutOfStock ? 'danger' : isLowStock ? 'warning' : 'success'}
                         className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                           isOutOfStock
-                            ? 'bg-rose-50 text-rose-700 border-rose-200'
+                            ? 'bg-danger/10 text-danger border-danger/30'
                             : isLowStock
-                            ? 'bg-amber-50 text-amber-800 border-amber-200'
-                            : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                            ? 'bg-warning/10 text-warning border-warning/30'
+                            : 'bg-success/15 text-success border-success/30'
                         }`}
                       >
                         {isOutOfStock ? (
@@ -223,8 +223,8 @@ export function ProductBottomSheet({
                             title={item.label}
                             className={`group relative w-13 h-13 sm:w-14 sm:h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer select-none active:scale-95 ${
                               isActive
-                                ? 'border-slate-900 ring-2 ring-slate-900/20 shadow-xs scale-[1.03] opacity-100'
-                                : 'border-slate-200 hover:border-slate-400 opacity-70 hover:opacity-100'
+                                ? 'border-primary ring-2 ring-primary/20 shadow-xs scale-[1.03] opacity-100'
+                                : 'border-border hover:border-muted opacity-70 hover:opacity-100'
                             }`}
                           >
                             <img
@@ -246,24 +246,24 @@ export function ProductBottomSheet({
                 </div>
 
                 {/* Price & Selection Action Strip (Strictly 1-Line, Cleaned per user specs) */}
-                <div className="p-2.5 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center justify-between gap-2">
+                <div className="p-2.5 bg-default/10 rounded-2xl border border-border flex items-center justify-between gap-2">
                   <div className="min-w-0 flex items-baseline gap-1.5 whitespace-nowrap">
                     {product.discountPercent ? (
                       <>
-                        <span className="text-sm font-extrabold text-rose-600 inline-flex items-center gap-1">
+                        <span className="text-sm font-extrabold text-danger inline-flex items-center gap-1">
                           <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
                           <TomanIcon className="size-4" />
                         </span>
-                        <span className="text-[10px] text-slate-400 line-through inline-flex items-center gap-0.5">
+                        <span className="text-[10px] text-muted line-through inline-flex items-center gap-0.5">
                           <span>{formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}</span>
                           <TomanIcon className="size-3" />
                         </span>
-                        <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-rose-100 text-rose-700">
+                        <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-danger/15 text-danger">
                           {toPersianDigits(product.discountPercent)}٪
                         </span>
                       </>
                     ) : (
-                      <span className="text-sm font-extrabold text-slate-900 inline-flex items-center gap-1">
+                      <span className="text-sm font-extrabold text-foreground inline-flex items-center gap-1">
                         <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
                         <TomanIcon className="size-4" />
                       </span>
@@ -277,13 +277,13 @@ export function ProductBottomSheet({
                         onClick={onToggleSelect}
                         className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap shrink-0 ${
                           isSelected
-                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-300'
-                            : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
+                            ? 'bg-success/15 text-success border border-success/30'
+                            : 'bg-surface hover:bg-default/15 text-foreground border border-border'
                         }`}
                       >
                         {isSelected ? (
                           <>
-                            <CheckIcon size={13} className="stroke-[3] text-emerald-600" />
+                            <CheckIcon size={13} className="stroke-[3] text-success" />
                             <span>انتخاب‌شده</span>
                           </>
                         ) : (
@@ -299,7 +299,7 @@ export function ProductBottomSheet({
                       <button
                         type="button"
                         onClick={() => onOrderDirect(product)}
-                        className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-blue-500/20 active:scale-95 whitespace-nowrap shrink-0"
+                        className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-primary/20 active:scale-95 whitespace-nowrap shrink-0"
                       >
                         <span>ثبت سفارش</span>
                       </button>
@@ -309,8 +309,8 @@ export function ProductBottomSheet({
 
                 {/* Structured Specifications with Solar Icons */}
                 <div className="space-y-1.5">
-                  <h3 className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                    <span className="w-5 h-5 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <h3 className="text-xs font-bold text-foreground flex items-center gap-1.5">
+                    <span className="w-5 h-5 rounded-md bg-primary/10 text-primary flex items-center justify-center shrink-0">
                       <SolarLayersIcon size={13} />
                     </span>
                     <span>مشخصات فنی</span>
@@ -318,104 +318,104 @@ export function ProductBottomSheet({
 
                   <div className="grid grid-cols-2 gap-1.5 text-xs">
                     {/* Dimensions (Solar Ruler) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarRulerIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">ابعاد</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">ابعاد</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
                         </span>
                       </div>
                     </div>
 
                     {/* Authoritative sqmPerCarton (Solar Box) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarBoxIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">متراژ در کارتن</span>
-                        <span className="font-bold text-blue-700 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">متراژ در کارتن</span>
+                        <span className="font-bold text-primary text-xs leading-normal truncate block">
                           {toPersianDigits(product.sqmPerCarton)}
                         </span>
                       </div>
                     </div>
 
                     {/* SKU Code (Solar Tag) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarTagIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">شناسه کالا</span>
-                        <span className="font-mono font-bold text-slate-800 text-xs leading-normal truncate block" dir="ltr">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">شناسه کالا</span>
+                        <span className="font-mono font-bold text-foreground text-xs leading-normal truncate block" dir="ltr">
                           {product.sku}
                         </span>
                       </div>
                     </div>
 
                     {/* Pieces per carton (Solar Layers) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarLayersIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">تعداد در کارتن</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">تعداد در کارتن</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(product.piecesPerCarton)} برگ
                         </span>
                       </div>
                     </div>
 
                     {/* Brand & Factory (Solar Shop) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarShopIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">برند</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">برند</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {product.brand}
                         </span>
                       </div>
                     </div>
 
                     {/* Grade (Solar Shield Check) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarShieldCheckIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">درجه کیفی</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">درجه کیفی</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {formatGrade(product.grade)}
                         </span>
                       </div>
                     </div>
 
                     {/* Color Spectrum (Solar Palette) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarPaletteIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">رنگ</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">رنگ</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {product.color}
                         </span>
                       </div>
                     </div>
 
                     {/* Weight (Solar Scale) */}
-                    <div className="p-2 bg-slate-50/80 rounded-xl border border-slate-200/70 flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-lg bg-blue-50/90 border border-blue-100/60 text-blue-600 flex items-center justify-center shrink-0">
+                    <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarScaleIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-slate-500 font-medium block leading-tight mb-0.5">وزن هر کارتن</span>
-                        <span className="font-bold text-slate-900 text-xs leading-normal truncate block">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">وزن هر کارتن</span>
+                        <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(product.cartonWeightKg)} کیلوگرم
                         </span>
                       </div>
@@ -425,11 +425,11 @@ export function ProductBottomSheet({
 
                 {/* Optional Rich Description */}
                 {(product.richDescription || product.description) && (
-                  <div className="p-2.5 bg-slate-50/60 rounded-xl border border-slate-200/60 space-y-0.5">
-                    <span className="text-[10px] font-bold text-slate-500 block mb-0.5">
+                  <div className="p-2.5 bg-default/10 rounded-xl border border-border space-y-0.5">
+                    <span className="text-[10px] font-bold text-muted block mb-0.5">
                       توضیحات
                     </span>
-                    <p className="text-[11px] text-slate-700 leading-relaxed">
+                    <p className="text-[11px] text-foreground leading-relaxed">
                       {product.richDescription || product.description}
                     </p>
                   </div>
@@ -437,12 +437,12 @@ export function ProductBottomSheet({
 
                 {/* Tags */}
                 {product.tags.length > 0 && (
-                  <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-1">
-                    <span className="text-[10px] text-slate-500 font-medium">ویژگی‌ها:</span>
+                  <div className="pt-2 border-t border-separator flex flex-wrap items-center gap-1">
+                    <span className="text-[10px] text-muted font-medium">ویژگی‌ها:</span>
                     {product.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-semibold"
+                        className="px-2 py-0.5 rounded-md bg-default/15 text-muted text-[10px] font-semibold"
                       >
                         #{tag}
                       </span>

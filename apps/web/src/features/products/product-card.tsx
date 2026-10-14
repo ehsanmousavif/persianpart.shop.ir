@@ -42,8 +42,8 @@ export function ProductCard({
       onClick={handleCardClick}
       className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[12px] border transition-all duration-150 cursor-pointer overflow-hidden text-start select-none ${
         isSelected
-          ? "border-emerald-600/60 scale-[0.985] shadow-[0_1px_3px_rgba(16,185,129,0.22)] bg-emerald-50/25"
-          : "border-slate-200/90 hover:border-slate-300 shadow-none bg-white"
+          ? "border-success/60 scale-[0.985] shadow-sm shadow-success/20 bg-success/10"
+          : "border-border hover:border-border shadow-none bg-surface"
       }`}
       role="button"
       tabIndex={0}
@@ -71,7 +71,7 @@ export function ProductCard({
               onOpenBottomSheet?.(product);
             }
           }}
-          className="relative size-20 rounded-[12px] overflow-hidden shrink-0 border border-slate-200 bg-slate-100 group/img cursor-pointer transition-transform active:scale-95"
+          className="relative size-20 rounded-[12px] overflow-hidden shrink-0 border border-border bg-default/15 group/img cursor-pointer transition-transform active:scale-95"
           title="مشاهده جزئیات کالا"
           aria-label={`مشاهده جزئیات ${product.name}`}
         >
@@ -83,8 +83,8 @@ export function ProductCard({
             onError={handleImgError}
           />
           {/* Hover hint icon */}
-          <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
-            <span className="p-1 rounded-md bg-slate-900/80 text-white shadow-xs">
+          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+            <span className="p-1 rounded-md bg-primary text-primary-foreground shadow-xs">
               <ZoomInIcon size={12} />
             </span>
           </div>
@@ -93,22 +93,22 @@ export function ProductCard({
         {/* Center Content: Dimensions & Metadata */}
         <div className="flex flex-col justify-center min-w-0">
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-slate-500 truncate max-w-[120px]">
+            <span className="text-xs font-semibold text-muted truncate max-w-[120px]">
               {product.brand}
             </span>
           </div>
 
-          <h3 className="text-sm font-bold text-slate-900 leading-2 mt-0.5">
+          <h3 className="text-sm font-bold text-foreground leading-2 mt-0.5">
             {product.name}
           </h3>
 
           {/* Dimension and Grade Badges Below Title */}
           <div className="flex items-center gap-1.5 flex-wrap mt-1">
-            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-default/15 text-foreground border border-border">
               {toPersianDigits(product.dimensions.width)} ×{" "}
               {toPersianDigits(product.dimensions.height)}
             </span>
-            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100">
+            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-primary/10 text-primary border border-primary/25">
               {formatGrade(product.grade)}
             </span>
           </div>
@@ -116,19 +116,19 @@ export function ProductCard({
       </div>
 
       {/* Trailing Section: Price and Status Badges */}
-      <div className="flex flex-col items-end shrink-0 ps-3 border-slate-100 text-end">
+      <div className="flex flex-col items-end shrink-0 ps-3 border-separator text-end">
         {isInCart && (
-          <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-100 mb-0.5">
+          <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-primary/10 text-primary border border-primary/25 mb-0.5">
             در سبد خرید
           </span>
         )}
 
         {product.discountPercent ? (
           <>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200 mb-0.5">
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-danger/10 text-danger border border-danger/30 mb-0.5">
               {toPersianDigits(product.discountPercent)}٪ تخفیف
             </span>
-            <span className="text-[11px] text-slate-400 line-through inline-flex items-center gap-0.5">
+            <span className="text-[11px] text-muted line-through inline-flex items-center gap-0.5">
               <span>
                 {formatToman(
                   product.originalPricePerSqm || product.finalCustomerPricePerSqm,
@@ -136,19 +136,19 @@ export function ProductCard({
               </span>
               <TomanIcon className="size-2.5" />
             </span>
-            <span className="text-sm font-bold text-rose-600 inline-flex items-center gap-1">
+            <span className="text-sm font-bold text-danger inline-flex items-center gap-1">
               <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
               <TomanIcon className="size-3" />
             </span>
           </>
         ) : (
-          <span className="text-sm font-bold text-slate-900 inline-flex items-center gap-1">
+          <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
             <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
             <TomanIcon className="size-3.5" />
           </span>
         )}
 
-        <span className="px-2 py-0.5 mt-1 rounded-[12px] flex text-[10px] font-semibold bg-blue-50 text-green-700 border border-blue-100">
+        <span className="px-2 py-0.5 mt-1 rounded-[12px] flex text-[10px] font-semibold bg-success/10 text-success border border-success/30">
           <span className="">
             {Math.floor(
               Number.isFinite(Number(product.inventorySqm))

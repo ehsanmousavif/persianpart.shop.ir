@@ -142,19 +142,19 @@ function ProductNewConfigurationPage() {
   if (selectedProducts.length === 0) {
     return (
       <div className="w-full max-w-2xl mx-auto px-4 py-12 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
           <BoxIcon size={32} />
         </div>
-        <h2 className="text-base font-bold text-slate-900">
+        <h2 className="text-base font-bold text-foreground">
           محصولی برای تعیین متراژ انتخاب نشده است
         </h2>
-        <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
+        <p className="text-xs text-muted max-w-sm mx-auto leading-relaxed">
           لطفاً ابتدا به صفحه محصولات مراجعه کرده و با کلیک روی کارت‌ها، کاشی‌های مد نظر خود را انتخاب نمایید.
         </p>
         <button
           type="button"
           onClick={() => navigate({ to: '/product' })}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
+          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
           <span>بازگشت به لیست محصولات</span>
@@ -166,21 +166,21 @@ function ProductNewConfigurationPage() {
   return (
     <div className="w-full max-w-xl mx-auto px-3.5 py-3 space-y-4 text-start pb-28">
       {/* Top Navigation & Step Indicator */}
-      <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-3">
+      <div className="flex items-center justify-between gap-2 border-b border-separator pb-3">
         <button
           type="button"
           onClick={handleBackToProducts}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-default/15 hover:bg-default/30 text-foreground text-xs font-bold transition-colors cursor-pointer"
         >
           <ArrowRightIcon size={14} />
           <span>بازگشت به لیست محصولات</span>
         </button>
 
         <div className="flex items-center gap-1.5 text-xs">
-          <span className="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold border border-blue-200">
+          <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-bold border border-primary/25">
             مرحله ۲ از ۲
           </span>
-          <span className="font-bold text-slate-800">تعیین متراژ و تایید</span>
+          <span className="font-bold text-foreground">تعیین متراژ و تایید</span>
         </div>
       </div>
 
@@ -198,12 +198,12 @@ function ProductNewConfigurationPage() {
           return (
             <div
               key={product.id}
-              className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-4 shadow-xs transition-all space-y-3.5 hover:border-slate-300"
+              className="bg-surface border border-border rounded-2xl p-3.5 sm:p-4 shadow-xs transition-all space-y-3.5 hover:border-primary/40"
             >
               {/* 1. Header Row: Thumbnail + Product Info + Delete Button */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
+                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border bg-default/15">
                     <img
                       src={product.images[0] || '/assets/images/placeholder.svg'}
                       alt={product.name}
@@ -218,22 +218,22 @@ function ProductNewConfigurationPage() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200/80">
+                      <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-default/15 text-foreground border border-border">
                         {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
                       </span>
-                      <span className="text-xs font-semibold text-slate-600">
+                      <span className="text-xs font-semibold text-muted">
                         {product.brand}
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-slate-900 truncate mt-1">
+                    <h3 className="text-sm font-bold text-foreground truncate mt-1">
                       {product.name}
                     </h3>
 
-                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5 flex-wrap">
-                      {/* <span className="font-mono text-slate-700 font-bold" dir="ltr">{product.sku}</span> */}
+                    <div className="flex items-center gap-2 text-xs text-muted mt-0.5 flex-wrap">
+                      {/* <span className="font-mono text-foreground font-bold" dir="ltr">{product.sku}</span> */}
                       <span className="inline-flex items-center gap-1">
-                        <strong className="font-bold text-slate-900">{formatToman(product.finalCustomerPricePerSqm)}</strong>
+                        <strong className="font-bold text-foreground">{formatToman(product.finalCustomerPricePerSqm)}</strong>
                         <TomanIcon className="size-4" />
                       </span>
                     </div>
@@ -244,7 +244,7 @@ function ProductNewConfigurationPage() {
                 <button
                   type="button"
                   onClick={() => handleRemoveProduct(product.id)}
-                  className="w-7 h-7 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
+                  className="w-7 h-7 rounded-lg text-muted hover:text-danger hover:bg-danger/15 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
                   title="حذف از لیست"
                   aria-label={`حذف ${product.name}`}
                 >
@@ -252,17 +252,17 @@ function ProductNewConfigurationPage() {
                 </button>
               </div>
 
-              <div className="h-px bg-slate-100" />
+              <div className="h-px bg-separator" />
 
               {/* 2. Meterage Controls: NumberField & Slider */}
               <div className="space-y-2.5">
                 <div className="flex items-center justify-between gap-2">
                   <div>
-                    <span className="text-xs font-bold text-slate-900 block leading-normal">
+                    <span className="text-xs font-bold text-foreground block leading-normal">
                       متراژ مورد نیاز:
                     </span>
-                    <span className="text-xs text-slate-500">
-                      هر کارتن: <strong className="font-bold text-slate-700">{toPersianDigits(product.sqmPerCarton)}</strong>
+                    <span className="text-xs text-muted">
+                      هر کارتن: <strong className="font-bold text-foreground">{toPersianDigits(product.sqmPerCarton)}</strong>
                     </span>
                   </div>
 
@@ -279,10 +279,10 @@ function ProductNewConfigurationPage() {
                         aria-label={`متراژ ${product.name}`}
                         className="w-28"
                       >
-                        <NumberField.Group className="!h-7.5 !min-h-0 !grid-cols-[26px_1fr_26px] rounded-lg border border-slate-200/90 bg-white shadow-2xs hover:border-slate-300 focus-within:!border-slate-400 focus-within:!ring-1 focus-within:!ring-slate-300 transition-colors">
-                          <NumberField.DecrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-slate-500 hover:text-slate-900 active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
-                          <NumberField.Input className="!text-xs font-bold text-center !px-0.5 !py-0 text-slate-900 !h-full" />
-                          <NumberField.IncrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-slate-500 hover:text-slate-900 active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
+                        <NumberField.Group className="!h-7.5 !min-h-0 !grid-cols-[26px_1fr_26px] rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
+                          <NumberField.DecrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
+                          <NumberField.Input className="!text-xs font-bold text-center !px-0.5 !py-0 text-foreground !h-full" />
+                          <NumberField.IncrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
                         </NumberField.Group>
                       </NumberField>
                     </I18nProvider>
@@ -312,18 +312,18 @@ function ProductNewConfigurationPage() {
                   </div>
 
                   {/* Presets */}
-                  <div className="flex justify-between items-center text-xs font-semibold text-slate-400 px-0.5">
+                  <div className="flex justify-between items-center text-xs font-semibold text-muted px-0.5">
                     <button
                       type="button"
                       onClick={() => handleAreaChange(product.id, 0, product.inventorySqm)}
-                      className="text-slate-500 hover:text-slate-800 transition-colors cursor-pointer"
+                      className="text-muted hover:text-foreground transition-colors cursor-pointer"
                     >
                       ۰
                     </button>
                     <button
                       type="button"
                       onClick={() => handleAreaChange(product.id, product.inventorySqm, product.inventorySqm)}
-                      className="text-slate-600 hover:text-slate-900 hover:underline cursor-pointer"
+                      className="text-muted hover:text-foreground hover:underline cursor-pointer"
                     >
                       سقف موجودی: {toPersianDigits(product.inventorySqm)}
                     </button>
@@ -332,54 +332,54 @@ function ProductNewConfigurationPage() {
               </div>
 
               {/* 3. Carton Calculation Metrics: 2x2 Clean Grid (Generous Space, No Crushing) */}
-              <div className="p-2.5 rounded-xl bg-slate-50/80 border border-slate-200/80 grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2.5 rounded-xl bg-default/10 border border-border grid grid-cols-2 gap-2 text-xs">
                 {/* 1. متراژ انتخابی */}
-                <div className="p-2 bg-white rounded-lg border border-slate-200/60 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60">
+                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                     <SolarRulerIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ انتخابی</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">متراژ انتخابی</span>
+                    <span className="font-bold text-foreground text-sm leading-normal truncate block">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* 2. تعداد کارتن */}
-                <div className="p-2 bg-white rounded-lg border border-slate-200/60 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60">
+                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                     <SolarBoxIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">تعداد کارتن</span>
-                    <span className="font-bold text-blue-700 text-sm leading-normal truncate block">
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">تعداد کارتن</span>
+                    <span className="font-bold text-primary text-sm leading-normal truncate block">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
                   </div>
                 </div>
 
                 {/* 3. متراژ تحویلی واقعی */}
-                <div className="p-2 bg-white rounded-lg border border-slate-200/60 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 border border-blue-100/60">
+                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
                     <SolarLayersIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">متراژ تحویلی</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate block">
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">متراژ تحویلی</span>
+                    <span className="font-bold text-foreground text-sm leading-normal truncate block">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* 4. مبلغ برآورد */}
-                <div className="p-2 bg-white rounded-lg border border-slate-200/60 flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-100/60">
+                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-md bg-success/15 text-success flex items-center justify-center shrink-0 border border-success/20">
                     <SolarTagIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-slate-500 font-medium block leading-tight mb-1">مبلغ برآورد</span>
-                    <span className="font-bold text-slate-900 text-sm leading-normal truncate inline-flex items-center gap-1">
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">مبلغ برآورد</span>
+                    <span className="font-bold text-foreground text-sm leading-normal truncate inline-flex items-center gap-1">
                       <span>{formatToman(calc.totalPrice)}</span>
                       <TomanIcon className="size-4" />
                     </span>
@@ -392,12 +392,12 @@ function ProductNewConfigurationPage() {
       </div>
 
       {/* Sticky Bottom Bar - ONLY "تایید" Button, Aligned with Container Width */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 backdrop-blur-md border-t border-slate-200/90 shadow-2xl z-40 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-surface/95 backdrop-blur-md border-t border-border shadow-2xl z-40 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
         <button
           type="button"
           onClick={() => setIsInvoiceOpen(true)}
           disabled={!totals.hasValidQuantities}
-          className="w-full h-12 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold flex items-center justify-center gap-2 shadow-lg transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
         >
           <span>تایید</span>
           <ArrowLeftIcon size={16} />

@@ -96,11 +96,11 @@ function CartPage() {
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
-            <ShoppingCartIcon size={20} className="text-blue-600" />
+          <h1 className="text-lg font-bold text-foreground flex items-center gap-1.5">
+            <ShoppingCartIcon size={20} className="text-primary" />
             <span>سبد خرید</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             بررسی اقلام و تکمیل سفارش
           </p>
         </div>
@@ -109,7 +109,7 @@ function CartPage() {
           <button
             type="button"
             onClick={clearCart}
-            className="text-xs font-semibold text-rose-600 hover:text-rose-700 flex items-center gap-1 cursor-pointer active:scale-95 transition-transform"
+            className="text-xs font-semibold text-danger hover:text-danger/80 flex items-center gap-1 cursor-pointer active:scale-95 transition-transform"
           >
             <Trash2Icon size={13} />
             <span>خالی کردن</span>
@@ -119,22 +119,22 @@ function CartPage() {
 
       {/* Main Cart Content */}
       {items.length === 0 ? (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-8 text-center max-w-lg mx-auto shadow-xs space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+        <div className="bg-surface border border-border rounded-2xl p-8 text-center max-w-lg mx-auto shadow-xs space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
             <ShoppingCartIcon size={28} />
           </div>
           <div>
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-foreground">
               سبد خرید خالی است
             </h3>
-            <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto leading-relaxed">
+            <p className="text-xs text-muted mt-1 max-w-xs mx-auto leading-relaxed">
               برای مشاهده و انتخاب کالاها به لیست محصولات مراجعه کنید.
             </p>
           </div>
           <div className="pt-2 flex flex-col gap-2">
             <Link
               to="/product"
-              className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold transition-all cursor-pointer shadow-xs"
+              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all cursor-pointer shadow-primary/20"
             >
               مشاهده محصولات
             </Link>
@@ -150,31 +150,31 @@ function CartPage() {
           </div>
 
           {/* Invoice Summary Card */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 shadow-xs space-y-2.5">
-            <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100">
+          <div className="bg-surface border border-border rounded-2xl p-3.5 shadow-xs space-y-2.5">
+            <h3 className="text-sm font-bold text-foreground pb-2 border-b border-separator">
               خلاصه صورت‌حساب
             </h3>
 
-            <div className="space-y-2 text-xs text-slate-600">
+            <div className="space-y-2 text-xs text-muted">
               <div className="flex justify-between">
                 <span>تعداد اقلام:</span>
-                <span className="font-bold text-slate-900">{toPersianDigits(itemCount)} ردیف</span>
+                <span className="font-bold text-foreground">{toPersianDigits(itemCount)} ردیف</span>
               </div>
 
               <div className="flex justify-between">
                 <span>مجموع متراژ:</span>
-                <span className="font-bold text-slate-900">{toPersianDigits(totalArea)} م²</span>
+                <span className="font-bold text-foreground">{toPersianDigits(totalArea)} م²</span>
               </div>
 
-              <div className="pt-1.5 border-t border-slate-100 flex justify-between">
+              <div className="pt-1.5 border-t border-separator flex justify-between">
                 <span>جمع اقلام:</span>
-                <span className="font-bold text-slate-900 inline-flex items-center gap-1">
+                <span className="font-bold text-foreground inline-flex items-center gap-1">
                   <span>{formatToman(subtotal)}</span>
                   <TomanIcon className="size-3.5" />
                 </span>
               </div>
 
-              <div className="flex justify-between text-emerald-700 font-bold">
+              <div className="flex justify-between text-success font-bold">
                 <span>تخفیف (۵٪):</span>
                 <span className="inline-flex items-center gap-1">
                   <span>- {formatToman(discountAmount)}</span>
@@ -184,24 +184,24 @@ function CartPage() {
 
               <div className="flex justify-between">
                 {/* <span>مالیات ارزش افزوده (۱۰٪):</span> */}
-                {/* <span className="font-medium text-slate-700 inline-flex items-center gap-1">
+                {/* <span className="font-medium text-foreground inline-flex items-center gap-1">
                   <span>{formatToman(taxAmount)}</span>
                   <TomanIcon className="size-3.5" />
                 </span> */}
               </div>
             </div>
 
-            <div className="pt-2 border-t-2 border-slate-200/80 flex items-baseline justify-between">
-              <span className="text-sm font-bold text-slate-900">مبلغ نهایی:</span>
-              <span className="text-lg font-bold text-blue-700 inline-flex items-center gap-1">
+            <div className="pt-2 border-t-2 border-border flex items-baseline justify-between">
+              <span className="text-sm font-bold text-foreground">مبلغ نهایی:</span>
+              <span className="text-lg font-bold text-primary inline-flex items-center gap-1">
                 <span>{formatToman(finalTotal)}</span>
                 <TomanIcon className="size-4" />
               </span>
             </div>
 
             {hasBlockingIssues && (
-              <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-1.5">
-                <AlertTriangleIcon size={15} className="text-rose-600 shrink-0" />
+              <div className="p-2.5 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs flex items-center gap-1.5">
+                <AlertTriangleIcon size={15} className="text-danger shrink-0" />
                 <span>کالاهای ناموجود را از سبد حذف کنید.</span>
               </div>
             )}
@@ -210,7 +210,7 @@ function CartPage() {
               type="button"
               onClick={() => setIsCheckoutModalOpen(true)}
               disabled={hasBlockingIssues || items.length === 0}
-              className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>ادامه ثبت سفارش</span>
               <ArrowRightIcon size={15} />
@@ -227,19 +227,19 @@ function CartPage() {
         isBottomSheetOnMobile={true}
       >
         <div className="space-y-4">
-          <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2 text-xs">
-            <div className="flex items-center gap-2 font-bold text-slate-900">
-              <StoreIcon size={16} className="text-blue-600" />
+          <div className="p-3.5 bg-default/10 border border-border rounded-xl space-y-2 text-xs">
+            <div className="flex items-center gap-2 font-bold text-foreground">
+              <StoreIcon size={16} className="text-primary" />
               <span>{user?.storeName || 'پخش بازرگانی پرشین پارت'}</span>
             </div>
-            <div className="flex items-start gap-2 text-slate-600">
-              <MapPinIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
+            <div className="flex items-start gap-2 text-muted">
+              <MapPinIcon size={16} className="text-muted mt-0.5 shrink-0" />
               <span>{user?.address || 'تهران، بزرگراه فتح، انبار مرکزی'}</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1 text-start">
+            <label className="block text-xs font-bold text-foreground mb-1 text-start">
               توضیحات سفارش (اختیاری):
             </label>
             <textarea
@@ -247,19 +247,19 @@ function CartPage() {
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
               placeholder="یادداشت تحویل یا هماهنگی..."
-              className="w-full p-3 rounded-xl border border-slate-300 focus:border-blue-600 text-xs text-slate-900 transition-all outline-hidden bg-slate-50/50"
+              className="w-full p-3 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-surface"
             />
           </div>
 
-          <div className="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl text-xs space-y-1">
-            <div className="flex justify-between font-bold text-emerald-900">
+          <div className="p-3 bg-success/15 border border-success/30 rounded-xl text-xs space-y-1">
+            <div className="flex justify-between font-bold text-foreground">
               <span>مبلغ نهایی:</span>
               <span className="text-sm font-bold inline-flex items-center gap-1">
                 <span>{formatToman(finalTotal)}</span>
                 <TomanIcon className="size-3.5" />
               </span>
             </div>
-            <div className="flex justify-between text-emerald-700 text-xs">
+            <div className="flex justify-between text-success text-xs">
               <span>شیوه پرداخت:</span>
               <span>اعتبار تجاری</span>
             </div>
@@ -269,7 +269,7 @@ function CartPage() {
             <button
               type="button"
               onClick={() => setIsCheckoutModalOpen(false)}
-              className="py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors cursor-pointer"
+              className="py-2.5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/20 transition-colors cursor-pointer"
             >
               بازگشت به سبد
             </button>
@@ -277,7 +277,7 @@ function CartPage() {
               type="button"
               onClick={handleCheckoutSubmit}
               disabled={isSubmitting}
-              className="py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <RefreshCwIcon size={16} className="animate-spin" />

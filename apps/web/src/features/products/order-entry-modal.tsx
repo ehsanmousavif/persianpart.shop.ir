@@ -72,26 +72,26 @@ export function OrderEntryModal({
     <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
       <HeroUIModal.Backdrop
         isDismissable
-        className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-backdrop-enter"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-backdrop-enter"
       >
         <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
-          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] z-10 border border-slate-200 overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start">
+          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] z-10 border border-border overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start">
             {/* Handle for mobile */}
             <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-slate-300" />
+              <div className="w-10 h-1 rounded-full bg-muted/40" />
             </div>
 
             {/* Header */}
-            <HeroUIModal.Header className="px-4 py-3 border-b border-slate-100 flex items-center justify-between shrink-0">
+            <HeroUIModal.Header className="px-4 py-3 border-b border-separator flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center font-bold">
                   <BoxIcon size={18} />
                 </div>
                 <div>
-                  <HeroUIModal.Heading className="text-sm font-bold text-slate-900">
+                  <HeroUIModal.Heading className="text-sm font-bold text-foreground">
                     تعیین متراژ و محاسبه کارتن
                   </HeroUIModal.Heading>
-                  <span className="text-xs text-slate-500 font-medium">
+                  <span className="text-xs text-muted font-medium">
                     فروش صرفاً بر مبنای کارتن کامل کارخانه
                   </span>
                 </div>
@@ -99,7 +99,7 @@ export function OrderEntryModal({
 
               <HeroUIModal.CloseTrigger
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 rounded-xl text-muted hover:text-foreground hover:bg-default/20 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="بستن پنجره سفارش"
               >
                 <XIcon size={18} />
@@ -109,11 +109,11 @@ export function OrderEntryModal({
             {/* Content Body */}
             <HeroUIModal.Body className="p-4 overflow-y-auto space-y-4 text-start">
               {/* Selected Product Summary Card */}
-              <div className="flex items-center gap-3 p-2.5 bg-slate-50 rounded-xl border border-slate-200/80">
+              <div className="flex items-center gap-3 p-2.5 bg-default/10 rounded-xl border border-border">
                 <img
                   src={product.images[0] || '/assets/images/placeholder.svg'}
                   alt={product.name}
-                  className="w-14 h-14 rounded-lg object-cover border border-slate-200 shrink-0"
+                  className="w-14 h-14 rounded-lg object-cover border border-border shrink-0"
                   onError={(e) => {
                     if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                       e.currentTarget.src = '/assets/images/placeholder.svg'
@@ -121,28 +121,28 @@ export function OrderEntryModal({
                   }}
                 />
                 <div className="flex-1 min-w-0">
-                  <span className="text-xs font-semibold text-blue-600 block">
+                  <span className="text-xs font-semibold text-primary block">
                     {product.brand} · {product.dimension}
                   </span>
-                  <h3 className="text-sm font-bold text-slate-900 truncate mt-0.5">
+                  <h3 className="text-sm font-bold text-foreground truncate mt-0.5">
                     {product.name}
                   </h3>
-                  <div className="text-xs text-slate-500 mt-0.5">
+                  <div className="text-xs text-muted mt-0.5">
                     موجودی انبار: <strong>{toPersianDigits(product.inventorySqm)}</strong> ({toPersianDigits(product.stockCartons)} کارتن)
                   </div>
                 </div>
                 <div className="text-end shrink-0">
-                  <span className="text-sm font-bold text-blue-700 inline-flex items-center gap-1 justify-end">
+                  <span className="text-sm font-bold text-primary inline-flex items-center gap-1 justify-end">
                     <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
                     <TomanIcon className="size-3.5" />
                   </span>
-                  <span className="text-xs text-slate-400 block">هر متر مربع</span>
+                  <span className="text-xs text-muted block">هر متر مربع</span>
                 </div>
               </div>
 
               {/* Customer Input: requestedSqm ONLY */}
               <div>
-                <label htmlFor={inputId} className="block text-xs font-bold text-slate-800 mb-1.5">
+                <label htmlFor={inputId} className="block text-xs font-bold text-foreground mb-1.5">
                   متراژ درخواستی (ارسال صرفاً بر اساس متر مربع):
                 </label>
                 <div className="relative">
@@ -154,22 +154,22 @@ export function OrderEntryModal({
                     value={requestedArea || ''}
                     onChange={(e) => handleAreaChange(e.target.value)}
                     placeholder="مثال: ۳۵"
-                    className="w-full h-12 px-3.5 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold text-lg text-start transition-all outline-hidden bg-white"
+                    className="w-full h-12 px-3.5 rounded-xl border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 text-foreground font-bold text-lg text-start transition-all outline-hidden bg-surface"
                   />
-                  <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 pointer-events-none">
+                  <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted pointer-events-none">
                     متر مربع
                   </span>
                 </div>
 
                 {/* Quick Add Presets in Meters only */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                  <span className="text-xs text-slate-500 font-medium">افزودن سریع:</span>
+                  <span className="text-xs text-muted font-medium">افزودن سریع:</span>
                   {[5, 10, 25, 50, 100].map((preset) => (
                     <button
                       key={preset}
                       type="button"
                       onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 text-xs font-semibold text-slate-700 transition-all cursor-pointer active:scale-95 shadow-xs"
+                      className="px-2.5 py-1 rounded-lg bg-default/15 hover:bg-default/30 border border-border text-xs font-semibold text-foreground transition-all cursor-pointer active:scale-95 shadow-xs"
                     >
                       +{toPersianDigits(preset)} متر
                     </button>
@@ -179,15 +179,15 @@ export function OrderEntryModal({
 
               {/* Round-Up Warning Alert */}
               {!calc.isExactMultiple && calc.requestedArea > 0 && (
-                <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-1.5 shadow-xs animate-in fade-in">
-                  <div className="flex items-center gap-2 font-bold text-amber-950">
-                    <AlertTriangleIcon size={16} className="text-amber-600 shrink-0" />
+                <div className="p-3.5 rounded-2xl bg-warning/15 border border-warning/30 text-warning-foreground text-xs space-y-1.5 shadow-xs animate-in fade-in">
+                  <div className="flex items-center gap-2 font-bold text-foreground">
+                    <AlertTriangleIcon size={16} className="text-warning shrink-0" />
                     <span>هشدار رُند شدن به بالا (بسته‌بندی کارخانه‌ای)</span>
                   </div>
-                  <p className="text-xs leading-relaxed text-amber-900">
+                  <p className="text-xs leading-relaxed text-foreground">
                     متراژ انتخابی شما ({toPersianDigits(calc.requestedArea)} متر) مضرب کاملی از بسته‌بندی کارخانه نیست.
                     جهت حفظ سلامت قطعات و بسته‌بندی کارخانه‌ای، مقدار به اندازه{' '}
-                    <strong className="text-amber-950 font-black underline decoration-amber-400">
+                    <strong className="text-foreground font-black underline decoration-warning">
                       {toPersianDigits(calc.extraArea)} متر مربع به بالا رُند شد
                     </strong>{' '}
                     و مجموعاً <strong>{toPersianDigits(calc.deliverableArea)} متر مربع</strong> ({toPersianDigits(calc.cartonCount)} کارتن پلمپ) به مبلغ کل{' '}
@@ -201,54 +201,54 @@ export function OrderEntryModal({
               )}
 
               {/* Carton Calculation Live Preview */}
-              <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-200/70 text-xs">
-                  <span className="font-bold text-slate-800">پیش‌نمایش محاسبه هوشمند کارتن</span>
-                  <span className="text-xs font-medium text-slate-500">
+              <div className="bg-default/10 border border-border rounded-2xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between pb-2 border-b border-separator text-xs">
+                  <span className="font-bold text-foreground">پیش‌نمایش محاسبه هوشمند کارتن</span>
+                  <span className="text-xs font-medium text-muted">
                     هر کارتن = {toPersianDigits(product.sqmPerCarton)}
                   </span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                    <span className="text-xs text-slate-500 block mb-0.5">مقدار درخواستی</span>
-                    <span className="font-bold text-slate-900">
+                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                    <span className="text-xs text-muted block mb-0.5">مقدار درخواستی</span>
+                    <span className="font-bold text-foreground">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
                   </div>
 
-                  <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                    <span className="text-xs text-slate-500 block mb-0.5">تعداد کارتن</span>
-                    <span className="font-bold text-blue-700">
+                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                    <span className="text-xs text-muted block mb-0.5">تعداد کارتن</span>
+                    <span className="font-bold text-primary">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
                   </div>
 
-                  <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                    <span className="text-xs text-slate-500 block mb-0.5">مقدار واقعی تحویلی</span>
-                    <span className="font-bold text-slate-900">
+                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                    <span className="text-xs text-muted block mb-0.5">مقدار واقعی تحویلی</span>
+                    <span className="font-bold text-foreground">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
 
-                  <div className="bg-white p-2.5 rounded-xl border border-slate-200/80 shadow-xs">
-                    <span className="text-xs text-slate-500 block mb-0.5">مازاد بر درخواست</span>
-                    <span className="font-bold text-slate-600">
+                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                    <span className="text-xs text-muted block mb-0.5">مازاد بر درخواست</span>
+                    <span className="font-bold text-muted">
                       +{toPersianDigits(calc.extraArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* Price Preview */}
-                <div className="pt-2 border-t border-slate-200/70 flex items-baseline justify-between">
+                <div className="pt-2 border-t border-separator flex items-baseline justify-between">
                   <div>
-                    <span className="text-xs text-slate-500 block">مبلغ کل ردیف (بر اساس متراژ تحویلی):</span>
-                    <span className="text-xs text-slate-600 inline-flex items-center gap-1">
+                    <span className="text-xs text-muted block">مبلغ کل ردیف (بر اساس متراژ تحویلی):</span>
+                    <span className="text-xs text-muted inline-flex items-center gap-1">
                       <span>{toPersianDigits(calc.deliverableArea)} × {formatToman(product.finalCustomerPricePerSqm)}</span>
                       <TomanIcon className="size-3" />
                     </span>
                   </div>
-                  <span className="text-base font-bold text-emerald-700 inline-flex items-center gap-1">
+                  <span className="text-base font-bold text-success inline-flex items-center gap-1">
                     <span>{formatToman(calc.totalPrice)}</span>
                     <TomanIcon className="size-4" />
                   </span>
@@ -257,30 +257,30 @@ export function OrderEntryModal({
 
               {/* Inventory Validation & Alerts */}
               {isOutOfStock ? (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2">
-                  <AlertTriangleIcon size={16} className="text-rose-600 shrink-0" />
+                <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs flex items-center gap-2">
+                  <AlertTriangleIcon size={16} className="text-danger shrink-0" />
                   <span className="font-bold">این کالا در حال حاضر در انبار ناموجود است.</span>
                 </div>
               ) : calc.isExceedingStock ? (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs space-y-1.5">
+                <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs space-y-1.5">
                   <div className="flex items-center gap-2 font-bold">
-                    <AlertTriangleIcon size={16} className="text-rose-600 shrink-0" />
+                    <AlertTriangleIcon size={16} className="text-danger shrink-0" />
                     <span>موجودی کافی نیست!</span>
                   </div>
-                  <p className="text-xs text-rose-700 leading-relaxed">
+                  <p className="text-xs text-danger leading-relaxed">
                     {calc.errorMessage}
                   </p>
                   <button
                     type="button"
                     onClick={() => setRequestedArea(calc.maxDeliverableSqm)}
-                    className="text-xs font-semibold text-rose-900 underline cursor-pointer"
+                    className="text-xs font-bold text-danger underline cursor-pointer"
                   >
                     تنظیم سفارش بر روی حداکثر موجودی ({toPersianDigits(calc.maxDeliverableSqm)})
                   </button>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-                  <CheckCircle2Icon size={16} className="text-emerald-600 shrink-0" />
+                <div className="p-2.5 rounded-xl bg-success/15 border border-success/30 text-success text-xs flex items-center gap-2">
+                  <CheckCircle2Icon size={16} className="text-success shrink-0" />
                   <span className="font-medium">
                     سهمیه تحویل فوری موجود است ({toPersianDigits(product.stockCartons)} کارتن در انبار).
                   </span>
@@ -293,7 +293,7 @@ export function OrderEntryModal({
                   type="button"
                   onClick={handleAddToCart}
                   disabled={isOutOfStock || calc.isExceedingStock || calc.cartonCount <= 0 || isAdding}
-                  className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCartIcon size={18} />
                   <span>

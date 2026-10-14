@@ -18,12 +18,19 @@ import { Plans } from './collections/Plans'
 import { Dimensions } from './collections/Dimensions'
 import { CustomerTypes } from './collections/CustomerTypes'
 
+import { fa } from '@payloadcms/translations/languages/fa'
+import { en } from '@payloadcms/translations/languages/en'
+
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const databaseUri = process.env.DATABASE_URI || process.env.DATABASE_URL || ''
 
 export default buildConfig({
+  i18n: {
+    fallbackLanguage: 'fa',
+    supportedLanguages: { fa, en },
+  },
   admin: {
     user: Admins.slug,
     importMap: {

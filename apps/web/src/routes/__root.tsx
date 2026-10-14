@@ -47,12 +47,27 @@ function RootComponent() {
 
   return (
     <NuqsAdapter>
-      <div className="min-h-screen bg-black flex justify-center selection:bg-slate-200 selection:text-slate-900" dir="rtl">
-        <div className="w-full max-w-xl min-h-screen bg-slate-50 text-slate-900 font-sans antialiased flex flex-col shadow-xl relative border-x border-slate-200/90">
+      <div
+        className={`bg-white flex justify-center selection:bg-primary/20 selection:text-foreground ${
+          isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-screen'
+        }`}
+        dir="rtl"
+      >
+        <div
+          className={`w-full bg-white text-foreground font-sans antialiased flex flex-col ${
+            isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-screen'
+          }`}
+        >
           <AppHeader />
-
+          <ToastContainer />
           {/* Main App Content Area */}
-          <main className={`flex-1 w-full ${isLoginPage ? 'pb-6' : 'pb-12'}`}>
+          <main
+            className={
+              isLoginPage
+                ? 'flex-1 w-full flex flex-col overflow-hidden relative'
+                : 'flex-1 max-w-xl mx-auto w-full pb-12'
+            }
+          >
             <Outlet />
           </main>
 
@@ -60,7 +75,7 @@ function RootComponent() {
           {!isLoginPage && <MobileBottomNav />}
 
           {/* Global Toast Notification Container */}
-          <ToastContainer />
+      
         </div>
       </div>
     </NuqsAdapter>

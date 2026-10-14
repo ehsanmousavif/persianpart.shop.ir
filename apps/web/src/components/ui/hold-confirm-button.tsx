@@ -94,19 +94,19 @@ export function HoldConfirmButton({
         onPointerLeave={stopHolding}
         onPointerCancel={stopHolding}
         onContextMenu={(e) => e.preventDefault()}
-        className={`relative w-50 whitespace-pre-wrap  h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between shadow-= cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
+        className={`relative w-50 whitespace-pre-wrap h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
           isConfirmed
-            ? 'bg-emerald-600 border-emerald-600 text-white shadow-emerald-500/25 shadow-lg'
+            ? 'bg-success border-success text-success-foreground shadow-success/25 shadow-lg'
             : isHolding
-            ? 'bg-emerald-50 border-emerald-500 text-emerald-950 scale-[0.99]'
-            : 'bg-emerald-50/90 hover:bg-emerald-100/80 border-emerald-400/80 text-emerald-900 hover:border-emerald-500'
+            ? 'bg-success/15 border-success text-foreground scale-[0.99]'
+            : 'bg-success/10 hover:bg-success/20 border-success/40 text-foreground hover:border-success'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
         aria-label={isConfirmed ? confirmedText : idleText}
       >
         {/* Animated Background Progress Fill (RTL Start-to-End Fill) */}
         {!isConfirmed && (
           <div
-            className="absolute inset-y-0 start-0 bg-emerald-400/60 transition-[width] ease-linear pointer-events-none"
+            className="absolute inset-y-0 start-0 bg-success/40 transition-[width] ease-linear pointer-events-none"
             style={{
               width: `${progress}%`,
               transitionDuration: isHolding ? '50ms' : '200ms',
@@ -129,10 +129,10 @@ export function HoldConfirmButton({
             <div
               className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs transition-all duration-500 ${
                 isConfirmed
-                  ? 'bg-white text-emerald-700 rotate-[360deg] scale-110'
+                  ? 'bg-surface text-success rotate-[360deg] scale-110'
                   : isHolding
-                  ? 'bg-emerald-500 text-white scale-105'
-                  : 'bg-emerald-200/80 text-emerald-900'
+                  ? 'bg-success text-success-foreground scale-105'
+                  : 'bg-success/20 text-success'
               } ${isSpinning ? 'rotate-[360deg]' : ''}`}
             >
               {isConfirmed ? (

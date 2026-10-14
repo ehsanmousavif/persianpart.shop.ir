@@ -26,11 +26,11 @@ function CustomerPlansPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
-          <h1 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
-            <ClipboardListIcon size={20} className="text-blue-600" />
+          <h1 className="text-lg font-bold text-foreground flex items-center gap-1.5">
+            <ClipboardListIcon size={20} className="text-primary" />
             <span>طرح‌ها</span>
           </h1>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-muted mt-1">
             طرح‌های تشویقی و تخفیف‌های فعال حساب شما
           </p>
         </div>
@@ -38,7 +38,7 @@ function CustomerPlansPage() {
         <button
           type="button"
           onClick={() => refresh?.()}
-          className="h-8.5 px-3 rounded-xl border border-slate-200/90 hover:bg-white text-slate-600 text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer shrink-0"
+          className="h-8.5 px-3 rounded-xl border border-border hover:bg-surface text-foreground text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs cursor-pointer shrink-0"
         >
           <RefreshCwIcon size={13} />
           <span>بروزرسانی</span>
@@ -46,15 +46,15 @@ function CustomerPlansPage() {
       </div>
 
       {/* Control Bar: Filter Tabs */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-2 shadow-xs">
+      <div className="bg-surface border border-border rounded-2xl p-2 shadow-xs">
         <ScrollShadow orientation="horizontal" className="w-full flex items-center gap-1.5 no-scrollbar">
           <button
             type="button"
             onClick={() => setFilterMode('all')}
             className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               filterMode === 'all'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-foreground text-background shadow-xs'
+                : 'bg-default/15 text-muted hover:bg-default/30'
             }`}
           >
             همه ({toPersianDigits(plans.length)})
@@ -64,8 +64,8 @@ function CustomerPlansPage() {
             onClick={() => setFilterMode('active')}
             className={`h-7.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
               filterMode === 'active'
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-success text-success-foreground shadow-xs'
+                : 'bg-default/15 text-muted hover:bg-default/30'
             }`}
           >
             طرح‌های فعال ({toPersianDigits(plans.filter((p) => p.status === 'active' || p.isActive).length)})
@@ -75,33 +75,33 @@ function CustomerPlansPage() {
 
       {/* Plans List */}
       {isLoading && plans.length === 0 ? (
-        <div className="space-y-3.5">
+        <div className="grid grid-cols-1 gap-4 items-stretch">
           <PlanCardSkeleton />
           <PlanCardSkeleton />
         </div>
       ) : filteredPlans.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-3 shadow-xs">
-          <div className="w-14 h-14 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto border border-blue-100">
+        <div className="bg-surface border border-border rounded-3xl p-8 text-center space-y-3 shadow-xs">
+          <div className="w-14 h-14 rounded-2xl bg-primary/15 text-primary flex items-center justify-center mx-auto border border-primary/20">
             <SparklesIcon size={26} />
           </div>
           <div className="space-y-1 max-w-sm mx-auto">
-            <h3 className="text-sm font-bold text-slate-900">
+            <h3 className="text-sm font-bold text-foreground">
               طرح فعالی یافت نشد
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-muted leading-relaxed">
               در حال حاضر طرح یا تخفیف فعالی برای حساب شما وجود ندارد.
             </p>
           </div>
           <Link
             to="/product"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800"
+            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90"
           >
             <span>مشاهده محصولات</span>
             <ArrowLeftIcon size={14} />
           </Link>
         </div>
       ) : (
-        <div className="space-y-3.5">
+        <div className="grid grid-cols-1 gap-4 items-stretch">
           {filteredPlans.map((plan) => (
             <PlanCard
               key={plan.id}

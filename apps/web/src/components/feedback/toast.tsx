@@ -16,6 +16,6 @@ export const toast = {
 }
 
 export function ToastContainer() {
-  return <Toast.Provider placement="bottom" className="bottom-20 sm:bottom-6 z-50" />
+  return <Toast.Provider placement="top" className="bottom-20 sm:bottom-6 text-right z-50" dir="rtl" />
 }
 

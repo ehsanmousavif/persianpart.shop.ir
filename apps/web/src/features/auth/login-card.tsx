@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { InputOTP } from '@heroui/react'
 import { useAuth } from './auth-store'
 import { toast } from '../../components/feedback/toast'
-import { PhoneIcon, ArrowLeftIcon, RefreshCwIcon, AlertCircleIcon, ShieldCheckIcon } from '../../components/ui/icons'
+import { PhoneIcon, ArrowLeftIcon, RefreshCwIcon, AlertCircleIcon } from '../../components/ui/icons'
 import { toPersianDigits } from '../../lib/utils/currency'
 
 export function LoginCard() {
@@ -98,24 +98,21 @@ export function LoginCard() {
   }
 
   return (
-    <div className="w-full bg-white border border-slate-200/90 rounded-2xl shadow-xs p-4">
+    <div className="w-full bg-surface rounded-2xl  py-4 p-4 max-w-2xl flex flex-col gap-2">
       {/* Header */}
-      <div className="text-center mb-5">
-        <div className="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center mx-auto mb-2.5 shadow-xs">
-          <ShieldCheckIcon size={22} />
-        </div>
-        <h2 className="text-base font-bold text-slate-900">
-          ورود به حساب کاربری
+      <div className="mb-5">
+        <h2 className="text-xl font-bold text-primary text-center">
+        ورود به حساب کاربری
         </h2>
-        <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-          سفارش‌گذاری پرشین‌پارت
+        <p className="text-base text-primary/70 mt-3 leading-relaxed text-right">
+          پرشین‌پارت؛ مرجع تخصصی تأمین و سفارش کاشی و سرامیک، با دسترسی به محصولات، قیمت‌گذاری شفاف و مدیریت آسان سفارش‌ها.
         </p>
       </div>
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="mb-4 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2 animate-in fade-in">
-          <AlertCircleIcon size={16} className="shrink-0 text-rose-600 mt-0.5" />
+        <div className="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/25 text-danger text-sm flex items-start gap-2 animate-in fade-in">
+          <AlertCircleIcon size={18} className="shrink-0 text-danger mt-0.5" />
           <span className="leading-relaxed font-medium">{errorMessage}</span>
         </div>
       )}
@@ -123,23 +120,32 @@ export function LoginCard() {
       {step === 'phone' ? (
         <form onSubmit={handleSendPhone} className="space-y-3.5">
           <div>
-            <label htmlFor="phone" className="block text-xs font-bold text-slate-700 mb-1.5 text-start">
+            <label htmlFor="phone" className="block text-primary/80 text-sm font-bold mb-1.5 text-right">
               شماره همراه:
             </label>
             <div className="relative">
               <input
                 id="phone"
                 type="tel"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  const cleaned = e.target.value
+                    .replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
+                    .replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString())
+                    .replace(/\D/g, '')
+                    .slice(0, 11)
+                  setPhone(cleaned)
+                }}
                 placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                 dir="ltr"
-                className="w-full h-11 px-3.5 ps-10 rounded-xl border border-slate-300 focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 text-slate-900 font-bold tracking-wider text-base text-start transition-all outline-hidden"
+                className="w-full h-12 px-4 rounded-xl border border-border bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 text-foreground font-bold tracking-wider text-lg text-start transition-all outline-hidden"
                 disabled={isLoading}
               />
-              <PhoneIcon size={18} className="absolute start-3 top-3 text-slate-400 pointer-events-none" />
+              <PhoneIcon size={18} className="absolute start-4 top-4 text-muted pointer-events-none" />
             </div>
-            <p className="text-xs text-slate-500 mt-1.5 text-start leading-relaxed">
+            <p className="text-sm text-primary/80 font-semibold mt-1.5 text-right leading-relaxed">
               کد تأیید به این شماره ارسال می‌شود.
             </p>
           </div>
@@ -147,24 +153,24 @@ export function LoginCard() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-blue-600/20 cursor-pointer disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-base flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/20 cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
-              <RefreshCwIcon className="w-4 h-4 animate-spin" />
+              <RefreshCwIcon className="w-5 h-5 animate-spin" />
             ) : (
               <>
                 <span>دریافت کد تأیید ورود</span>
-                <ArrowLeftIcon size={15} />
+                <ArrowLeftIcon size={16} />
               </>
             )}
           </button>
         </form>
       ) : (
         <div className="space-y-4">
-          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-            <div className="text-start">
-              <span className="text-xs text-slate-500 block">ارسال کد به شماره:</span>
-              <span className="text-sm font-extrabold text-slate-900" dir="ltr">
+          <div className="p-3 bg-default/15 border border-border rounded-xl flex items-center justify-between">
+            <div className="text-right">
+              <span className="text-sm text-muted block">ارسال کد به شماره:</span>
+              <span className="text-base font-extrabold text-foreground" dir="ltr">
                 {toPersianDigits(phone)}
               </span>
             </div>
@@ -174,48 +180,48 @@ export function LoginCard() {
                 setStep('phone')
                 setErrorMessage(null)
               }}
-              className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
+              className="text-sm font-bold text-primary hover:opacity-80 cursor-pointer"
             >
               ویرایش شماره
             </button>
           </div>
 
           <div className="w-full">
-            <label className="block text-xs font-bold text-slate-700 mb-2.5 text-start">
+            <label className="block text-sm font-bold text-foreground mb-2.5 text-right">
               کد تأیید ۵ رقمی:
             </label>
-            <div className="flex  w-full justify-center items-center py-1" dir="ltr">
+            <div className="flex w-full justify-center items-center py-1" dir="ltr">
               <InputOTP
                 maxLength={5}
                 value={otpCode}
                 onChange={setOtpCode}
                 onComplete={(code) => handleVerifyOtp(code)}
                 isDisabled={isLoading}
-                className="w-full max-w-[300px] "
+                className="w-full max-w-[300px]"
                 autoFocus
               >
                 <InputOTP.Group className="gap-2 sm:gap-2.5 flex justify-center">
-                  <InputOTP.Slot index={0} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={1} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={2} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={3} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
-                  <InputOTP.Slot index={4} className="size-15 text-xl font-bold rounded-xl border border-slate-300" />
+                  <InputOTP.Slot index={0} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
+                  <InputOTP.Slot index={1} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
+                  <InputOTP.Slot index={2} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
+                  <InputOTP.Slot index={3} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
+                  <InputOTP.Slot index={4} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
                 </InputOTP.Group>
               </InputOTP>
             </div>
           </div>
 
           {/* Timer and Resend */}
-          <div className="flex items-center justify-between text-xs">
+          <div className="flex items-center justify-between text-sm">
             {countdown > 0 ? (
-              <span className="text-slate-500 font-medium">
-                ارسال مجدد تا: <strong className="text-slate-800">{formatTimer(countdown)}</strong>
+              <span className="text-muted font-medium">
+                ارسال مجدد تا: <strong className="text-foreground">{formatTimer(countdown)}</strong>
               </span>
             ) : (
               <button
                 type="button"
                 onClick={() => handleSendPhone()}
-                className="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                className="text-primary hover:opacity-80 font-bold flex items-center gap-1 cursor-pointer text-sm"
               >
                 <RefreshCwIcon size={14} />
                 <span>ارسال مجدد کد</span>
@@ -227,7 +233,7 @@ export function LoginCard() {
             type="button"
             onClick={() => handleVerifyOtp()}
             disabled={isLoading || otpCode.length !== 5}
-            className="w-full h-12 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md shadow-blue-500/20 cursor-pointer disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 transition-all shadow-md shadow-primary/20 cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-5 h-5 animate-spin" />

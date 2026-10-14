@@ -133,15 +133,15 @@ function ProductListPage() {
             value={filters.searchQuery}
             onChange={(e) => setFilter('searchQuery', e.target.value)}
             placeholder="جستجوی کالا، کد یا برند..."
-            className="w-full h-13 px-3 ps-9 placeholder:font-bold placeholder:text-[12px] rounded-[12px] bg-white border border-slate-200/90 focus:border-slate-800 text-xs font-semibold text-slate-900 transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
+            className="w-full h-13 px-3 ps-9 placeholder:font-bold placeholder:text-[12px] rounded-[12px] bg-surface border border-border focus:border-primary text-xs font-semibold text-foreground transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
             aria-label="جستجوی سریع محصولات"
           />
-          <SearchIcon size={16} className="absolute start-3 top-4 text-slate-400 pointer-events-none" />
+          <SearchIcon size={16} className="absolute start-3 top-4 text-muted pointer-events-none" />
           {filters.searchQuery && (
             <button
               type="button"
               onClick={() => setFilter('searchQuery', '')}
-              className="absolute end-2.5  top-2.5 w-6 h-6 rounded-[12px] text-slate-400 hover:text-slate-700 flex items-center justify-center cursor-pointer"
+              className="absolute end-2.5  top-2.5 w-6 h-6 rounded-[12px] text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
               aria-label="پاک کردن متن جستجو"
             >
               <XIcon size={14} />
@@ -154,13 +154,13 @@ function ProductListPage() {
           onClick={() => setIsFilterOpen(true)}
           className={` px-4 rounded-[12px] border font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95 shadow-2xs ${
             activeFilterCount > 0
-              ? 'bg-blue-50 border-blue-600 text-blue-700'
-              : 'bg-white border-slate-200/90 text-slate-700 hover:bg-slate-50'
+              ? 'bg-primary/15 border-primary text-primary'
+              : 'bg-surface border-border text-foreground hover:bg-default/20'
           }`}
         >
           <FilterIcon size={15} />
           {activeFilterCount > 0 && (
-            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-blue-600 text-white text-xs font-bold flex items-center justify-center shadow-xs">
+            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-xs">
               {toPersianDigits(activeFilterCount)}
             </span>
           )}
@@ -187,8 +187,8 @@ function ProductListPage() {
               id="all"
               className={`h-10 w-fit px-4 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
                 !filters.selectedDimension
-                  ? 'bg-slate-900 border-slate-900 text-white'
-                  : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  ? 'bg-foreground border-foreground text-background'
+                  : 'bg-surface border-border text-muted hover:bg-default/20 hover:text-foreground'
               }`}
             >
               همه
@@ -201,8 +201,8 @@ function ProductListPage() {
                   id={dim}
                   className={`h-10 px-4 w-fit rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
                     isSelected
-                      ? 'bg-slate-900 border-slate-900 text-white'
-                      : 'bg-white border-slate-200/90 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                      ? 'bg-foreground border-foreground text-background'
+                      : 'bg-surface border-border text-muted hover:bg-default/20 hover:text-foreground'
                   }`}
                 >
                   {toPersianDigits(dim)}
@@ -223,13 +223,13 @@ function ProductListPage() {
       {/* Status & Active Count */}
       <div className="flex items-center justify-between gap-2 px-1 py-1 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-slate-900">لیست محصولات</span>
+          <span className="text-sm font-bold text-foreground">لیست محصولات</span>
         
           {activeFilterCount > 0 && (
             <button
               type="button"
               onClick={resetFilters}
-              className="text-xs font-semibold text-rose-600 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-danger hover:underline cursor-pointer"
             >
               پاک کردن فیلترها ({toPersianDigits(activeFilterCount)})
             </button>
@@ -245,20 +245,20 @@ function ProductListPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center my-4 space-y-2.5 shadow-xs">
-          <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mx-auto">
+        <div className="bg-surface border border-border rounded-2xl p-8 text-center my-4 space-y-2.5 shadow-xs">
+          <div className="w-12 h-12 rounded-xl bg-default/20 text-muted flex items-center justify-center mx-auto">
             <BoxIcon size={24} />
           </div>
-          <h3 className="text-sm font-extrabold text-slate-900">
+          <h3 className="text-sm font-extrabold text-foreground">
             محصولی با این مشخصات یافت نشد
           </h3>
-          <p className="text-xs text-slate-500 max-w-xs mx-auto leading-relaxed">
+          <p className="text-xs text-muted max-w-xs mx-auto leading-relaxed">
             با تغییر یا حذف فیلترها، مجدداً جستجو کنید.
           </p>
           <button
             type="button"
             onClick={resetFilters}
-            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors cursor-pointer"
           >
             <RefreshCwIcon size={13} />
             <span>پاک کردن فیلترها</span>
@@ -303,7 +303,7 @@ function ProductListPage() {
                         setIsLoadingMore(false)
                       }, LOAD_MORE_DELAY_MS)
                     }}
-                    className="text-xs text-blue-600 hover:text-blue-700 font-bold py-2 px-4 rounded-xl bg-blue-50/70 hover:bg-blue-50 transition-all cursor-pointer"
+                    className="text-xs text-primary hover:text-primary/90 font-bold py-2 px-4 rounded-xl bg-primary/15 hover:bg-primary/25 transition-all cursor-pointer"
                   >
                     نمایش بیشتر ({toPersianDigits(products.length - displayLimit)} کالا)
                   </button>
@@ -313,9 +313,9 @@ function ProductListPage() {
           )}
 
           {!hasMore && products.length > INITIAL_BATCH_SIZE && (
-            <div className="py-6 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
-              <div className="h-px w-12 bg-slate-200" />
-              <div className="h-px w-12 bg-slate-200" />
+            <div className="py-6 text-center text-xs text-muted flex items-center justify-center gap-2">
+              <div className="h-px w-12 bg-border" />
+              <div className="h-px w-12 bg-border" />
             </div>
           )}
         </div>
@@ -327,13 +327,13 @@ function ProductListPage() {
           <Link
             to="/product/new"
             aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedCount)} محصول انتخاب شده`}
-            className="h-12 px-5 rounded-full bg-slate-950/95 backdrop-blur-md text-white flex items-center gap-3 shadow-2xl border border-slate-800 ring-1 ring-white/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-slate-900"
+            className="h-12 px-5 rounded-full bg-foreground/95 backdrop-blur-md text-background flex items-center gap-3 shadow-2xl border border-border ring-1 ring-background/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-foreground"
           >
-            <span className="min-w-6 h-6 px-1.5 rounded-full bg-emerald-500 text-slate-950 font-bold text-xs flex items-center justify-center shadow-xs">
+            <span className="min-w-6 h-6 px-1.5 rounded-full bg-success text-success-foreground font-bold text-xs flex items-center justify-center shadow-xs">
               {toPersianDigits(selectedCount)}
             </span>
             <span className="text-sm font-bold">ثبت سفارش</span>
-            <ArrowLeftIcon size={16} className="text-slate-200" />
+            <ArrowLeftIcon size={16} className="text-background/80" />
           </Link>
         </div>
       )}

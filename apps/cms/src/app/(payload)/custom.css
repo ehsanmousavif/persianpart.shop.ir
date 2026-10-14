@@ -1,4 +1,576 @@
-/* PersianPart Payload CMS custom styles */
-body{
-direction: rtl;    
+/* ==========================================================================
+   PersianPart 2.0 — Payload CMS Minimalist Theme (payloadcms.com Standard)
+   - Architectural Reference: Authentic Payload CMS Design Language
+   - Principles: Anti-slop, Monochromatic, Hairline Borders, Precision Radii
+   - Typography: Vazirmatn Variable, Native RTL Flow
+   ========================================================================== */
+
+@import "@fontsource-variable/vazirmatn/index.css";
+
+/* --------------------------------------------------------------------------
+   1. TOKENS & SYSTEM VARIABLES
+   -------------------------------------------------------------------------- */
+:root {
+  --font-body: 'Vazirmatn Variable', 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'SF Mono', Menlo, Consolas, Monaco, monospace;
+  font-family: var(--font-body);
+
+  /* Payload CMS Engineered Precision Radii */
+  --style-radius-s: 4px;
+  --style-radius-m: 6px;
+  --style-radius-l: 8px;
+  --border-radius: 6px;
+
+  /* Monochromatic Zinc Light Palette */
+  --theme-bg: #ffffff;
+  --theme-input-bg: #ffffff;
+  --theme-text: #09090b;
+  --theme-elevation-0: #ffffff;
+  --theme-elevation-50: #fafafa;
+  --theme-elevation-100: #f4f4f5;
+  --theme-elevation-150: #e4e4e7;
+  --theme-elevation-200: #d4d4d8;
+  --theme-elevation-250: #c4c4c9;
+  --theme-elevation-300: #a1a1aa;
+  --theme-elevation-400: #71717a;
+  --theme-elevation-500: #52525b;
+  --theme-elevation-600: #3f3f46;
+  --theme-elevation-700: #27272a;
+  --theme-elevation-800: #18181b;
+  --theme-elevation-900: #0f0f11;
+  --theme-elevation-1000: #000000;
+}
+
+[data-theme='dark'] {
+  /* Payload CMS Signature Obsidian Dark Palette */
+  --style-radius-s: 4px;
+  --style-radius-m: 6px;
+  --style-radius-l: 8px;
+  --border-radius: 6px;
+
+  --theme-bg: #09090b;
+  --theme-input-bg: #09090b;
+  --theme-text: #f4f4f5;
+  --theme-elevation-0: #09090b;
+  --theme-elevation-50: #121214;
+  --theme-elevation-100: #18181b;
+  --theme-elevation-150: #222226;
+  --theme-elevation-200: #27272a;
+  --theme-elevation-250: #333338;
+  --theme-elevation-300: #3f3f46;
+  --theme-elevation-400: #52525b;
+  --theme-elevation-500: #71717a;
+  --theme-elevation-600: #a1a1aa;
+  --theme-elevation-700: #d4d4d8;
+  --theme-elevation-800: #e4e4e7;
+  --theme-elevation-900: #f4f4f5;
+  --theme-elevation-1000: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   2. GLOBAL RESET & PERSIAN TYPOGRAPHY
+   -------------------------------------------------------------------------- */
+html,
+body,
+button,
+input,
+textarea,
+select,
+.app-header,
+.nav,
+.dashboard,
+.btn,
+.card,
+.field-type,
+.table,
+.modal,
+.drawer,
+.popup,
+.tooltip {
+  font-family: var(--font-body) !important;
+  direction: rtl;
+  letter-spacing: 0 !important;
+}
+
+body {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  background-color: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+/* Eliminate harsh AI-slop glows or bulky shadows across the board */
+* {
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------------------------
+   3. PRECISION RADIUS SYSTEM (4px / 6px / 8px)
+   -------------------------------------------------------------------------- */
+/* Buttons & interactive controls: 6px */
+.btn,
+.btn--size-small,
+.btn--size-medium,
+.btn--size-large,
+.btn--style-primary,
+.btn--style-secondary,
+.btn--style-subtle,
+.btn--style-pill {
+  border-radius: 6px !important;
+  font-family: var(--font-body) !important;
+}
+
+/* Inputs & Form fields: 6px */
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select,
+.inputWrap input:not([type='checkbox']):not([type='radio']),
+.inputWrap textarea,
+.field-type input:not([type='checkbox']):not([type='radio']),
+.field-type textarea,
+.field-type select,
+.search-filter__input,
+.rs__control,
+.rs__menu {
+  border-radius: 6px !important;
+  font-family: var(--font-body) !important;
+}
+
+/* Standard square checkbox with 4px subtle rounded corners (NOT 50% circle) */
+input[type='checkbox'],
+.select-row input[type='checkbox'],
+.checkbox-input__input input[type='checkbox'] {
+  border-radius: 4px !important;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--theme-elevation-900);
+}
+
+/* Radio buttons strictly remain 50% circle */
+input[type='radio'] {
+  border-radius: 50% !important;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+/* Containers, Cards & Tables: 6px to 8px */
+.card,
+.dashboard__card,
+.card-list,
+.collection-list,
+.doc-header,
+.table-wrap,
+.table-wrap .table {
+  border-radius: 6px !important;
+}
+
+/* Modal, Drawer & Popups: 8px */
+.modal,
+.dialog,
+.drawer,
+.drawer__header,
+.popup,
+.popup__content,
+.template-minimal__wrap {
+  border-radius: 8px !important;
+}
+
+/* Small tags, pills & badges: 4px */
+.pill,
+.badge,
+.status,
+.step-nav__item,
+.doc-header__pills,
+.view-description {
+  border-radius: 4px !important;
+}
+
+/* Nav links: 6px */
+.nav__link,
+.nav-group,
+.nav-group__toggle {
+  border-radius: 6px !important;
+  transition: background-color 0.12s ease, color 0.12s ease;
+}
+
+/* --------------------------------------------------------------------------
+   4. RTL LAYOUT & ALIGNMENT REFINEMENTS
+   -------------------------------------------------------------------------- */
+[dir='rtl'] .nav {
+  text-align: right;
+  border-left: 1px solid var(--theme-elevation-150) !important;
+  border-right: none !important;
+  background-color: var(--theme-elevation-0) !important;
+}
+
+[dir='rtl'] .nav__link {
+  flex-direction: row-reverse;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 8px 12px;
+  margin: 2px 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--theme-elevation-600);
+}
+
+[dir='rtl'] .nav__link:hover {
+  background-color: var(--theme-elevation-100);
+  color: var(--theme-text);
+}
+
+[dir='rtl'] .nav__link--active,
+[dir='rtl'] .nav__link.active {
+  background-color: var(--theme-elevation-150) !important;
+  color: var(--theme-elevation-1000) !important;
+  font-weight: 600;
+}
+
+[dir='rtl'] .nav-group__toggle,
+[dir='rtl'] .nav-group__label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--theme-elevation-400);
+  padding: 12px 14px 4px 14px;
+  letter-spacing: 0.5px;
+}
+
+[dir='rtl'] .app-header {
+  flex-direction: row-reverse;
+  border-bottom: 1px solid var(--theme-elevation-150) !important;
+  background-color: var(--theme-elevation-0) !important;
+  padding: 0 24px;
+  height: 56px;
+}
+
+[dir='rtl'] .field-type__label,
+[dir='rtl'] .field-label {
+  text-align: right;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--theme-elevation-700);
+  margin-bottom: 6px;
+}
+
+[dir='rtl'] .table th,
+[dir='rtl'] .table td {
+  text-align: right;
+}
+
+/* --------------------------------------------------------------------------
+   5. DASHBOARD & COLLECTION CARDS (payloadcms.com Signature Style)
+   -------------------------------------------------------------------------- */
+.dashboard {
+  padding: 32px;
+  max-width: 1400px;
+}
+
+.dashboard__group {
+  margin-bottom: 32px;
+  border: none !important;
+  background: transparent !important;
+}
+
+.dashboard__group-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-elevation-800);
+  margin-bottom: 14px;
+}
+
+.card-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Clean, flat hairline cards without puffy shadows or gradients */
+.card,
+.dashboard__card {
+  border: 1px solid var(--theme-elevation-150) !important;
+  background-color: var(--theme-elevation-0) !important;
+  padding: 16px 20px;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.card:hover,
+.dashboard__card:hover {
+  border-color: var(--theme-elevation-300) !important;
+  background-color: var(--theme-elevation-50) !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+.card__title,
+.dashboard__card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--theme-elevation-900);
+  margin: 0;
+}
+
+.card__count,
+.dashboard__card-count {
+  font-size: 12px;
+  color: var(--theme-elevation-500);
+  font-weight: 500;
+}
+
+/* --------------------------------------------------------------------------
+   6. TABLES & LIST VIEWS
+   -------------------------------------------------------------------------- */
+.table-wrap {
+  border: 1px solid var(--theme-elevation-150) !important;
+  background-color: var(--theme-elevation-0) !important;
+  overflow: hidden;
+  box-shadow: none !important;
+}
+
+.table thead th {
+  background-color: var(--theme-elevation-50) !important;
+  border-bottom: 1px solid var(--theme-elevation-150) !important;
+  color: var(--theme-elevation-500);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 10px 14px;
+  height: 40px;
+}
+
+.table tbody tr {
+  transition: background-color 0.1s ease;
+}
+
+.table tbody td {
+  border-bottom: 1px solid var(--theme-elevation-100) !important;
+  color: var(--theme-elevation-800);
+  font-size: 13px;
+  padding: 12px 14px;
+}
+
+.table tbody tr:hover td {
+  background-color: var(--theme-elevation-50) !important;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+/* --------------------------------------------------------------------------
+   7. FORM CONTROLS & PRECISION INPUTS
+   -------------------------------------------------------------------------- */
+input:not([type='checkbox']):not([type='radio']),
+textarea,
+select,
+.inputWrap input:not([type='checkbox']):not([type='radio']),
+.inputWrap textarea {
+  border: 1px solid var(--theme-elevation-200) !important;
+  background-color: var(--theme-elevation-0) !important;
+  color: var(--theme-elevation-900) !important;
+  font-size: 13px;
+  padding: 8px 12px;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  height: 38px;
+}
+
+textarea,
+.inputWrap textarea {
+  height: auto;
+  min-height: 80px;
+  line-height: 1.6;
+}
+
+/* Crisp 1px monochrome focus ring */
+input:focus:not([type='checkbox']):not([type='radio']),
+textarea:focus,
+select:focus,
+.inputWrap input:focus:not([type='checkbox']):not([type='radio']),
+.inputWrap textarea:focus {
+  border-color: var(--theme-elevation-800) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 1px var(--theme-elevation-800) !important;
+}
+
+.field-description {
+  font-size: 11px;
+  color: var(--theme-elevation-500);
+  margin-top: 4px;
+}
+
+.field-error {
+  font-size: 11px;
+  color: var(--theme-error-600);
+  margin-top: 4px;
+}
+
+/* --------------------------------------------------------------------------
+   8. HIGH-CONTRAST MONOCHROME BUTTONS
+   -------------------------------------------------------------------------- */
+.btn {
+  font-size: 13px;
+  font-weight: 600;
+  height: 36px;
+  padding: 0 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  border: 1px solid transparent;
+}
+
+.btn--style-primary {
+  background-color: var(--theme-elevation-1000) !important;
+  color: var(--theme-elevation-0) !important;
+  border-color: var(--theme-elevation-1000) !important;
+}
+
+.btn--style-primary:hover {
+  opacity: 0.9 !important;
+}
+
+.btn--style-secondary {
+  background-color: var(--theme-elevation-100) !important;
+  color: var(--theme-elevation-800) !important;
+  border-color: var(--theme-elevation-200) !important;
+}
+
+.btn--style-secondary:hover {
+  background-color: var(--theme-elevation-150) !important;
+}
+
+.btn--style-subtle {
+  background-color: transparent !important;
+  color: var(--theme-elevation-600) !important;
+}
+
+.btn--style-subtle:hover {
+  background-color: var(--theme-elevation-100) !important;
+  color: var(--theme-elevation-900) !important;
+}
+
+/* --------------------------------------------------------------------------
+   9. LOGIN & MINIMAL TEMPLATE (payloadcms.com Minimalist Authentication)
+   - Central Geometric Grid with Radial Fade to Edges (#1C1696)
+   -------------------------------------------------------------------------- */
+@keyframes cmsCenterPulse {
+  0% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.35;
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0.65;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(0.92);
+    opacity: 0.35;
+  }
+}
+
+.template-minimal {
+  position: relative;
+  background-color: var(--theme-bg);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  overflow: hidden;
+}
+
+/* Central Pattern with Fade Out to edges */
+.template-minimal::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(to right, rgba(28, 22, 150, 0.16) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(28, 22, 150, 0.16) 1px, transparent 1px),
+    radial-gradient(circle, rgba(28, 22, 150, 0.45) 1.5px, transparent 1.5px);
+  background-size: 36px 36px, 36px 36px, 36px 36px;
+  background-position: center center;
+  mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, black 15%, rgba(0, 0, 0, 0.5) 45%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, black 15%, rgba(0, 0, 0, 0.5) 45%, transparent 80%);
+}
+
+/* Central Glowing Ambient Pulse */
+.template-minimal::after {
+  content: '';
+  position: absolute;
+  width: 650px;
+  height: 650px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, rgba(28, 22, 150, 0.22) 0%, rgba(42, 34, 196, 0.10) 45%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  filter: blur(80px);
+  pointer-events: none;
+  animation: cmsCenterPulse 10s ease-in-out infinite alternate;
+  will-change: transform, opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .template-minimal::after {
+    animation: none !important;
+  }
+}
+
+.template-minimal__wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 400px;
+  border: 1px solid var(--theme-elevation-150) !important;
+  background-color: var(--theme-elevation-0) !important;
+  padding: 36px 32px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03) !important;
+}
+
+.login__brand {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 28px;
+}
+
+.login__brand .graphic-logo {
+  max-height: 36px;
+  width: auto;
+}
+
+/* --------------------------------------------------------------------------
+   10. PILLS, STATUS BADGES & DRAWER MODALS
+   -------------------------------------------------------------------------- */
+.pill,
+.badge,
+.status {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border: 1px solid var(--theme-elevation-150);
+  background-color: var(--theme-elevation-100);
+  color: var(--theme-elevation-700);
+}
+
+.drawer {
+  border-left: 1px solid var(--theme-elevation-150) !important;
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.08) !important;
+}
+
+.drawer__header {
+  border-bottom: 1px solid var(--theme-elevation-150) !important;
+  padding: 16px 24px;
+}
+
+.modal {
+  border: 1px solid var(--theme-elevation-150) !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12) !important;
 }

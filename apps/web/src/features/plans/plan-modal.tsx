@@ -99,14 +99,14 @@ export function PlanModal({
       <form onSubmit={handleSubmit} className="space-y-4 text-start">
         {/* Customer Selection: Customer [ Select Customer ▼ ] */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1">
-            مشتری هدف: <span className="text-rose-500">*</span>
+          <label className="block text-xs font-bold text-foreground mb-1">
+            مشتری هدف: <span className="text-danger">*</span>
           </label>
           <div className="relative">
             <select
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              className="w-full h-10 px-3 pe-8 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-900 transition-all outline-hidden bg-white appearance-none cursor-pointer"
+              className="w-full h-10 px-3 pe-8 rounded-xl border border-border focus:border-primary text-xs font-bold text-foreground transition-all outline-hidden bg-surface appearance-none cursor-pointer"
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -114,7 +114,7 @@ export function PlanModal({
                 </option>
               ))}
             </select>
-            <div className="absolute end-3 top-3 pointer-events-none text-slate-400 text-xs font-bold">
+            <div className="absolute end-3 top-3 pointer-events-none text-muted text-xs font-bold">
               ▼
             </div>
           </div>
@@ -122,7 +122,7 @@ export function PlanModal({
 
         {/* Plan Title (Dynamic preview if empty) */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1">
+          <label className="block text-xs font-bold text-foreground mb-1">
             عنوان طرح (اختیاری):
           </label>
           <input
@@ -130,11 +130,11 @@ export function PlanModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={defaultDynamicTitle}
-            className="w-full h-10 px-3 rounded-xl border border-slate-300 focus:border-blue-600 text-xs font-bold text-slate-900 transition-all outline-hidden bg-slate-50/50"
+            className="w-full h-10 px-3 rounded-xl border border-border focus:border-primary text-xs font-bold text-foreground transition-all outline-hidden bg-default/10"
           />
-          <div className="text-xs text-blue-600 mt-1 flex items-center gap-1 font-medium">
+          <div className="text-xs text-primary mt-1 flex items-center gap-1 font-medium">
             <span>پیش‌نمایش عنوان:</span>
-            <span className="font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-100">
+            <span className="font-bold bg-primary/10 px-1.5 py-0.5 rounded-xl border border-primary/25">
               {title || defaultDynamicTitle}
             </span>
           </div>
@@ -142,8 +142,8 @@ export function PlanModal({
 
         {/* Plan Type Selector (Credit Terms vs Product Discount) */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5">
-            نوع طرح تجاری: <span className="text-rose-500">*</span>
+          <label className="block text-xs font-bold text-foreground mb-1.5">
+            نوع طرح تجاری: <span className="text-danger">*</span>
           </label>
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -151,14 +151,14 @@ export function PlanModal({
               onClick={() => setPlanType('credit_terms')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'credit_terms'
-                  ? 'border-blue-600 bg-blue-50/80 text-blue-900 ring-2 ring-blue-500/20 shadow-xs'
-                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-xs'
+                  : 'border-border bg-surface text-muted hover:bg-default/15'
               }`}
             >
               <span className="font-bold text-xs">
                 خرید اعتباری
               </span>
-              <span className="text-[11px] font-normal text-slate-500 leading-tight">
+              <span className="text-[11px] font-normal text-muted leading-tight">
                 تعیین مهلت پرداخت مدت‌دار
               </span>
             </button>
@@ -168,14 +168,14 @@ export function PlanModal({
               onClick={() => setPlanType('product_discount')}
               className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'product_discount'
-                  ? 'border-emerald-600 bg-emerald-50/80 text-emerald-900 ring-2 ring-emerald-500/20 shadow-xs'
-                  : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  ? 'border-success bg-success/15 text-success ring-2 ring-success/20 shadow-xs'
+                  : 'border-border bg-surface text-muted hover:bg-default/15'
               }`}
             >
               <span className="font-bold text-xs">
                 تخفیف کالاها
               </span>
-              <span className="text-[11px] font-normal text-slate-500 leading-tight">
+              <span className="text-[11px] font-normal text-muted leading-tight">
                 اعمال درصد تخفیف روی اقلام منتخب
               </span>
             </button>
@@ -184,12 +184,12 @@ export function PlanModal({
 
         {/* If product_discount mode: Show Discount Percent setting */}
         {planType === 'product_discount' && (
-          <div className="p-3 bg-emerald-50/70 rounded-xl border border-emerald-200/90 space-y-2 animate-fade-in">
+          <div className="p-3 bg-success/10 rounded-xl border border-success/30 space-y-2 animate-fade-in">
             <div className="flex items-center justify-between">
-              <label className="text-xs font-bold text-emerald-900">
+              <label className="text-xs font-bold text-success">
                 درصد تخفیف اعمالی روی کالاها:
               </label>
-              <span className="text-xs font-black text-emerald-800 bg-white px-2 py-0.5 rounded-lg border border-emerald-300">
+              <span className="text-xs font-black text-success bg-surface px-2 py-0.5 rounded-lg border border-success/30">
                 {toPersianDigits(discountPercent)}٪ تخفیف
               </span>
             </div>
@@ -200,7 +200,7 @@ export function PlanModal({
                 max={50}
                 value={discountPercent}
                 onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                className="flex-1 h-2 bg-emerald-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                className="flex-1 h-2 bg-success/30 rounded-lg appearance-none cursor-pointer accent-success"
               />
               <div className="flex items-center gap-1 shrink-0">
                 <input
@@ -209,12 +209,12 @@ export function PlanModal({
                   max={100}
                   value={discountPercent}
                   onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                  className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-emerald-300 bg-white focus:outline-emerald-500"
+                  className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-success/30 bg-surface focus:outline-primary"
                 />
-                <span className="text-xs font-bold text-emerald-800">٪</span>
+                <span className="text-xs font-bold text-success">٪</span>
               </div>
             </div>
-            <p className="text-[11px] text-emerald-700 leading-tight">
+            <p className="text-[11px] text-success leading-tight">
               این تخفیف در لیست محصولات و سبد خرید خریدار منتخب اعمال شده و قیمت‌های کالا با نشان تخفیف ویژه به روز می‌شوند.
             </p>
           </div>
@@ -222,8 +222,8 @@ export function PlanModal({
 
         {/* Content (Textarea) */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1">
-            متن پیام طرح (Textarea): <span className="text-rose-500">*</span>
+          <label className="block text-xs font-bold text-foreground mb-1">
+            متن پیام طرح (Textarea): <span className="text-danger">*</span>
           </label>
           <textarea
             required
@@ -235,23 +235,23 @@ export function PlanModal({
                 ? 'مثال: امکان خرید اعتباری با بازپرداخت ۳ ماهه و ارائه چک صیادی...'
                 : 'مثال: به پاس همکاری‌های مستمر، ۱۰٪ تخفیف مازاد برای این اقلام به مدت محدود فعال شد...'
             }
-            className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs text-slate-900 transition-all outline-hidden bg-slate-50/50"
+            className="w-full p-2.5 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-default/10"
           />
-          <span className="text-xs text-slate-500 mt-0.5 block">
+          <span className="text-xs text-muted mt-0.5 block">
             متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.
           </span>
         </div>
 
         {/* Status: Active / Expired / Draft */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1.5">
-            وضعیت طرح (Status): <span className="text-rose-500">*</span>
+          <label className="block text-xs font-bold text-foreground mb-1.5">
+            وضعیت طرح (Status): <span className="text-danger">*</span>
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { val: 'active', label: 'در حال اجرا', color: 'border-emerald-500 bg-emerald-50 text-emerald-800' },
-              { val: 'expired', label: 'منقضی شده', color: 'border-amber-500 bg-amber-50 text-amber-800' },
-              { val: 'draft', label: 'پیش‌نویس', color: 'border-slate-400 bg-slate-100 text-slate-700' },
+              { val: 'active', label: 'در حال اجرا', color: 'border-success bg-success/15 text-success' },
+              { val: 'expired', label: 'منقضی شده', color: 'border-warning bg-warning/15 text-warning' },
+              { val: 'draft', label: 'پیش‌نویس', color: 'border-border bg-default/20 text-foreground' },
             ].map((st) => (
               <button
                 key={st.val}
@@ -259,8 +259,8 @@ export function PlanModal({
                 onClick={() => setStatus(st.val as any)}
                 className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
                   status === st.val
-                    ? `${st.color} shadow-xs font-bold ring-2 ring-offset-1 ring-blue-500`
-                    : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                    ? `${st.color} shadow-xs font-bold ring-2 ring-offset-1 ring-primary`
+                    : 'border-border bg-surface text-muted hover:bg-default/15'
                 }`}
               >
                 {st.label}
@@ -272,18 +272,18 @@ export function PlanModal({
         {/* Products in Plan Selection (Independent Relation from Tags) */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="block text-xs font-bold text-slate-800">
+            <label className="block text-xs font-bold text-foreground">
               انتخاب کالاهای شامل طرح (Select Products):
             </label>
-            <span className="text-xs font-semibold text-blue-600">
+            <span className="text-xs font-semibold text-primary">
               {toPersianDigits(selectedProductIds.length)} انتخاب شده
             </span>
           </div>
-          <span className="text-xs text-slate-500 block pb-1">
+          <span className="text-xs text-muted block pb-1">
             این رابطه مستقلاً برای هر طرح تنظیم می‌شود و ارتباطی با تگ‌های عمومی محصول ندارد.
           </span>
 
-          <div className="max-h-48 overflow-y-auto border border-slate-200 rounded-xl divide-y divide-slate-100 p-1 bg-white">
+          <div className="max-h-48 overflow-y-auto border border-border rounded-xl divide-y divide-separator p-1 bg-surface">
             {allProducts.map((product) => {
               const isChecked = selectedProductIds.includes(product.id)
               const originalPrice = product.finalCustomerPricePerSqm
@@ -296,19 +296,19 @@ export function PlanModal({
                 <label
                   key={product.id}
                   className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors cursor-pointer select-none ${
-                    isChecked ? 'bg-blue-50/50' : 'hover:bg-slate-50'
+                    isChecked ? 'bg-primary/10' : 'hover:bg-default/10'
                   }`}
                 >
                   <input
                     type="checkbox"
                     checked={isChecked}
                     onChange={() => toggleProduct(product.id)}
-                    className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500 cursor-pointer shrink-0"
+                    className="w-4 h-4 rounded text-primary focus:ring-primary cursor-pointer shrink-0"
                   />
                   <img
                     src={product.images[0] || '/assets/images/placeholder.svg'}
                     alt={product.name}
-                    className="w-8 h-8 rounded-md object-cover border border-slate-200 shrink-0"
+                    className="w-8 h-8 rounded-md object-cover border border-border shrink-0"
                     onError={(e) => {
                       if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                         e.currentTarget.src = '/assets/images/placeholder.svg'
@@ -316,27 +316,27 @@ export function PlanModal({
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <span className="text-xs font-bold text-slate-900 truncate block">
+                    <span className="text-xs font-bold text-foreground truncate block">
                       {product.name}
                     </span>
-                    <span className="text-xs text-slate-500">
+                    <span className="text-xs text-muted">
                       {product.brand} · {toPersianDigits(product.dimension)}
                     </span>
                   </div>
                   <div className="text-end shrink-0">
                     {planType === 'product_discount' && isChecked ? (
                       <div className="flex flex-col items-end">
-                        <span className="text-[10px] text-slate-400 line-through inline-flex items-center gap-0.5">
+                        <span className="text-[10px] text-muted line-through inline-flex items-center gap-0.5">
                           <span>{formatToman(originalPrice)}</span>
                           <TomanIcon className="size-2.5" />
                         </span>
-                        <span className="text-xs font-bold text-emerald-700 inline-flex items-center gap-0.5">
+                        <span className="text-xs font-bold text-success inline-flex items-center gap-0.5">
                           <span>{formatToman(discountedPrice)}</span>
                           <TomanIcon className="size-3" />
                         </span>
                       </div>
                     ) : (
-                      <span className="text-xs font-bold text-slate-700 inline-flex items-center gap-0.5">
+                      <span className="text-xs font-bold text-foreground inline-flex items-center gap-0.5">
                         <span>{formatToman(originalPrice)}</span>
                         <TomanIcon className="size-3" />
                       </span>
@@ -350,7 +350,7 @@ export function PlanModal({
 
         {/* Optional Notes */}
         <div>
-          <label className="block text-xs font-bold text-slate-800 mb-1">
+          <label className="block text-xs font-bold text-foreground mb-1">
             یادداشت داخلی طرح (اختیاری):
           </label>
           <textarea
@@ -358,22 +358,22 @@ export function PlanModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="توضیحات و شرایط ویژه طرح..."
-            className="w-full p-2.5 rounded-xl border border-slate-300 focus:border-blue-600 text-xs text-slate-900 transition-all outline-hidden bg-slate-50/50"
+            className="w-full p-2.5 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-default/10"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 grid grid-cols-2 gap-3 border-t border-slate-100">
+        <div className="pt-2 grid grid-cols-2 gap-3 border-t border-separator">
           <button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors cursor-pointer"
+            className="h-10 rounded-xl border border-border hover:bg-default/15 text-foreground text-xs font-bold transition-colors cursor-pointer"
           >
             انصراف
           </button>
           <button
             type="submit"
-            className="h-10 rounded-xl bg-blue-600 hover:bg-blue-700 active:scale-98 text-white text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-blue-600/20 cursor-pointer"
+            className="h-10 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 cursor-pointer"
           >
             <CheckIcon size={16} />
             <span>{editingPlan ? 'ذخیره تغییرات' : 'ثبت طرح'}</span>

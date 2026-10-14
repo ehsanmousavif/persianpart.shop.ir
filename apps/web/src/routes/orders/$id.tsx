@@ -235,11 +235,11 @@ function OrderDetailPage() {
   if (!order) {
     return (
       <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
-        <h2 className="text-sm font-bold text-slate-800">سفارش مورد نظر یافت نشد</h2>
-        <p className="text-xs text-slate-500">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
+        <h2 className="text-sm font-bold text-foreground">سفارش مورد نظر یافت نشد</h2>
+        <p className="text-xs text-muted">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
         <Link
           to="/orders"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold shadow-xs hover:bg-slate-800"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90"
         >
           <ArrowRightIcon size={14} />
           <span>مشاهده همه سفارش‌ها</span>
@@ -251,21 +251,21 @@ function OrderDetailPage() {
   return (
     <div className="w-full px-3 py-3 space-y-3">
       {/* Top Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <Link to="/orders" className="hover:text-blue-600 transition-colors flex items-center gap-1">
+      <nav className="flex items-center gap-2 text-xs text-muted">
+        <Link to="/orders" className="hover:text-primary transition-colors flex items-center gap-1">
           <ArrowRightIcon size={14} />
           <span>سفارش‌های من</span>
         </Link>
         <span>/</span>
-        <span className="text-slate-900 font-bold">سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+        <span className="text-foreground font-bold">سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
       </nav>
 
       {/* Main Order Header Card */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
         <div>
           <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-            <span className="px-3 py-1 rounded-xl bg-blue-50 border border-blue-200 text-sm font-extrabold text-blue-900 flex items-center gap-1.5">
-              <span className="text-blue-500 text-xs font-semibold">سفارش</span>
+            <span className="px-3 py-1 rounded-xl bg-primary/15 border border-primary/25 text-sm font-extrabold text-primary flex items-center gap-1.5">
+              <span className="text-primary text-xs font-semibold">سفارش</span>
               <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
             </span>
             <Badge variant={statusConfig.color} size="md">
@@ -277,11 +277,11 @@ function OrderDetailPage() {
               <span
                 className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs ${
                   isWithin10Minutes
-                    ? 'bg-amber-50 text-amber-900 border-amber-300 animate-pulse'
-                    : 'bg-slate-100 text-slate-500 border-slate-200'
+                    ? 'bg-warning/15 text-warning-foreground border-warning/30 animate-pulse'
+                    : 'bg-default/15 text-muted border-border'
                 }`}
               >
-                <ClockIcon size={13} className={isWithin10Minutes ? 'text-amber-700' : 'text-slate-400'} />
+                <ClockIcon size={13} className={isWithin10Minutes ? 'text-warning' : 'text-muted'} />
                 <span>
                   {isWithin10Minutes
                     ? `مهلت ۱۰ دقیقه‌ای لغو: ${formatCountdown(timeLeftSeconds)}`
@@ -290,19 +290,19 @@ function OrderDetailPage() {
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500">
-            تاریخ ثبت سفارش: <strong className="text-slate-700">{formatPersianDate(order.createdAt || order.date)}</strong>
+          <p className="text-xs text-muted">
+            تاریخ ثبت سفارش: <strong className="text-foreground">{formatPersianDate(order.createdAt || order.date)}</strong>
           </p>
         </div>
 
         {/* Action Buttons - زیر تاریخ */}
-        <div className="pt-3 border-t border-slate-100 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="pt-3 border-t border-separator flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {isCancellableByCustomer && (
             <>
               <button
                 type="button"
                 onClick={() => setShowCancelModal(true)}
-                className="flex-1 py-2.5 px-3.5 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                className="flex-1 py-2.5 px-3.5 rounded-xl border border-danger/30 text-danger hover:bg-danger/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
               >
                 <XIcon size={16} />
                 <span>لغو سفارش</span>
@@ -311,7 +311,7 @@ function OrderDetailPage() {
               <button
                 type="button"
                 onClick={handleEditOrder}
-                className="flex-1 py-2.5 px-3.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                className="flex-1 py-2.5 px-3.5 rounded-xl border border-border text-foreground hover:bg-default/20 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
               >
                 <PencilIcon size={16} />
                 <span>ویرایش فاکتور</span>
@@ -322,7 +322,7 @@ function OrderDetailPage() {
           <button
             type="button"
             onClick={handleReorder}
-            className="flex-1 py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-md shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer"
+            className="flex-1 py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
             <span>سفارش مجدد</span>
@@ -331,30 +331,30 @@ function OrderDetailPage() {
       </div>
 
       {/* Visual Stepper Timeline */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 pb-10 sm:p-6 shadow-xs space-y-4">
-        <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
+      <div className="bg-surface border border-border rounded-3xl p-5 pb-10 sm:p-6 shadow-xs space-y-4">
+        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator">
           وضعیت سفارش
         </h3>
         <OrderTimeline steps={timeline} />
       </div>
 
       {/* Products in this order */}
-      <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
-        <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator flex items-center justify-between">
           <span>اقلام سفارش</span>
-          <span className="text-xs text-slate-400 font-normal">
+          <span className="text-xs text-muted font-normal">
             {toPersianDigits(order.items.length)} کالا انتخاب شده
           </span>
         </h3>
 
-        <div className="divide-y divide-slate-100">
+        <div className="divide-y divide-separator">
           {order.items.map((item: OrderItem, idx: number) => (
             <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <Link
                   to="/product"
                   search={{ productname: item.productSlug }}
-                  className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden border border-slate-200 shrink-0 block"
+                  className="w-16 h-16 rounded-xl bg-default/15 overflow-hidden border border-border shrink-0 block"
                 >
                   <img
                     src={item.productImage || '/assets/images/placeholder.svg'}
@@ -371,27 +371,27 @@ function OrderDetailPage() {
                   <Link
                     to="/product"
                     search={{ productname: item.productSlug }}
-                    className="text-sm font-extrabold text-slate-900 hover:text-blue-600 transition-colors line-clamp-1"
+                    className="text-sm font-extrabold text-foreground hover:text-primary transition-colors line-clamp-1"
                   >
                     {item.productName}
                   </Link>
-                  <div className="flex items-center gap-2 text-xs text-slate-500 mt-1">
+                  <div className="flex items-center gap-2 text-xs text-muted mt-1">
                     <span>کد کالا: {toPersianDigits(item.productSku)}</span>
                     <span>•</span>
                     <span>{toPersianDigits(item.dimension)}</span>
                   </div>
-                  <div className="text-xs text-slate-600 mt-1">
+                  <div className="text-xs text-muted mt-1">
                     متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong> ({toPersianDigits(item.cartonCount)} کارتن)
                   </div>
                 </div>
               </div>
 
-              <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-slate-100 flex flex-col items-start sm:items-end">
-                <span className="text-xs text-slate-400 inline-flex items-center gap-1">
+              <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-separator flex flex-col items-start sm:items-end">
+                <span className="text-xs text-muted inline-flex items-center gap-1">
                   <span>{formatToman(item.unitPrice)}</span>
                   <TomanIcon className="size-3" />
                 </span>
-                <span className="text-sm font-bold text-slate-900 inline-flex items-center gap-1">
+                <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
                   <span>{formatToman(item.totalPrice)}</span>
                   <TomanIcon className="size-3.5" />
                 </span>
@@ -401,9 +401,9 @@ function OrderDetailPage() {
         </div>
 
         {/* Financial Summary */}
-        <div className="pt-4 space-y-2 text-xs text-slate-600">
+        <div className="pt-4 space-y-2 text-xs text-muted">
           {order.discountAmount > 0 && (
-            <div className="flex justify-between items-center text-emerald-700 font-semibold">
+            <div className="flex justify-between items-center text-success font-semibold">
               <span>تخفیف:</span>
               <span className="inline-flex items-center gap-1">
                 <span>- {formatToman(order.discountAmount)}</span>
@@ -412,9 +412,9 @@ function OrderDetailPage() {
             </div>
           )}
 
-          <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-sm font-bold text-slate-900">
+          <div className="pt-2 border-t border-separator flex justify-between items-center text-sm font-bold text-foreground">
             <span>مبلغ نهایی:</span>
-            <span className="text-base font-bold text-blue-700 inline-flex items-center gap-1">
+            <span className="text-base font-bold text-primary inline-flex items-center gap-1">
               <span>{formatToman(order.finalTotal)}</span>
               <TomanIcon className="size-4" />
             </span>
@@ -423,41 +423,41 @@ function OrderDetailPage() {
       </div>
 
       {/* Delivery Information */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
-        <h3 className="text-sm font-extrabold text-slate-900 pb-2 border-b border-slate-100">
+      <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
+        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator">
           اطلاعات تحویل
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div className="flex items-start gap-2.5">
-            <StoreIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
+            <StoreIcon size={16} className="text-muted mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">فروشگاه:</span>
-              <span className="font-bold text-slate-800">{order.storeName}</span>
+              <span className="text-muted block">فروشگاه:</span>
+              <span className="font-bold text-foreground">{order.storeName}</span>
             </div>
           </div>
 
           <div className="flex items-start gap-2.5">
-            <PhoneIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
+            <PhoneIcon size={16} className="text-muted mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">تحویل‌گیرنده:</span>
-              <span className="font-bold text-slate-800">
+              <span className="text-muted block">تحویل‌گیرنده:</span>
+              <span className="font-bold text-foreground">
                 {order.customerName} ({toPersianDigits(order.customerPhone)})
               </span>
             </div>
           </div>
 
           <div className="flex items-start gap-2.5">
-            <MapPinIcon size={16} className="text-slate-400 mt-0.5 shrink-0" />
+            <MapPinIcon size={16} className="text-muted mt-0.5 shrink-0" />
             <div>
-              <span className="text-slate-400 block">نشانی تحویل:</span>
-              <span className="font-bold text-slate-800">{order.deliveryAddress}</span>
+              <span className="text-muted block">نشانی تحویل:</span>
+              <span className="font-bold text-foreground">{order.deliveryAddress}</span>
             </div>
           </div>
         </div>
 
         {order.notes && (
-          <div className="p-3 bg-slate-50 rounded-xl text-xs text-slate-600 mt-2">
+          <div className="p-3 bg-default/10 rounded-xl text-xs text-muted mt-2">
             <strong>یادداشت سفارش:</strong> {order.notes}
           </div>
         )}
@@ -467,34 +467,34 @@ function OrderDetailPage() {
       <HeroUIModal.Root isOpen={showCancelModal} onOpenChange={(open) => !open && setShowCancelModal(false)}>
         <HeroUIModal.Backdrop
           isDismissable
-          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
         >
           <HeroUIModal.Container className="pointer-events-none w-full max-w-sm h-auto p-0 flex flex-col items-center">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-white rounded-3xl shadow-2xl flex flex-col z-10 border border-slate-200 overflow-hidden animate-modal-enter text-center p-6 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-rose-50 text-rose-600 flex items-center justify-center mx-auto border border-rose-100">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl shadow-2xl flex flex-col z-10 border border-border overflow-hidden animate-modal-enter text-center p-6 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-danger/15 text-danger flex items-center justify-center mx-auto border border-danger/30">
                 <AlertTriangleIcon size={24} />
               </div>
               <div>
-                <HeroUIModal.Heading className="text-base font-bold text-slate-900">
+                <HeroUIModal.Heading className="text-base font-bold text-foreground">
                   لغو سفارش
                 </HeroUIModal.Heading>
-                <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                <p className="text-xs text-muted mt-1 leading-relaxed">
                   آیا از لغو سفارش <strong>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
-                <div className="mt-2.5 p-2 bg-emerald-50 rounded-xl border border-emerald-200 text-[11px] text-emerald-800 text-start">
+                <div className="mt-2.5 p-2 bg-success/15 rounded-xl border border-success/30 text-[11px] text-success text-start">
                   اقلام سفارش به موجودی انبار بازگردانده می‌شوند.
                 </div>
               </div>
 
               {/* Cancellation Reason Selector */}
               <div className="text-start space-y-1">
-                <label className="text-[11px] font-bold text-slate-700 block">
+                <label className="text-[11px] font-bold text-foreground block">
                   دلیل لغو:
                 </label>
                 <select
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  className="w-full h-9 px-2.5 rounded-xl border border-slate-300 text-xs font-medium text-slate-800 bg-white outline-hidden cursor-pointer"
+                  className="w-full h-9 px-2.5 rounded-xl border border-border text-xs font-medium text-foreground bg-surface outline-hidden cursor-pointer"
                 >
                   <option value="تغییر در متراژ یا اقلام سفارش">تغییر در متراژ یا اقلام سفارش</option>
                   <option value="تغییر در زمان‌بندی پروژه و ارسال">تغییر در زمان‌بندی پروژه و ارسال</option>
@@ -507,14 +507,14 @@ function OrderDetailPage() {
                 <button
                   type="button"
                   onClick={() => setShowCancelModal(false)}
-                  className="py-2.5 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-50 cursor-pointer transition-all"
+                  className="py-2.5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/20 cursor-pointer transition-all"
                 >
                   انصراف
                 </button>
                 <button
                   type="button"
                   onClick={handleCancel}
-                  className="py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold shadow-md shadow-rose-600/20 cursor-pointer transition-all"
+                  className="py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold shadow-md shadow-danger/25 cursor-pointer transition-all"
                 >
                   تأیید لغو سفارش
                 </button>

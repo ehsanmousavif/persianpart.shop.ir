@@ -28,8 +28,8 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
     title: string
     children: React.ReactNode
   }) => (
-    <div className="py-3 border-b border-slate-100 last:border-0 text-start">
-      <h4 className="text-xs font-bold text-slate-800 mb-2">{title}</h4>
+    <div className="py-3 border-b border-separator last:border-0 text-start">
+      <h4 className="text-xs font-bold text-foreground mb-2">{title}</h4>
       <div className="flex flex-wrap gap-1.5">{children}</div>
     </div>
   )
@@ -37,19 +37,19 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
   const content = (
     <div className="space-y-1">
       {/* Stock Toggle */}
-      <div className="py-3 border-b border-slate-100 flex items-center justify-between text-start">
+      <div className="py-3 border-b border-separator flex items-center justify-between text-start">
         <div>
-          <span className="text-xs font-bold text-slate-900 block">فقط کالاهای موجود</span>
+          <span className="text-xs font-bold text-foreground block">فقط کالاهای موجود</span>
         </div>
         <button
           type="button"
           onClick={() => setFilter('onlyInStock', !filters.onlyInStock)}
           className={`w-11 h-6 rounded-full transition-colors relative cursor-pointer ${
-            filters.onlyInStock ? 'bg-blue-600' : 'bg-slate-300'
+            filters.onlyInStock ? 'bg-primary' : 'bg-default/40'
           }`}
         >
           <span
-            className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${
+            className={`w-4 h-4 rounded-full bg-surface transition-transform absolute top-1 ${
               filters.onlyInStock ? 'end-1' : 'start-1'
             }`}
           />
@@ -71,10 +71,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={opt.id}
               type="button"
               onClick={() => setFilter('sortBy', opt.id as any)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-600 border-blue-600 text-white font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary border-primary text-primary-foreground font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               {opt.label}
@@ -88,10 +88,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
         <button
           type="button"
           onClick={() => setFilter('selectedDimension', null)}
-          className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
             !filters.selectedDimension
-              ? 'bg-blue-600 border-blue-600 text-white font-bold'
-              : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+              ? 'bg-primary border-primary text-primary-foreground font-bold'
+              : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
           }`}
         >
           همه
@@ -103,10 +103,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={dim}
               type="button"
               onClick={() => setFilter('selectedDimension', isSelected ? null : dim)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary/10 border-primary text-primary font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               {toPersianDigits(dim)}
@@ -124,10 +124,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={brand}
               type="button"
               onClick={() => toggleArrayFilter('selectedBrands', brand)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary/10 border-primary text-primary font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               {brand}
@@ -145,10 +145,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={col}
               type="button"
               onClick={() => toggleArrayFilter('selectedColors', col)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary/10 border-primary text-primary font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               {col}
@@ -166,10 +166,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={grade}
               type="button"
               onClick={() => toggleArrayFilter('selectedGrades', grade)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-blue-50 border-blue-600 text-blue-700 font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary/10 border-primary text-primary font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               {grade}
@@ -187,10 +187,10 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
               key={tag}
               type="button"
               onClick={() => toggleArrayFilter('selectedTags', tag)}
-              className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all cursor-pointer ${
+              className={`px-2.5 py-1 rounded-xl text-xs font-medium border transition-all cursor-pointer ${
                 isSelected
-                  ? 'bg-slate-900 border-slate-900 text-white font-bold'
-                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700'
+                  ? 'bg-primary border-primary text-primary-foreground font-bold'
+                  : 'bg-default/10 hover:bg-default/20 border-border text-foreground'
               }`}
             >
               #{tag}
@@ -210,11 +210,11 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
     >
       <div className="flex flex-col h-full">
         <div className="flex-1 overflow-y-auto">{content}</div>
-        <div className="pt-4 mt-2 border-t border-slate-200 grid grid-cols-2 gap-3">
+        <div className="pt-4 mt-2 border-t border-border grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={resetFilters}
-            className="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 text-xs font-bold hover:bg-slate-100 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="py-2.5 px-4 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/15 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={14} />
             <span>پاک کردن فیلترها</span>
@@ -222,7 +222,7 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
           <button
             type="button"
             onClick={onClose}
-            className="py-2.5 px-4 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
+            className="py-2.5 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <CheckIcon size={14} />
             <span>اعمال فیلتر ({toPersianDigits(hook.products.length)})</span>

@@ -1,16 +1,23 @@
-import type { CollectionConfig } from 'payload'
+import type { CollectionConfig } from "payload";
 
 export const Dimensions: CollectionConfig = {
-  slug: 'dimensions',
+  slug: "dimensions",
   labels: {
-    singular: 'بُعد / سایز',
-    plural: 'ابعاد کاشی',
+    singular: "بُعد / سایز",
+    plural: "ابعاد کاشی",
   },
   admin: {
-    useAsTitle: 'name',
-    defaultColumns: ['name', 'width', 'height', 'slug', 'isActive', 'createdAt'],
-    group: 'کاتالوگ و انبار',
-    description: 'ابعاد استاندارد کاشی و سرامیک.',
+    useAsTitle: "name",
+    defaultColumns: [
+      "name",
+      "width",
+      "height",
+      "slug",
+      "isActive",
+      "createdAt",
+    ],
+    group: "کاتالوگ و انبارداری",
+    description: "ابعاد استاندارد کاشی و سرامیک.",
   },
   access: {
     read: () => true,
@@ -20,42 +27,42 @@ export const Dimensions: CollectionConfig = {
   },
   fields: [
     {
-      name: 'name',
-      type: 'text',
+      name: "name",
+      type: "text",
       required: true,
-      label: 'عنوان سایز (مثال: ۶۰×۱۲۰)',
+      label: "عنوان سایز (مثال: ۶۰×۱۲۰)",
     },
     {
-      type: 'row',
+      type: "row",
       fields: [
         {
-          name: 'width',
-          type: 'number',
+          name: "width",
+          type: "number",
           required: true,
-          label: 'عرض (cm)',
-          admin: { width: '50%' },
+          label: "عرض (cm)",
+          admin: { width: "50%" },
         },
         {
-          name: 'height',
-          type: 'number',
+          name: "height",
+          type: "number",
           required: true,
-          label: 'طول (cm)',
-          admin: { width: '50%' },
+          label: "طول (cm)",
+          admin: { width: "50%" },
         },
       ],
     },
     {
-      name: 'slug',
-      type: 'text',
+      name: "slug",
+      type: "text",
       required: true,
       unique: true,
-      label: 'شناسه یکتا (Slug)',
+      label: "شناسه یکتا (Slug)",
     },
     {
-      name: 'isActive',
-      type: 'checkbox',
+      name: "isActive",
+      type: "checkbox",
       defaultValue: true,
-      label: 'فعال',
+      label: "فعال",
     },
   ],
-}
+};
