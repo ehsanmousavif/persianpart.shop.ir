@@ -12,7 +12,7 @@ export interface ProductCardProps {
   onOpenBottomSheet?: (product: Product) => void;
 }
 
-export function ProductCard({
+export const ProductCard = React.memo(function ProductCard({
   product,
   isSelected,
   isInCart = false,
@@ -28,32 +28,26 @@ export function ProductCard({
     onToggleSelect(product);
   };
 
-  const handleImgError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    const target = e.currentTarget;
-    if (!target.src.endsWith("/assets/images/placeholder.svg")) {
-      target.src = "/assets/images/placeholder.svg";
-    }
-  };
-
   const imgSrc = product.images[0] || "/assets/images/placeholder.svg";
 
   return (
     <div
-      onClick={handleCardClick}
-      className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[12px] border transition-all duration-150 cursor-pointer overflow-hidden text-start select-none ${
-        isSelected
-          ? "border-success/60 scale-[0.985] shadow-sm shadow-success/20 bg-success/10"
-          : "border-border hover:border-border shadow-none bg-surface"
-      }`}
       role="button"
       tabIndex={0}
       aria-pressed={isSelected}
+      onClick={handleCardClick}
       onKeyDown={(e) => {
         if (e.key === " " || e.key === "Enter") {
           e.preventDefault();
           onToggleSelect(product);
         }
       }}
+      className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[20px] bg-surface border transition-all duration-150 cursor-pointer select-none text-start ${
+        isSelected
+          ? "border-success/80 bg-success/10 scale-[0.985] shadow-xs ring-1 ring-success/30"
+          : "border-border hover:border-primary/40 shadow-xs"
+      }`}
+      style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
     >
       {/* Leading Thumbnail (Image Click ONLY opens Bottom Sheet) */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
@@ -71,19 +65,29 @@ export function ProductCard({
               onOpenBottomSheet?.(product);
             }
           }}
-          className="relative size-20 rounded-[12px] overflow-hidden shrink-0 border border-border bg-default/15 group/img cursor-pointer transition-transform active:scale-95"
+          className="relative size-19 aspect-square shrink-0 group/img cursor-pointer transition-transform active:scale-95"
           title="مشاهده جزئیات کالا"
           aria-label={`مشاهده جزئیات ${product.name}`}
         >
           <img
-            alt={product.name}
-            className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                  alt={product.name}
             src={imgSrc}
             loading="lazy"
-            onError={handleImgError}
+            decoding="async"
+            className="size-19 aspect-square object-cover rounded-[18px] border border-border transition-transform duration-200 group-hover/img:scale-105"
+            style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
+            onError={(e) => {
+              const target = e.currentTarget;
+              if (!target.src.endsWith("/assets/images/placeholder.svg")) {
+                target.src = "/assets/images/placeholder.svg";
+              }
+            }}
           />
           {/* Hover hint icon */}
-          <div className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center">
+          <div
+                  className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center rounded-[18px] pointer-events-none"
+            style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
+          >
             <span className="p-1 rounded-md bg-primary text-primary-foreground shadow-xs">
               <ZoomInIcon size={12} />
             </span>
@@ -161,4 +165,4 @@ export function ProductCard({
       </div>
     </div>
   );
-}
+})

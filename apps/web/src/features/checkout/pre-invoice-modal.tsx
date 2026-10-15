@@ -286,26 +286,24 @@ export function PreInvoiceModal({
                   >
                     {/* Product Thumbnail & Details */}
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-13 h-13 rounded-xl overflow-hidden shrink-0 border border-border bg-default/15">
-                        <img
-                          src={
-                            item.product.images[0] ||
-                            "/assets/images/placeholder.svg"
+                      <img
+                        src={
+                          item.product.images[0] ||
+                          "/assets/images/placeholder.svg"
+                        }
+                        alt={item.product.name}
+                        className="w-13 h-13 rounded-[14px] object-cover border border-border bg-default/15 shrink-0"
+                        onError={(e) => {
+                          if (
+                            !e.currentTarget.src.endsWith(
+                              "/assets/images/placeholder.svg",
+                            )
+                          ) {
+                            e.currentTarget.src =
+                              "/assets/images/placeholder.svg";
                           }
-                          alt={item.product.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            if (
-                              !e.currentTarget.src.endsWith(
-                                "/assets/images/placeholder.svg",
-                              )
-                            ) {
-                              e.currentTarget.src =
-                                "/assets/images/placeholder.svg";
-                            }
-                          }}
-                        />
-                      </div>
+                        }}
+                      />
                       <div className="min-w-0 flex-1">
                         <h4 className="font-bold text-foreground text-xs sm:text-sm truncate leading-snug">
                           {item.product.name}

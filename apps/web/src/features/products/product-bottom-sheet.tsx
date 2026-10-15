@@ -134,17 +134,15 @@ export function ProductBottomSheet({
               <HeroUIModal.Body className="p-3.5 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-3 text-start">
                 {/* 1. Main Hero Preview */}
                 <div className="space-y-2">
-                  <div className="relative aspect-16/10 rounded-2xl overflow-hidden bg-default/15 border border-border shadow-xs group">
+                  <div
+                    className="relative aspect-16/10 shrink-0 overflow-hidden bg-default/15 rounded-[20px] border border-border group"
+                    style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+                  >
                     <img
-                      src={currentHeroUrl || '/assets/images/placeholder.svg'}
+                        src={currentHeroUrl || '/assets/images/placeholder.svg'}
                       alt={product.name}
-                      className="w-full h-full object-cover transition-all duration-300"
-                      onError={(e) => {
-                        const target = e.currentTarget
-                        if (!target.src.endsWith('/assets/images/placeholder.svg')) {
-                          target.src = '/assets/images/placeholder.svg'
-                        }
-                      }}
+                      className="w-full h-full object-cover rounded-[20px]"
+                      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                     />
 
                     {/* Lightbox Trigger on Hero Preview */}
@@ -221,16 +219,19 @@ export function ProductBottomSheet({
                             onClick={() => setActiveImageUrl(item.url)}
                             aria-label={item.label}
                             title={item.label}
-                            className={`group relative w-13 h-13 sm:w-14 sm:h-14 shrink-0 rounded-xl overflow-hidden border-2 transition-all cursor-pointer select-none active:scale-95 ${
+                            className={`group relative w-13 h-13 sm:w-14 sm:h-14 shrink-0 transition-all cursor-pointer select-none active:scale-95 ${
                               isActive
-                                ? 'border-primary ring-2 ring-primary/20 shadow-xs scale-[1.03] opacity-100'
-                                : 'border-border hover:border-muted opacity-70 hover:opacity-100'
+                                ? 'scale-[1.03] opacity-100'
+                                : 'opacity-70 hover:opacity-100'
                             }`}
                           >
                             <img
-                              src={item.url || '/assets/images/placeholder.svg'}
+                                        src={item.url || '/assets/images/placeholder.svg'}
                               alt=""
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-250"
+                              className={`w-full h-full object-cover rounded-[14px] border ${
+                                isActive ? 'border-primary border-2' : 'border-border'
+                              } group-hover:scale-105 transition-transform`}
+                              style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                               onError={(e) => {
                                 const target = e.currentTarget
                                 if (!target.src.endsWith('/assets/images/placeholder.svg')) {

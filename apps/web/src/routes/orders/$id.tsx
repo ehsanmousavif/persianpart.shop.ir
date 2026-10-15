@@ -354,12 +354,13 @@ function OrderDetailPage() {
                 <Link
                   to="/product"
                   search={{ productname: item.productSlug }}
-                  className="w-16 h-16 rounded-xl bg-default/15 overflow-hidden border border-border shrink-0 block"
+                  className="relative w-16 h-16 shrink-0 block hover:opacity-90 transition-opacity"
                 >
                   <img
                     src={item.productImage || '/assets/images/placeholder.svg'}
                     alt={item.productName}
-                    className="w-full h-full object-cover"
+                    className="w-16 h-16 rounded-[16px] object-cover border border-border bg-default/15"
+                    style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                     onError={(e) => {
                       if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                         e.currentTarget.src = '/assets/images/placeholder.svg'

@@ -88,7 +88,7 @@ export function FilterDrawer({ isOpen, onClose, productHook, catalogHook }: Filt
         <button
           type="button"
           onClick={() => setFilter('selectedDimension', null)}
-          className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer ${
+          className={`px-3 py-1.5 rounded-[100px] text-xs font-semibold border transition-all cursor-pointer ${
             !filters.selectedDimension
               ? 'bg-primary border-primary text-primary-foreground font-bold'
               : 'bg-default/10 hover:bg-default/20 border-border text-foreground'

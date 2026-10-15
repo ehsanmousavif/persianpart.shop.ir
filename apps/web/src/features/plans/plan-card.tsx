@@ -18,11 +18,10 @@ export function PlanCard({ plan, products }: PlanCardProps) {
 
   return (
     <div
-      className={`border rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xs flex flex-col justify-between gap-4 text-start transition-all h-full ${
-        isActive
-          ? 'bg-surface border-border hover:shadow-md hover:border-primary/30'
-          : 'bg-default/10 border-border opacity-85 hover:opacity-100'
+      className={`p-4 sm:p-5 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-[20px] bg-surface border border-border shadow-xs ${
+        !isActive ? 'opacity-85' : ''
       }`}
+      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
     >
       <div className="space-y-3.5">
         {/* Top Header: Status Badge & Date */}
@@ -152,10 +151,12 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                       <img
                         src={prod.images[0] || '/assets/images/placeholder.svg'}
                         alt={prod.name}
-                        className="w-12 h-12 rounded-lg object-cover border border-border shrink-0"
+                        className="w-12 h-12 rounded-[14px] object-cover border border-border shrink-0"
+                        style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                         onError={(e) => {
-                          if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                            e.currentTarget.src = '/assets/images/placeholder.svg'
+                          const target = e.currentTarget
+                          if (!target.src.endsWith('/assets/images/placeholder.svg')) {
+                            target.src = '/assets/images/placeholder.svg'
                           }
                         }}
                       />

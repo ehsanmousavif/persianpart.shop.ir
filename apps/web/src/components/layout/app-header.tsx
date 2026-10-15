@@ -36,7 +36,7 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40  w-full border-b border-border bg-surface/95 backdrop-blur-md shadow-[0_1px_2px_rgba(0,0,0,0.03)]">
+    <header className="sticky top-0 z-40 w-full border-border bg-surface/95 backdrop-blur-md ">
       <div className="w-full px-3.5 h-14 max-w-xl mx-auto flex items-center justify-between gap-2">
         {/* Brand Logo */}
         <Link
@@ -56,12 +56,10 @@ export function AppHeader() {
         {isAuthenticated && user ? (
           <Link
             to="/account"
-                        className="w-9.5 h-9.5 rounded-xl border border-border bg-default/15 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
-
+            className="w-9.5 h-9.5 rounded-xl border border-border bg-default/15 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
             aria-label="حساب کاربری"
           >
-                       <UserIcon size={20} className="text-primary" />
-
+            <UserIcon size={20} className="text-primary" />
           </Link>
         ) : (
           <Link
@@ -69,8 +67,7 @@ export function AppHeader() {
             className="w-9.5 h-9.5 rounded-xl border border-border bg-default/15 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
             aria-label="ورود همکاران"
           >
-                        <UserIcon size={20} className="text-primary" />
-
+            <UserIcon size={20} className="text-primary" />
           </Link>
         )}
       </div>

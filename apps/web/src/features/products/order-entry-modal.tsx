@@ -113,7 +113,8 @@ export function OrderEntryModal({
                 <img
                   src={product.images[0] || '/assets/images/placeholder.svg'}
                   alt={product.name}
-                  className="w-14 h-14 rounded-lg object-cover border border-border shrink-0"
+                  className="w-14 h-14 rounded-[16px] object-cover border border-border shrink-0"
+                  style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                   onError={(e) => {
                     if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                       e.currentTarget.src = '/assets/images/placeholder.svg'

@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import { createFileRoute, useNavigate, Link } from '@tanstack/react-router'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { ScrollShadow, TagGroup, Tag } from '@heroui/react'
 import { useProducts } from '../../features/products/product-store'
 import { ProductCard } from '../../features/products/product-card'
@@ -71,19 +72,17 @@ function ProductListPage() {
   const [isFilterOpen, setIsFilterOpen] = useState(false)
   const [activeBottomSheetProduct, setActiveBottomSheetProduct] = useState<Product | null>(null)
 
-  const handleOpenBottomSheet = (product: Product) => {
+  const handleOpenBottomSheet = useCallback((product: Product) => {
     setActiveBottomSheetProduct(product)
-  }
+  }, [])
 
-  const handleCloseBottomSheet = () => {
+  const handleCloseBottomSheet = useCallback(() => {
     setActiveBottomSheetProduct(null)
-  }
+  }, [])
 
-  const handleToggleSelect = (product: Product) => {
+  const handleToggleSelect = useCallback((product: Product) => {
     toggleProduct(product.id)
-  }
-
-  const activeContainerClass = 'flex flex-col gap-2'
+  }, [toggleProduct])
 
   // Normal in-place selection: Products stay in their original order.
   const displayedProducts = useMemo(() => {
@@ -92,6 +91,50 @@ function ProductListPage() {
 
   const hasMore = displayLimit < products.length
 
+  const listContainerRef = useRef<HTMLDivElement | null>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+
+  useLayoutEffect(() => {
+    if (listContainerRef.current) {
+      setScrollMargin(listContainerRef.current.offsetTop)
+    }
+  }, [filters])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (listContainerRef.current) {
+        setScrollMargin(listContainerRef.current.offsetTop)
+      }
+    }
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const virtualizer = useWindowVirtualizer({
+    count: displayedProducts.length,
+    estimateSize: () => 104,
+    overscan: 5,
+    scrollMargin,
+    gap: 8,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
+  // Auto-load next batch when scrolling near the end of the virtual window
+  useEffect(() => {
+    const lastItem = virtualItems[virtualItems.length - 1]
+    if (!lastItem) return
+
+    if (lastItem.index >= displayedProducts.length - 2 && hasMore && !isLoadingMore) {
+      setIsLoadingMore(true)
+      setTimeout(() => {
+        setDisplayLimit((prev) => Math.min(prev + BATCH_STEP, products.length))
+        setIsLoadingMore(false)
+      }, 200)
+    }
+  }, [virtualItems, displayedProducts.length, hasMore, isLoadingMore, products.length])
+
+  // Fallback IntersectionObserver sentinel
   useEffect(() => {
     if (!hasMore || isLoadingMore) return
 
@@ -124,7 +167,7 @@ function ProductListPage() {
   }, [hasMore, isLoadingMore, products.length])
 
   return (
-    <div className="w-full px-3 py-3 space-y-3 text-start pb-32 bg-white">
+    <div className="w-full px-4 py-3 space-y-3 text-start pb-12 bg-white">
       {/* 1. Search Bar & Advanced Filters Trigger */}
       <div className="flex items-stretch gap-2">
         <div className="relative flex-1">
@@ -133,15 +176,15 @@ function ProductListPage() {
             value={filters.searchQuery}
             onChange={(e) => setFilter('searchQuery', e.target.value)}
             placeholder="جستجوی کالا، کد یا برند..."
-            className="w-full h-13 px-3 ps-9 placeholder:font-bold placeholder:text-[12px] rounded-[12px] bg-surface border border-border focus:border-primary text-xs font-semibold text-foreground transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
+            className="w-full h-13 px-3 ps-9  placeholder:text-sm rounded-xl bg-surface border border-border focus:border-primary text-xs font-semibold text-foreground transition-all outline-hidden shadow-2xs flex flex-col justify-center items-center"
             aria-label="جستجوی سریع محصولات"
           />
-          <SearchIcon size={16} className="absolute start-3 top-4 text-muted pointer-events-none" />
+          <SearchIcon size={16} className="absolute start-s-3 top-4 text-muted pointer-events-none" />
           {filters.searchQuery && (
             <button
               type="button"
               onClick={() => setFilter('searchQuery', '')}
-              className="absolute end-2.5  top-2.5 w-6 h-6 rounded-[12px] text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
+              className="absolute end-s-2.5  top-2.5 w-6 h-6 rounded-3xl text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
               aria-label="پاک کردن متن جستجو"
             >
               <XIcon size={14} />
@@ -185,7 +228,7 @@ function ProductListPage() {
           <TagGroup.List className="flex items-center gap-1.5 min-w-max">
             <Tag
               id="all"
-              className={`h-10 w-fit px-4 rounded-xl text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
+              className={`h-10 w-fit px-4 text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 border active:scale-95 shadow-2xs ${
                 !filters.selectedDimension
                   ? 'bg-foreground border-foreground text-background'
                   : 'bg-surface border-border text-muted hover:bg-default/20 hover:text-foreground'
@@ -239,7 +282,7 @@ function ProductListPage() {
 
       {/* Product Items Display */}
       {isLoading ? (
-        <div className={activeContainerClass}>
+        <div className="flex flex-col gap-2">
           {Array.from({ length: 6 }).map((_, idx) => (
             <ProductCardSkeleton key={idx} viewMode="list" />
           ))}
@@ -265,30 +308,52 @@ function ProductListPage() {
           </button>
         </div>
       ) : (
-        <div className="space-y-2">
-          <div className={activeContainerClass}>
-            {displayedProducts.map((product) => {
+        <div className="w-full">
+          <div
+            ref={listContainerRef}
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualItems.map((virtualRow) => {
+              const product = displayedProducts[virtualRow.index]
+              if (!product) return null
+
               const inCart = isProductInCart(product.id)
               const isSelected = isProductSelected(product.id)
 
               return (
-                <ProductCard
+                <div
                   key={product.id}
-                  product={product}
-                  isSelected={isSelected}
-                  isInCart={inCart}
-                  onToggleSelect={handleToggleSelect}
-                  onOpenBottomSheet={handleOpenBottomSheet}
-                />
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
+                  }}
+                >
+                  <ProductCard
+                    product={product}
+                    isSelected={isSelected}
+                    isInCart={inCart}
+                    onToggleSelect={handleToggleSelect}
+                    onOpenBottomSheet={handleOpenBottomSheet}
+                  />
+                </div>
               )
             })}
           </div>
 
           {/* Infinite Scroll Sentinel */}
           {hasMore && (
-            <div ref={observerTargetRef} className="pt-2 space-y-2">
+            <div ref={observerTargetRef} className="pt-4 space-y-2">
               {isLoadingMore ? (
-                <div className={activeContainerClass}>
+                <div className="flex flex-col gap-2">
                   <ProductCardSkeleton viewMode="list" />
                   <ProductCardSkeleton viewMode="list" />
                 </div>
@@ -312,12 +377,7 @@ function ProductListPage() {
             </div>
           )}
 
-          {!hasMore && products.length > INITIAL_BATCH_SIZE && (
-            <div className="py-6 text-center text-xs text-muted flex items-center justify-center gap-2">
-              <div className="h-px w-12 bg-border" />
-              <div className="h-px w-12 bg-border" />
-            </div>
-          )}
+         
         </div>
       )}
 

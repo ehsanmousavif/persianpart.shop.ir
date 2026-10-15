@@ -19,8 +19,6 @@ import { Route as OrdersIndexRouteImport } from './routes/orders/index'
 import { Route as OrdersIdRouteImport } from './routes/orders/$id'
 import { Route as ProductIndexRouteImport } from './routes/product/index'
 import { Route as ProductNewRouteImport } from './routes/product/new'
-import { Route as ProductsIndexRouteImport } from './routes/products/index'
-import { Route as ProductsNewRouteImport } from './routes/products/new'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -72,16 +70,6 @@ const ProductNewRoute = ProductNewRouteImport.update({
   path: '/new',
   getParentRoute: () => ProductRoute,
 } as any)
-const ProductsIndexRoute = ProductsIndexRouteImport.update({
-  id: '/products/',
-  path: '/products/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProductsNewRoute = ProductsNewRouteImport.update({
-  id: '/products/new',
-  path: '/products/new',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -92,10 +80,8 @@ export interface FileRoutesByFullPath {
   '/product': typeof ProductRouteWithChildren
   '/orders/$id': typeof OrdersIdRoute
   '/product/new': typeof ProductNewRoute
-  '/products/new': typeof ProductsNewRoute
   '/orders/': typeof OrdersIndexRoute
   '/product/': typeof ProductIndexRoute
-  '/products/': typeof ProductsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -105,10 +91,8 @@ export interface FileRoutesByTo {
   '/plans': typeof PlansRoute
   '/orders/$id': typeof OrdersIdRoute
   '/product/new': typeof ProductNewRoute
-  '/products/new': typeof ProductsNewRoute
   '/orders': typeof OrdersIndexRoute
   '/product': typeof ProductIndexRoute
-  '/products': typeof ProductsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -120,10 +104,8 @@ export interface FileRoutesById {
   '/product': typeof ProductRouteWithChildren
   '/orders/$id': typeof OrdersIdRoute
   '/product/new': typeof ProductNewRoute
-  '/products/new': typeof ProductsNewRoute
   '/orders/': typeof OrdersIndexRoute
   '/product/': typeof ProductIndexRoute
-  '/products/': typeof ProductsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -136,10 +118,8 @@ export interface FileRouteTypes {
     | '/product'
     | '/orders/$id'
     | '/product/new'
-    | '/products/new'
     | '/orders/'
     | '/product/'
-    | '/products/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -149,10 +129,8 @@ export interface FileRouteTypes {
     | '/plans'
     | '/orders/$id'
     | '/product/new'
-    | '/products/new'
     | '/orders'
     | '/product'
-    | '/products'
   id:
     | '__root__'
     | '/'
@@ -163,10 +141,8 @@ export interface FileRouteTypes {
     | '/product'
     | '/orders/$id'
     | '/product/new'
-    | '/products/new'
     | '/orders/'
     | '/product/'
-    | '/products/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -177,9 +153,7 @@ export interface RootRouteChildren {
   PlansRoute: typeof PlansRoute
   ProductRoute: typeof ProductRouteWithChildren
   OrdersIdRoute: typeof OrdersIdRoute
-  ProductsNewRoute: typeof ProductsNewRoute
   OrdersIndexRoute: typeof OrdersIndexRoute
-  ProductsIndexRoute: typeof ProductsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -254,20 +228,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductNewRouteImport
       parentRoute: typeof ProductRoute
     }
-    '/products/': {
-      id: '/products/'
-      path: '/products'
-      fullPath: '/products/'
-      preLoaderRoute: typeof ProductsIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/products/new': {
-      id: '/products/new'
-      path: '/products/new'
-      fullPath: '/products/new'
-      preLoaderRoute: typeof ProductsNewRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
@@ -292,9 +252,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlansRoute: PlansRoute,
   ProductRoute: ProductRouteWithChildren,
   OrdersIdRoute: OrdersIdRoute,
-  ProductsNewRoute: ProductsNewRoute,
   OrdersIndexRoute: OrdersIndexRoute,
-  ProductsIndexRoute: ProductsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

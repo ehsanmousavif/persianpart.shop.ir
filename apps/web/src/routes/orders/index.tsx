@@ -1,5 +1,6 @@
-import { useState, useMemo, useEffect, useRef } from 'react'
+import React, { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import { ScrollShadow } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus, type Order, type Product } from '../../types'
@@ -31,6 +32,135 @@ function cleanOrderNumber(orderNumber: string): string {
   return stripped
 }
 
+const isCancelledStatus = (s: string) =>
+  s === 'cancel' || s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
+
+interface OrderCardProps {
+  order: Order
+  onReorder: (orderId: string) => void
+}
+
+const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardProps) {
+  const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
+  const is10MinutesPassed = Date.now() >= createdAtMs + 10 * 60 * 1000
+
+  let dynamicStatusLabel = order.statusLabel
+  let dynamicStatusColor: 'primary' | 'warning' | 'success' | 'danger' = 'warning'
+
+  if (order.status === 'pending') {
+    if (is10MinutesPassed) {
+      dynamicStatusLabel = 'در حال بررسی واحد بازرگانی'
+      dynamicStatusColor = 'warning'
+    } else {
+      dynamicStatusLabel = 'سفارش ثبت شده'
+      dynamicStatusColor = 'primary'
+    }
+  } else if (order.status === 'completed' || order.status === 'approve' || order.status === 'approved') {
+    dynamicStatusLabel = 'تکمیل شده'
+    dynamicStatusColor = 'success'
+  } else if (order.status === 'cancelled_by_customer' || (isCancelledStatus(order.status) && order.cancelledBy === 'customer')) {
+    dynamicStatusLabel = 'لغو توسط کاربر'
+    dynamicStatusColor = 'danger'
+  } else if (order.status === 'cancelled_by_admin' || (isCancelledStatus(order.status) && order.cancelledBy === 'admin')) {
+    dynamicStatusLabel = 'لغو توسط ادمین'
+    dynamicStatusColor = 'danger'
+  } else {
+    dynamicStatusLabel = ORDER_STATUS_MAP[order.status]?.label || order.statusLabel || 'در حال بررسی'
+    dynamicStatusColor = (ORDER_STATUS_MAP[order.status]?.color as any) || 'warning'
+  }
+
+  const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
+  const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
+
+  return (
+    <div
+      
+      className="p-3.5 space-y-3 rounded-[20px] bg-surface border border-border shadow-xs"
+      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+    >
+      {/* Order Top Bar */}
+      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-separator flex-wrap sm:flex-nowrap">
+        <div className="flex items-center gap-2">
+          <span className="px-2.5 py-0.5 rounded-lg bg-default/15 border border-border text-xs font-bold text-foreground flex items-center gap-1">
+            <span className="text-muted text-[11px] font-normal">سفارش</span>
+            <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+          </span>
+          <Badge variant={dynamicStatusColor} size="sm">
+            {dynamicStatusLabel}
+          </Badge>
+        </div>
+
+        <span className="text-xs text-muted font-medium">
+          {formatPersianDate(order.createdAt || order.date)}
+        </span>
+      </div>
+
+      {/* Items Thumbnails & Specs */}
+      <div className="space-y-2.5">
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+          {order.items.map((item, idx) => (
+            <img
+              key={idx}
+              
+              src={item.productImage || '/assets/images/placeholder.svg'}
+              alt={item.productName}
+              className="w-12 h-12 rounded-[14px] object-cover border border-border bg-default/15 shrink-0"
+              style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+              title={item.productName}
+              onError={(e) => {
+                const target = e.currentTarget
+                if (!target.src.endsWith('/assets/images/placeholder.svg')) {
+                  target.src = '/assets/images/placeholder.svg'
+                }
+              }}
+            />
+          ))}
+          <div className="ps-1 text-xs text-muted">
+            <span className="font-bold text-foreground block text-xs">
+              {toPersianDigits(order.items.length)} محصول
+            </span>
+            <span className="text-xs text-muted">
+              {toPersianDigits(totalCartons)} کارتن ({toPersianDigits(totalArea)})
+            </span>
+          </div>
+        </div>
+
+        {/* Financials & Action Buttons */}
+        <div className="flex items-center justify-between gap-2 pt-2 border-t border-separator">
+          <div>
+            <span className="text-xs text-muted block font-medium leading-tight mb-0.5">مبلغ کل:</span>
+            <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
+              <span>{formatToman(order.finalTotal)}</span>
+              <TomanIcon className="size-3.5" />
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => onReorder(order.id)}
+              className="h-8 px-2.5 rounded-xl border border-border hover:bg-default/20 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+              title="سفارش مجدد اقلام"
+            >
+              <RefreshCwIcon size={13} />
+              <span>تکرار</span>
+            </button>
+
+            <Link
+              to="/orders/$id"
+              params={{ id: order.id }}
+              className="h-8 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center gap-1 shadow-primary/20 cursor-pointer active:scale-95 shrink-0"
+            >
+              <span>پیگیری</span>
+              <ArrowLeftIcon size={13} />
+            </Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+})
+
 function OrdersListPage() {
   const navigate = useNavigate()
   const { orders, isLoading } = useOrders()
@@ -48,9 +178,6 @@ function OrdersListPage() {
   useEffect(() => {
     setDisplayLimit(INITIAL_BATCH_SIZE)
   }, [selectedStatusTab])
-
-  const isCancelledStatus = (s: string) =>
-    s === 'cancel' || s === 'cancelled' || s === 'cancelled_by_customer' || s === 'cancelled_by_admin'
 
   const filteredOrders =
     selectedStatusTab === 'all'
@@ -143,12 +270,54 @@ function OrdersListPage() {
     return { reorderProducts: products, reorderQuantities: quantities }
   }, [reorderOrder?.items, allProducts])
 
-  const handleReorder = (orderId: string) => {
+  const handleReorder = useCallback((orderId: string) => {
     const target = orders.find((o) => o.id === orderId)
     if (target) {
       setReorderOrder(target)
     }
-  }
+  }, [orders])
+
+  const listContainerRef = useRef<HTMLDivElement | null>(null)
+  const [scrollMargin, setScrollMargin] = useState(0)
+
+  useLayoutEffect(() => {
+    if (listContainerRef.current) {
+      setScrollMargin(listContainerRef.current.offsetTop)
+    }
+  }, [selectedStatusTab])
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (listContainerRef.current) {
+        setScrollMargin(listContainerRef.current.offsetTop)
+      }
+    }
+    window.addEventListener('resize', handleResize, { passive: true })
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  const virtualizer = useWindowVirtualizer({
+    count: displayedOrders.length,
+    estimateSize: () => 180,
+    overscan: 4,
+    scrollMargin,
+    gap: 10,
+  })
+
+  const virtualItems = virtualizer.getVirtualItems()
+
+  useEffect(() => {
+    const lastItem = virtualItems[virtualItems.length - 1]
+    if (!lastItem) return
+
+    if (lastItem.index >= displayedOrders.length - 2 && hasMore && !isLoadingMore) {
+      setIsLoadingMore(true)
+      setTimeout(() => {
+        setDisplayLimit((prev) => Math.min(prev + BATCH_STEP, filteredOrders.length))
+        setIsLoadingMore(false)
+      }, 200)
+    }
+  }, [virtualItems, displayedOrders.length, hasMore, isLoadingMore, filteredOrders.length])
 
   const TABS = [
     { key: 'all', label: 'همه سفارش‌ها' },
@@ -229,127 +398,37 @@ function OrdersListPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-2.5">
-          {displayedOrders.map((order) => {
-            const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
-            const is10MinutesPassed = Date.now() >= createdAtMs + 10 * 60 * 1000
+        <div className="w-full">
+          <div
+            ref={listContainerRef}
+            style={{
+              height: `${virtualizer.getTotalSize()}px`,
+              width: '100%',
+              position: 'relative',
+            }}
+          >
+            {virtualItems.map((virtualRow) => {
+              const order = displayedOrders[virtualRow.index]
+              if (!order) return null
 
-            let dynamicStatusLabel = order.statusLabel
-            let dynamicStatusColor: 'primary' | 'warning' | 'success' | 'danger' = 'warning'
-
-            if (order.status === 'pending') {
-              if (is10MinutesPassed) {
-                dynamicStatusLabel = 'در حال بررسی واحد بازرگانی'
-                dynamicStatusColor = 'warning'
-              } else {
-                dynamicStatusLabel = 'سفارش ثبت شده'
-                dynamicStatusColor = 'primary'
-              }
-            } else if (order.status === 'completed' || order.status === 'approve' || order.status === 'approved') {
-              dynamicStatusLabel = 'تکمیل شده'
-              dynamicStatusColor = 'success'
-            } else if (order.status === 'cancelled_by_customer' || (isCancelledStatus(order.status) && order.cancelledBy === 'customer')) {
-              dynamicStatusLabel = 'لغو توسط کاربر'
-              dynamicStatusColor = 'danger'
-            } else if (order.status === 'cancelled_by_admin' || (isCancelledStatus(order.status) && order.cancelledBy === 'admin')) {
-              dynamicStatusLabel = 'لغو توسط ادمین'
-              dynamicStatusColor = 'danger'
-            } else {
-              dynamicStatusLabel = ORDER_STATUS_MAP[order.status]?.label || order.statusLabel || 'در حال بررسی'
-              dynamicStatusColor = (ORDER_STATUS_MAP[order.status]?.color as any) || 'warning'
-            }
-
-            const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
-            const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
-
-            return (
-              <div
-                key={order.id}
-                className="bg-surface border border-border hover:border-primary/40 rounded-2xl p-3.5 shadow-xs transition-all space-y-3"
-              >
-                {/* Order Top Bar */}
-                <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-separator flex-wrap sm:flex-nowrap">
-                  <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-lg bg-default/15 border border-border text-xs font-bold text-foreground flex items-center gap-1">
-                      <span className="text-muted text-[11px] font-normal">سفارش</span>
-                      <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
-                    </span>
-                    <Badge variant={dynamicStatusColor} size="sm">
-                      {dynamicStatusLabel}
-                    </Badge>
-                  </div>
-
-                  <span className="text-xs text-muted font-medium">
-                    {formatPersianDate(order.createdAt || order.date)}
-                  </span>
+              return (
+                <div
+                  key={order.id}
+                  data-index={virtualRow.index}
+                  ref={virtualizer.measureElement}
+                  style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '100%',
+                    transform: `translateY(${virtualRow.start - virtualizer.options.scrollMargin}px)`,
+                  }}
+                >
+                  <OrderCard order={order} onReorder={handleReorder} />
                 </div>
-
-                {/* Items Thumbnails & Specs */}
-                <div className="space-y-2.5">
-                  <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
-                    {order.items.map((item, idx) => (
-                      <div
-                        key={idx}
-                        className="relative w-12 h-12 rounded-xl bg-default/15 overflow-hidden border border-border shrink-0"
-                        title={item.productName}
-                      >
-                        <img
-                          src={item.productImage || '/assets/images/placeholder.svg'}
-                          alt={item.productName}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                              e.currentTarget.src = '/assets/images/placeholder.svg'
-                            }
-                          }}
-                        />
-                      </div>
-                    ))}
-                    <div className="ps-1 text-xs text-muted">
-                      <span className="font-bold text-foreground block text-xs">
-                        {toPersianDigits(order.items.length)} محصول
-                      </span>
-                      <span className="text-xs text-muted">
-                        {toPersianDigits(totalCartons)} کارتن ({toPersianDigits(totalArea)})
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Financials & Action Buttons */}
-                  <div className="flex items-center justify-between gap-2 pt-2 border-t border-separator">
-                    <div>
-                      <span className="text-xs text-muted block font-medium leading-tight mb-0.5">مبلغ کل:</span>
-                      <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
-                        <span>{formatToman(order.finalTotal)}</span>
-                        <TomanIcon className="size-3.5" />
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleReorder(order.id)}
-                        className="h-8 px-2.5 rounded-xl border border-border hover:bg-default/20 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
-                        title="سفارش مجدد اقلام"
-                      >
-                        <RefreshCwIcon size={13} />
-                        <span>تکرار</span>
-                      </button>
-
-                      <Link
-                        to="/orders/$id"
-                        params={{ id: order.id }}
-                        className="h-8 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center gap-1 shadow-primary/20 cursor-pointer active:scale-95 shrink-0"
-                      >
-                        <span>پیگیری</span>
-                        <ArrowLeftIcon size={13} />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
 
           {/* Infinite Scroll Sentinel & Loading Indicator */}
           {hasMore && (
@@ -362,13 +441,6 @@ function OrdersListPage() {
             </div>
           )}
 
-          {!hasMore && displayedOrders.length > 0 && (
-            <div className="py-6 text-center text-xs text-muted/70 flex items-center justify-center gap-2">
-              <span className="w-12 h-px bg-border" />
-              <span>پایان لیست سفارش‌ها ({toPersianDigits(displayedOrders.length)} سفارش)</span>
-              <span className="w-12 h-px bg-border" />
-            </div>
-          )}
         </div>
       )}
 

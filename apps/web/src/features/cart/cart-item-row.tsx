@@ -1,3 +1,4 @@
+import React from 'react'
 import { Link } from '@tanstack/react-router'
 import type { CartItem } from './cart-store'
 import { useCart } from './cart-store'
@@ -8,11 +9,14 @@ export interface CartItemRowProps {
   item: CartItem
 }
 
-export function CartItemRow({ item }: CartItemRowProps) {
+export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRowProps) {
   const { updateRequestedArea, removeItem } = useCart()
 
   return (
-    <div className="bg-surface border border-border rounded-2xl p-3 transition-all shadow-xs space-y-2.5 text-start">
+    <div
+      className="p-3 space-y-2.5 rounded-[20px] bg-surface border border-border shadow-xs"
+      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+    >
       {/* Warning states banners */}
       {item.statusWarning === 'low_stock' && (
         <div className="p-2 rounded-xl bg-warning/10 border border-warning/30 text-warning text-xs flex items-center justify-between gap-1.5">
@@ -73,18 +77,20 @@ export function CartItemRow({ item }: CartItemRowProps) {
       <div className="flex items-start gap-3">
         {/* Thumbnail: links to /product with productname query to open bottom sheet */}
         <Link
-          to="/products"
+          to="/product"
           search={{ productname: item.slug }}
-          className="w-18 h-18 rounded-xl bg-default/15 overflow-hidden shrink-0 border border-border block hover:opacity-90 transition-opacity"
+          className="relative size-18 shrink-0 block hover:opacity-90 transition-opacity"
           title="مشاهده مشخصات کالا در لیست محصولات"
         >
           <img
-            src={item.image || '/assets/images/placeholder.svg'}
+                  src={item.image || '/assets/images/placeholder.svg'}
             alt={item.name}
-            className="w-full h-full object-cover"
+            className="size-18 object-cover rounded-[16px] border border-border"
+            style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
             onError={(e) => {
-              if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                e.currentTarget.src = '/assets/images/placeholder.svg'
+              const target = e.currentTarget
+              if (!target.src.endsWith('/assets/images/placeholder.svg')) {
+                target.src = '/assets/images/placeholder.svg'
               }
             }}
           />
@@ -183,4 +189,4 @@ export function CartItemRow({ item }: CartItemRowProps) {
       </div>
     </div>
   )
-}
+})

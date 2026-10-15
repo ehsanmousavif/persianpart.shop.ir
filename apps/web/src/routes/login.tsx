@@ -1,7 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { LoginCard } from '../features/auth/login-card'
-import { GradientWaves } from '../components/ui/gradient-waves'
 import { BorderGlow } from '../components/ui/border-glow'
+
+const GradientWaves = lazy(() =>
+  import('../components/ui/gradient-waves').then((m) => ({ default: m.GradientWaves }))
+)
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -12,21 +16,23 @@ function LoginPage() {
     <div className="relative max-w-2xl mx-auto h-full flex-1 flex items-center justify-center p-4 overflow-hidden bg-background">
       {/* ReactBits Gradient Waves Background with User Configured Parameters */}
       <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <GradientWaves
-          height={15}
-          zoom={0.7}
-          tilt={1}
-          horizonColor="#8e6ee5"
-          waveColor="#ffffff"
-          crestColor="#201a97"
-          waveScale={0.65}
-          amplitude={7}
-          speed={0.12}
-          turbulence={20}
-          swell={8}
-          mouseInteraction={true}
-          className="w-full h-full"
-        />
+        <Suspense fallback={null}>
+          <GradientWaves
+            height={15}
+            zoom={0.7}
+            tilt={1}
+            horizonColor="#8e6ee5"
+            waveColor="#ffffff"
+            crestColor="#201a97"
+            waveScale={0.65}
+            amplitude={7}
+            speed={0.12}
+            turbulence={20}
+            swell={8}
+            mouseInteraction={true}
+            className="w-full h-full"
+          />
+        </Suspense>
       </div>
 
       {/* Login Card with ReactBits BorderGlow */}

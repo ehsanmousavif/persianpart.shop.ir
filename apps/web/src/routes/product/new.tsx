@@ -176,12 +176,7 @@ function ProductNewConfigurationPage() {
           <span>بازگشت به لیست محصولات</span>
         </button>
 
-        <div className="flex items-center gap-1.5 text-xs">
-          <span className="px-2 py-0.5 rounded-md bg-primary/15 text-primary font-bold border border-primary/25">
-            مرحله ۲ از ۲
-          </span>
-          <span className="font-bold text-foreground">تعیین متراژ و تایید</span>
-        </div>
+       
       </div>
 
       {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}

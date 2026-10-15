@@ -73,9 +73,6 @@ function RootComponent() {
 
           {/* Permanent Bottom Navigation Bar (Hidden on login) */}
           {!isLoginPage && <MobileBottomNav />}
-
-          {/* Global Toast Notification Container */}
-      
         </div>
       </div>
     </NuqsAdapter>
