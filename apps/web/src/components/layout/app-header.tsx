@@ -36,8 +36,8 @@ export function AppHeader() {
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full border-border bg-surface/95 backdrop-blur-md ">
-      <div className="w-full px-3.5 h-14 max-w-xl mx-auto flex items-center justify-between gap-2">
+    <header className="sticky top-0 z-40 w-full bg-white/95 backdrop-blur-md pt-[env(safe-area-inset-top,0px)]">
+      <div className="w-full px-4 h-14 max-w-xl mx-auto flex items-center justify-between gap-2">
         {/* Brand Logo */}
         <Link
           to="/product"
@@ -56,7 +56,7 @@ export function AppHeader() {
         {isAuthenticated && user ? (
           <Link
             to="/account"
-            className="w-9.5 h-9.5 rounded-xl border border-border bg-default/15 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
+            className="w-9.5 h-9.5 rounded-xl px-2 ml-1 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
             aria-label="حساب کاربری"
           >
             <UserIcon size={20} className="text-primary" />

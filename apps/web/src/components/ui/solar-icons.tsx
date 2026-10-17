@@ -1,5 +1,6 @@
 import React from 'react'
-import type { Icon } from '@solar-icons/react'
+
+type Icon = React.ComponentType<any>
 import {
   RulerIcon,
   BoxIcon,

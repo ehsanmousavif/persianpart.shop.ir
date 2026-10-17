@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from 'react'
-import { Modal as HeroUIModal, Chip } from '@heroui/react'
-import type { Product } from '../../types'
-import { toPersianDigits, formatToman } from '../../lib/utils/currency'
-import { ImageViewerModal } from '../../components/ui/image-viewer-modal'
-import { formatGrade } from './product-store'
+import { useState, useMemo, useEffect } from "react";
+import { Modal as HeroUIModal, Chip } from "@heroui/react";
+import type { Product } from "../../types";
+import { toPersianDigits, formatToman } from "../../lib/utils/currency";
+import { ImageViewerModal } from "../../components/ui/image-viewer-modal";
+import { formatGrade } from "./product-store";
 import {
   XIcon,
   ZoomInIcon,
@@ -18,22 +18,22 @@ import {
   SolarPaletteIcon,
   SolarScaleIcon,
   TomanIcon,
-} from '../../components/ui/icons'
+} from "../../components/ui/icons";
 
 export interface ProductBottomSheetProps {
-  product: Product | null
-  isOpen: boolean
-  isSelected?: boolean
-  onClose: () => void
-  onToggleSelect?: () => void
-  onOrderDirect?: (product: Product) => void
+  product: Product | null;
+  isOpen: boolean;
+  isSelected?: boolean;
+  onClose: () => void;
+  onToggleSelect?: () => void;
+  onOrderDirect?: (product: Product) => void;
 }
 
 interface GalleryMediaItem {
-  id: string
-  url: string
-  label: string
-  isSampleWork: boolean
+  id: string;
+  url: string;
+  label: string;
+  isSampleWork: boolean;
 }
 
 export function ProductBottomSheet({
@@ -44,61 +44,63 @@ export function ProductBottomSheet({
   onToggleSelect,
   onOrderDirect,
 }: ProductBottomSheetProps) {
-  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null)
-  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null)
+  const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
+  const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
 
   // Consolidate tile angles and sample works into a unified gallery
   const mediaItems: GalleryMediaItem[] = useMemo(() => {
-    if (!product) return []
-    const items: GalleryMediaItem[] = []
-    const seen = new Set<string>()
+    if (!product) return [];
+    const items: GalleryMediaItem[] = [];
+    const seen = new Set<string>();
 
-    const all = [
-      ...(product.images || []),
-      ...(product.gallery || []),
-    ].filter(Boolean)
+    const all = [...(product.images || []), ...(product.gallery || [])].filter(
+      Boolean,
+    );
 
     all.forEach((url, idx) => {
       if (!seen.has(url)) {
-        seen.add(url)
+        seen.add(url);
         items.push({
           id: `media-${idx}`,
           url,
-          label: idx === 0 ? 'تصویر اصلی' : `نمونه‌کار ${toPersianDigits(idx)}`,
+          label: idx === 0 ? "تصویر اصلی" : `نمونه‌کار ${toPersianDigits(idx)}`,
           isSampleWork: idx > 0,
-        })
+        });
       }
-    })
+    });
 
     if (items.length === 0) {
       items.push({
-        id: 'placeholder',
-        url: '/assets/images/placeholder.svg',
-        label: 'تصویر شاخص',
+        id: "placeholder",
+        url: "/assets/images/placeholder.svg",
+        label: "تصویر شاخص",
         isSampleWork: false,
-      })
+      });
     }
 
-    return items
-  }, [product])
+    return items;
+  }, [product]);
 
   // Sync active image when product changes
   useEffect(() => {
     if (product && product.images.length > 0) {
-      setActiveImageUrl(product.images[0] ?? null)
+      setActiveImageUrl(product.images[0] ?? null);
     }
-  }, [product])
+  }, [product]);
 
-  if (!isOpen || !product) return null
+  if (!isOpen || !product) return null;
 
-  const isOutOfStock = product.stockStatus === 'out_of_stock'
-  const isLowStock = product.stockStatus === 'low_stock'
-  const currentHeroUrl = activeImageUrl || product.images[0] || ''
-  const currentMediaItem = mediaItems.find((m) => m.url === currentHeroUrl)
+  const isOutOfStock = product.stockStatus === "out_of_stock";
+  const isLowStock = product.stockStatus === "low_stock";
+  const currentHeroUrl = activeImageUrl || product.images[0] || "";
+  const currentMediaItem = mediaItems.find((m) => m.url === currentHeroUrl);
 
   return (
     <>
-      <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <HeroUIModal.Root
+        isOpen={isOpen}
+        onOpenChange={(open) => !open && onClose()}
+      >
         <HeroUIModal.Backdrop
           isDismissable
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end justify-center animate-backdrop-enter"
@@ -110,7 +112,6 @@ export function ProductBottomSheet({
                 <div className="w-8 h-1 rounded-full bg-border" />
               </div>
 
-              {/* Header (Strictly Top-Right Aligned) */}
               <HeroUIModal.Header className="px-3.5 py-2 border-b border-separator flex items-start justify-between gap-2.5 shrink-0 text-start">
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
                   <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/25 self-start">
@@ -136,13 +137,23 @@ export function ProductBottomSheet({
                 <div className="space-y-2">
                   <div
                     className="relative aspect-16/10 shrink-0 overflow-hidden bg-default/15 rounded-[20px] border border-border group"
-                    style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+                    style={
+                      {
+                        cornerShape: "squircle",
+                        WebkitCornerShape: "squircle",
+                      } as React.CSSProperties
+                    }
                   >
                     <img
-                        src={currentHeroUrl || '/assets/images/placeholder.svg'}
+                      src={currentHeroUrl || "/assets/images/placeholder.svg"}
                       alt={product.name}
                       className="w-full h-full object-cover rounded-[20px]"
-                      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+                      style={
+                        {
+                          cornerShape: "squircle",
+                          WebkitCornerShape: "squircle",
+                        } as React.CSSProperties
+                      }
                     />
 
                     {/* Lightbox Trigger on Hero Preview */}
@@ -189,20 +200,28 @@ export function ProductBottomSheet({
                       <Chip
                         size="sm"
                         variant="soft"
-                        color={isOutOfStock ? 'danger' : isLowStock ? 'warning' : 'success'}
+                        color={
+                          isOutOfStock
+                            ? "danger"
+                            : isLowStock
+                              ? "warning"
+                              : "success"
+                        }
                         className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border ${
                           isOutOfStock
-                            ? 'bg-danger/10 text-danger border-danger/30'
+                            ? "bg-danger/10 text-danger border-danger/30"
                             : isLowStock
-                            ? 'bg-warning/10 text-warning border-warning/30'
-                            : 'bg-success/15 text-success border-success/30'
+                              ? "bg-warning/10 text-warning border-warning/30"
+                              : "bg-success/15 text-success border-success/30"
                         }`}
                       >
                         {isOutOfStock ? (
-                          'ناموجود در انبار'
+                          "ناموجود در انبار"
                         ) : (
                           <>
-                            موجودی انبار: {toPersianDigits(product.inventorySqm)} متر ({toPersianDigits(product.stockCartons)} کارتن)
+                            موجودی انبار:{" "}
+                            {toPersianDigits(product.inventorySqm)} متر (
+                            {toPersianDigits(product.stockCartons)} کارتن)
                           </>
                         )}
                       </Chip>
@@ -210,7 +229,7 @@ export function ProductBottomSheet({
 
                     <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
                       {mediaItems.map((item) => {
-                        const isActive = item.url === currentHeroUrl
+                        const isActive = item.url === currentHeroUrl;
 
                         return (
                           <button
@@ -221,26 +240,31 @@ export function ProductBottomSheet({
                             title={item.label}
                             className={`group relative w-13 h-13 sm:w-14 sm:h-14 shrink-0 transition-all cursor-pointer select-none active:scale-95 ${
                               isActive
-                                ? 'scale-[1.03] opacity-100'
-                                : 'opacity-70 hover:opacity-100'
+                                ? "scale-[1.03] opacity-100"
+                                : "opacity-70 hover:opacity-100"
                             }`}
                           >
                             <img
-                                        src={item.url || '/assets/images/placeholder.svg'}
+                              src={item.url || "/assets/images/placeholder.svg"}
                               alt=""
                               className={`w-full h-full object-cover rounded-[14px] border ${
-                                isActive ? 'border-primary border-2' : 'border-border'
+                                isActive
+                                  ? "border-primary border-2"
+                                  : "border-border"
                               } group-hover:scale-105 transition-transform`}
-                              style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
                               onError={(e) => {
-                                const target = e.currentTarget
-                                if (!target.src.endsWith('/assets/images/placeholder.svg')) {
-                                  target.src = '/assets/images/placeholder.svg'
+                                const target = e.currentTarget;
+                                if (
+                                  !target.src.endsWith(
+                                    "/assets/images/placeholder.svg",
+                                  )
+                                ) {
+                                  target.src = "/assets/images/placeholder.svg";
                                 }
                               }}
                             />
                           </button>
-                        )
+                        );
                       })}
                     </div>
                   </div>
@@ -252,11 +276,18 @@ export function ProductBottomSheet({
                     {product.discountPercent ? (
                       <>
                         <span className="text-sm font-extrabold text-danger inline-flex items-center gap-1">
-                          <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+                          <span>
+                            {formatToman(product.finalCustomerPricePerSqm)}
+                          </span>
                           <TomanIcon className="size-4" />
                         </span>
                         <span className="text-[10px] text-muted line-through inline-flex items-center gap-0.5">
-                          <span>{formatToman(product.originalPricePerSqm || product.finalCustomerPricePerSqm)}</span>
+                          <span>
+                            {formatToman(
+                              product.originalPricePerSqm ||
+                                product.finalCustomerPricePerSqm,
+                            )}
+                          </span>
                           <TomanIcon className="size-3" />
                         </span>
                         <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-danger/15 text-danger">
@@ -265,7 +296,9 @@ export function ProductBottomSheet({
                       </>
                     ) : (
                       <span className="text-sm font-extrabold text-foreground inline-flex items-center gap-1">
-                        <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
+                        <span>
+                          {formatToman(product.finalCustomerPricePerSqm)}
+                        </span>
                         <TomanIcon className="size-4" />
                       </span>
                     )}
@@ -278,13 +311,16 @@ export function ProductBottomSheet({
                         onClick={onToggleSelect}
                         className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold flex items-center gap-1 transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap shrink-0 ${
                           isSelected
-                            ? 'bg-success/15 text-success border border-success/30'
-                            : 'bg-surface hover:bg-default/15 text-foreground border border-border'
+                            ? "bg-success/15 text-success border border-success/30"
+                            : "bg-surface hover:bg-default/15 text-foreground border border-border"
                         }`}
                       >
                         {isSelected ? (
                           <>
-                            <CheckIcon size={13} className="stroke-[3] text-success" />
+                            <CheckIcon
+                              size={13}
+                              className="stroke-[3] text-success"
+                            />
                             <span>انتخاب‌شده</span>
                           </>
                         ) : (
@@ -324,9 +360,12 @@ export function ProductBottomSheet({
                         <SolarRulerIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">ابعاد</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          ابعاد
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
+                          {toPersianDigits(product.dimensions.width)} ×{" "}
+                          {toPersianDigits(product.dimensions.height)}
                         </span>
                       </div>
                     </div>
@@ -337,33 +376,40 @@ export function ProductBottomSheet({
                         <SolarBoxIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">متراژ در کارتن</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          متراژ در کارتن
+                        </span>
                         <span className="font-bold text-primary text-xs leading-normal truncate block">
                           {toPersianDigits(product.sqmPerCarton)}
                         </span>
                       </div>
                     </div>
 
-                    {/* SKU Code (Solar Tag) */}
                     <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarTagIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">شناسه کالا</span>
-                        <span className="font-mono font-bold text-foreground text-xs leading-normal truncate block" dir="ltr">
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          شناسه کالا
+                        </span>
+                        <span
+                          className="font-mono font-bold text-foreground text-xs leading-normal truncate block"
+                          dir="ltr"
+                        >
                           {product.sku}
                         </span>
                       </div>
                     </div>
 
-                    {/* Pieces per carton (Solar Layers) */}
                     <div className="p-2 bg-default/10 rounded-xl border border-border flex items-center gap-2">
                       <div className="w-7 h-7 rounded-lg bg-primary/10 border border-primary/25 text-primary flex items-center justify-center shrink-0">
                         <SolarLayersIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">تعداد در کارتن</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          تعداد در کارتن
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(product.piecesPerCarton)} برگ
                         </span>
@@ -376,7 +422,9 @@ export function ProductBottomSheet({
                         <SolarShopIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">برند</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          برند
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {product.brand}
                         </span>
@@ -389,7 +437,9 @@ export function ProductBottomSheet({
                         <SolarShieldCheckIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">درجه کیفی</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          درجه کیفی
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {formatGrade(product.grade)}
                         </span>
@@ -402,7 +452,9 @@ export function ProductBottomSheet({
                         <SolarPaletteIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">رنگ</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          رنگ
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {product.color}
                         </span>
@@ -415,7 +467,9 @@ export function ProductBottomSheet({
                         <SolarScaleIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">وزن هر کارتن</span>
+                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                          وزن هر کارتن
+                        </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(product.cartonWeightKg)} کیلوگرم
                         </span>
@@ -439,7 +493,9 @@ export function ProductBottomSheet({
                 {/* Tags */}
                 {product.tags.length > 0 && (
                   <div className="pt-2 border-t border-separator flex flex-wrap items-center gap-1">
-                    <span className="text-[10px] text-muted font-medium">ویژگی‌ها:</span>
+                    <span className="text-[10px] text-muted font-medium">
+                      ویژگی‌ها:
+                    </span>
                     {product.tags.map((tag) => (
                       <span
                         key={tag}
@@ -466,5 +522,5 @@ export function ProductBottomSheet({
         />
       )}
     </>
-  )
+  );
 }

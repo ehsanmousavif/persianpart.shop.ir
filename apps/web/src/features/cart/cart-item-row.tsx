@@ -1,29 +1,42 @@
-import React from 'react'
-import { Link } from '@tanstack/react-router'
-import type { CartItem } from './cart-store'
-import { useCart } from './cart-store'
-import { formatToman, toPersianDigits } from '../../lib/utils/currency'
-import { PlusIcon, MinusIcon, Trash2Icon, AlertTriangleIcon, AlertCircleIcon, BoxIcon, TomanIcon } from '../../components/ui/icons'
+import React from "react";
+import { Link } from "@tanstack/react-router";
+import type { CartItem } from "./cart-store";
+import { useCart } from "./cart-store";
+import { formatToman, toPersianDigits } from "../../lib/utils/currency";
+import {
+  PlusIcon,
+  MinusIcon,
+  Trash2Icon,
+  AlertTriangleIcon,
+  AlertCircleIcon,
+  BoxIcon,
+  TomanIcon,
+} from "../../components/ui/icons";
 
 export interface CartItemRowProps {
-  item: CartItem
+  item: CartItem;
 }
 
-export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRowProps) {
-  const { updateRequestedArea, removeItem } = useCart()
+export const CartItemRow = React.memo(function CartItemRow({
+  item,
+}: CartItemRowProps) {
+  const { updateRequestedArea, removeItem } = useCart();
 
   return (
-    <div
-      className="p-3 space-y-2.5 rounded-[20px] bg-surface border border-border shadow-xs"
-      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
-    >
+    <div className="p-3 space-y-2.5 rounded-[20px] bg-surface border border-border shadow-xs">
       {/* Warning states banners */}
-      {item.statusWarning === 'low_stock' && (
+      {item.statusWarning === "low_stock" && (
         <div className="p-2 rounded-xl bg-warning/10 border border-warning/30 text-warning text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertTriangleIcon size={15} className="text-warning shrink-0" />
             <span className="text-xs">
-              موجودی محدود است (حداکثر <strong>{toPersianDigits(Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100)}</strong> م²).
+              موجودی محدود است (حداکثر{" "}
+              <strong>
+                {toPersianDigits(
+                  Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100,
+                )}
+              </strong>{" "}
+              م²).
             </span>
           </div>
           <button
@@ -31,7 +44,7 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
             onClick={() =>
               updateRequestedArea(
                 item.productId,
-                Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100
+                Math.round(item.stockCartons * item.sqmPerCarton * 100) / 100,
               )
             }
             className="text-xs font-semibold text-warning underline cursor-pointer shrink-0"
@@ -41,11 +54,13 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
         </div>
       )}
 
-      {item.statusWarning === 'out_of_stock' && (
+      {item.statusWarning === "out_of_stock" && (
         <div className="p-2 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-danger shrink-0" />
-            <span className="text-xs">این محصول متأسفانه در انبار ناموجود شده است.</span>
+            <span className="text-xs">
+              این محصول متأسفانه در انبار ناموجود شده است.
+            </span>
           </div>
           <button
             type="button"
@@ -57,12 +72,14 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
         </div>
       )}
 
-      {item.statusWarning === 'price_changed' && (
+      {item.statusWarning === "price_changed" && (
         <div className="p-2 rounded-xl bg-primary/10 border border-primary/25 text-primary text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-primary shrink-0" />
             <span className="text-xs inline-flex items-center gap-1">
-              <span>قیمت به‌روزرسانی شد ({formatToman(item.oldUnitPrice || 0)}</span>
+              <span>
+                قیمت به‌روزرسانی شد ({formatToman(item.oldUnitPrice || 0)}
+              </span>
               <TomanIcon className="size-3" />
               <span>).</span>
             </span>
@@ -83,14 +100,13 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
           title="مشاهده مشخصات کالا در لیست محصولات"
         >
           <img
-                  src={item.image || '/assets/images/placeholder.svg'}
+            src={item.image || "/assets/images/placeholder.svg"}
             alt={item.name}
-            className="size-18 object-cover rounded-[16px] border border-border"
-            style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+            className="size-18 object-cover rounded-4xl border border-border"
             onError={(e) => {
-              const target = e.currentTarget
-              if (!target.src.endsWith('/assets/images/placeholder.svg')) {
-                target.src = '/assets/images/placeholder.svg'
+              const target = e.currentTarget;
+              if (!target.src.endsWith("/assets/images/placeholder.svg")) {
+                target.src = "/assets/images/placeholder.svg";
               }
             }}
           />
@@ -100,7 +116,7 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between gap-1.5">
             <Link
-              to="/products"
+              to="/product"
               search={{ productname: item.slug }}
               className="text-sm font-bold text-foreground hover:text-primary transition-colors line-clamp-1"
             >
@@ -118,16 +134,26 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
-            <span className="font-mono" dir="ltr">{item.sku}</span>
+            <span className="font-mono" dir="ltr">
+              {item.sku}
+            </span>
             <span>•</span>
             <span>{toPersianDigits(item.dimension)}</span>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-muted mt-1">
             <BoxIcon size={13} className="text-muted" />
-            <span>متراژ تحویلی: <strong className="text-foreground">{toPersianDigits(item.deliverableArea)}</strong> م²</span>
+            <span>
+              متراژ تحویلی:{" "}
+              <strong className="text-foreground">
+                {toPersianDigits(item.deliverableArea)}
+              </strong>{" "}
+              م²
+            </span>
             {item.sqmPerCarton > 0 && (
-              <span className="text-muted text-[11px]">• ضریب: {toPersianDigits(item.sqmPerCarton)}</span>
+              <span className="text-muted text-[11px]">
+                • ضریب: {toPersianDigits(item.sqmPerCarton)}
+              </span>
             )}
           </div>
         </div>
@@ -143,7 +169,9 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
               onClick={() =>
                 updateRequestedArea(
                   item.productId,
-                  Math.round(((item.requestedArea || item.deliverableArea) + 1) * 10) / 10
+                  Math.round(
+                    ((item.requestedArea || item.deliverableArea) + 1) * 10,
+                  ) / 10,
                 )
               }
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-default/25 transition-colors cursor-pointer active:bg-default/35"
@@ -162,7 +190,12 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
               onClick={() =>
                 updateRequestedArea(
                   item.productId,
-                  Math.max(1, Math.round(((item.requestedArea || item.deliverableArea) - 1) * 10) / 10)
+                  Math.max(
+                    1,
+                    Math.round(
+                      ((item.requestedArea || item.deliverableArea) - 1) * 10,
+                    ) / 10,
+                  ),
                 )
               }
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-default/25 transition-colors cursor-pointer active:bg-default/35"
@@ -188,5 +221,5 @@ export const CartItemRow = React.memo(function CartItemRow({ item }: CartItemRow
         </div>
       </div>
     </div>
-  )
-})
+  );
+});

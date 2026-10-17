@@ -1,5 +1,4 @@
 import React from "react";
-import type { Icon } from "@solar-icons/react";
 import {
   MagnifierIcon,
   FilterIcon as SolarFilterIcon,
@@ -44,8 +43,6 @@ import {
   StarsIcon,
   TagIcon as SolarTagIcon,
 } from "@solar-icons/react/linear";
-
-export type { Icon } from "@solar-icons/react";
 export { SolarProvider, useSolar } from "@solar-icons/react";
 
 export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "color"> {
@@ -54,6 +51,8 @@ export interface IconProps extends Omit<React.SVGProps<SVGSVGElement>, "color"> 
   color?: string;
   strokeWidth?: number | string;
 }
+
+export type Icon = React.ComponentType<any>;
 
 function createSolarIcon(SolarComponent: Icon, defaultSize = 20) {
   const IconWrapper = React.forwardRef<SVGSVGElement, IconProps>(

@@ -3,57 +3,47 @@
 @import "@fontsource-variable/vazirmatn";
 
 
-/* --------------------------------------------------------------------------
-   SQUIRCLE CORNER-SHAPE SYSTEM (CSS Backgrounds & Borders Level 4)
-   Applies squircle curvature to all buttons, badges, navbar, and header elements
-   EXCEPT capsule/pill elements (rounded-full) which retain classic round curvature
-   -------------------------------------------------------------------------- */
-/* *,
-::before,
-::after {
-  corner-shape: squircle;
-  -webkit-corner-shape: squircle;
-} */
 
-@supports (corner-shape: superellipse(1.85)) {
+
+@supports (corner-shape: superellipse(1.5)) {
   *,
   ::before,
   ::after {
-    corner-shape: superellipse(1.85);
-    -webkit-corner-shape: superellipse(1.85);
+    corner-shape: superellipse(1.5);
+    -webkit-corner-shape: superellipse(1.5);
   }
 
-  :root{
-    --radius:1rem;
+  :root {
+    --radius: 1rem;
   }
 }
 
+html,
+body,
+#root {
+  background-color: #ffffff !important;
+  color-scheme: light;
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+}
 
-/* Strict Capsule/Pill Exemption */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
 .rounded-full,
 [class*="rounded-full"],
 [class*="rounded-[9999px]"],
 [data-slot="thumb"],
-[data-slot="track"] {
+[data-slot="track"],
+[data-slot="slider-thumb"],
+[data-slot="slider-thumb"]::after,
+[data-slot="slider-track"],
+.slider__thumb,
+.slider__thumb::after,
+.slider__track {
   corner-shape: round !important;
   -webkit-corner-shape: round !important;
-}
-
-/* Targeted rules for buttons, badges, navbars, and headers */
-button:not(.rounded-full):not([class*="rounded-full"]),
-[role="button"]:not(.rounded-full):not([class*="rounded-full"]),
-[type="button"]:not(.rounded-full):not([class*="rounded-full"]),
-[type="submit"]:not(.rounded-full):not([class*="rounded-full"]),
-a[class*="rounded"]:not(.rounded-full):not([class*="rounded-full"]),
-span[class*="rounded"]:not(.rounded-full):not([class*="rounded-full"]),
-[class*="badge"]:not(.rounded-full):not([class*="rounded-full"]),
-[class*="Badge"]:not(.rounded-full):not([class*="rounded-full"]),
-[data-slot="badge"]:not(.rounded-full):not([class*="rounded-full"]),
-[data-slot="chip"]:not(.rounded-full):not([class*="rounded-full"]),
-nav,
-header {
-  corner-shape: squircle;
-  -webkit-corner-shape: squircle;
 }
 
 @theme {
@@ -130,8 +120,8 @@ header {
   --danger: #dc2626;
   --danger-foreground: #ffffff;
 
-  /* Base & Surface (Derived from #1C1696 with indigo undertones) */
-  --background: #f8f9fd;
+  /* Base & Surface (Pure white background as configured) */
+  --background: #ffffff;
   --foreground: #0e0c2d;
   --surface: #ffffff;
   --surface-foreground: var(--foreground);
@@ -172,18 +162,46 @@ body {
   user-select: text;
   font-feature-settings: "ss01" 1;
   line-height: 1.6;
-  background-color: var(--background);
+  background-color: #ffffff;
   color: var(--foreground);
 }
-/* Prevent iOS input focus zoom */
+/* Prevent iOS input focus zoom & double-tap delay/zoom */
 html {
   -webkit-text-size-adjust: 100%;
+  background-color: #ffffff;
+}
+
+html,
+body,
+button,
+a,
+input,
+textarea,
+select {
+  touch-action: manipulation;
 }
 
 input,
 textarea,
 select {
   font-size: inherit;
+}
+
+/* Enforce 16px minimum font-size on mobile inputs to eliminate iOS Safari focus auto-zoom */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select,
+  [data-slot="input"],
+  [data-slot="search-input"],
+  input[type="text"],
+  input[type="number"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="email"],
+  input[type="password"] {
+    font-size: 16px !important;
+  }
 }
 
 /* Persian typography: ensure cursive continuity and prevent glyph clipping */
@@ -265,6 +283,22 @@ h6 {
 
 .animate-drawer-slide-up {
   animation: drawerSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-card-fade-in {
+  animation: cardFadeIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
 }
 
 /* HeroUI Toast RTL Alignment (Strict Right Align for All Content) */

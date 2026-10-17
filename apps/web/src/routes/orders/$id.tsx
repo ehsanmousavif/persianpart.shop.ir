@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { Modal as HeroUIModal } from '@heroui/react'
+import { Modal as HeroUIModal, cn } from '@heroui/react'
 import { useOrders, buildFullOrderTimeline } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type Order, type OrderItem, type Product } from '../../types'
 import { OrderTimeline } from '../../features/orders/order-timeline'
@@ -275,13 +275,14 @@ function OrderDetailPage() {
             {/* 10-Minute Customer Countdown Badge */}
             {!isCancelled && !isCompleted && (
               <span
-                className={`px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs ${
+                className={cn(
+                  'px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs',
                   isWithin10Minutes
                     ? 'bg-warning/15 text-warning-foreground border-warning/30 animate-pulse'
                     : 'bg-default/15 text-muted border-border'
-                }`}
+                )}
               >
-                <ClockIcon size={13} className={isWithin10Minutes ? 'text-warning' : 'text-muted'} />
+                <ClockIcon size={13} className={cn(isWithin10Minutes ? 'text-warning' : 'text-muted')} />
                 <span>
                   {isWithin10Minutes
                     ? `مهلت ۱۰ دقیقه‌ای لغو: ${formatCountdown(timeLeftSeconds)}`
@@ -359,8 +360,7 @@ function OrderDetailPage() {
                   <img
                     src={item.productImage || '/assets/images/placeholder.svg'}
                     alt={item.productName}
-                    className="w-16 h-16 rounded-[16px] object-cover border border-border bg-default/15"
-                    style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
+                    className="w-16 h-16 rounded-4xl object-cover border border-border bg-default/15"
                     onError={(e) => {
                       if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                         e.currentTarget.src = '/assets/images/placeholder.svg'

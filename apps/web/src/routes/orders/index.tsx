@@ -69,14 +69,12 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
     dynamicStatusColor = (ORDER_STATUS_MAP[order.status]?.color as any) || 'warning'
   }
 
-  const totalArea = order.items.reduce((s, i) => s + i.deliverableArea, 0)
   const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
 
   return (
     <div
       
       className="p-3.5 space-y-3 rounded-[20px] bg-surface border border-border shadow-xs"
-      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
     >
       {/* Order Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-separator flex-wrap sm:flex-nowrap">
@@ -105,7 +103,6 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
               src={item.productImage || '/assets/images/placeholder.svg'}
               alt={item.productName}
               className="w-12 h-12 rounded-[14px] object-cover border border-border bg-default/15 shrink-0"
-              style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
               title={item.productName}
               onError={(e) => {
                 const target = e.currentTarget
@@ -120,7 +117,7 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
               {toPersianDigits(order.items.length)} محصول
             </span>
             <span className="text-xs text-muted">
-              {toPersianDigits(totalCartons)} کارتن ({toPersianDigits(totalArea)})
+              {toPersianDigits(totalCartons)} کارتن
             </span>
           </div>
         </div>
@@ -339,39 +336,23 @@ function OrdersListPage() {
         </p>
       </div>
 
-      {/* Filter Tabs (with ScrollShadow) */}
       <ScrollShadow orientation="horizontal" className="w-full overflow-x-auto pb-1 scrollbar-none">
         <div className="flex items-center gap-1.5 min-w-max">
           {TABS.map((tab) => {
             const isSelected = selectedStatusTab === tab.key
-            const count =
-              tab.key === 'all'
-                ? orders.length
-                : tab.key === 'cancel'
-                ? orders.filter((o) => isCancelledStatus(o.status)).length
-                : tab.key === 'completed'
-                ? orders.filter((o) => o.status === 'completed' || o.status === 'approve' || o.status === 'approved').length
-                : orders.filter((o) => o.status === 'pending' || o.status === 'checking').length
 
             return (
               <button
                 key={tab.key}
                 type="button"
                 onClick={() => setSelectedStatusTab(tab.key as any)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-1.5 cursor-pointer shrink-0 active:scale-95 ${
+                className={`h-10 w-fit px-4 text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 shadow-2xs rounded-2xl ${
                   isSelected
-                    ? 'bg-foreground text-background shadow-xs'
-                    : 'bg-surface text-muted hover:bg-default/20 border border-border'
+                        ? "bg-[#252745] text-background"
+                  : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground"
                 }`}
               >
                 <span>{tab.label}</span>
-                <span
-                  className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    isSelected ? 'bg-background/20 text-background' : 'bg-default/20 text-muted'
-                  }`}
-                >
-                  {toPersianDigits(count)}
-                </span>
               </button>
             )
           })}

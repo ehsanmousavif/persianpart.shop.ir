@@ -64,12 +64,9 @@ export function ProductCardSkeleton({
 
   return (
     <div
-      className="flex flex-row items-center gap-3 p-3 bg-surface border border-border rounded-[20px] shadow-xs"
-      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
-    >
+      className="flex flex-row items-center gap-3 p-3 bg-surface border border-border rounded-[20px] shadow-xs"    >
       <HeroUISkeleton
           className="size-19 aspect-square rounded-[18px] shrink-0"
-        style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
       />
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-1.5">
         <div className="flex items-center gap-2">
@@ -94,9 +91,7 @@ export function ProductCardSkeleton({
 export function OrderCardSkeleton() {
   return (
     <div
-      className="bg-surface border border-border rounded-[20px] p-3.5 shadow-xs space-y-3"
-      style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
-    >
+      className="bg-surface border border-border rounded-[20px] p-3.5 shadow-xs space-y-3"    >
       {/* Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-separator flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
@@ -111,12 +106,10 @@ export function OrderCardSkeleton() {
         <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
           <HeroUISkeleton
                   className="w-12 h-12 rounded-[14px] shrink-0"
-            style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
-          />
+              />
           <HeroUISkeleton
                   className="w-12 h-12 rounded-[14px] shrink-0"
-            style={{ cornerShape: 'squircle', WebkitCornerShape: 'squircle' } as React.CSSProperties}
-          />
+              />
           <div className="ps-1 space-y-1.5 flex-1">
             <HeroUISkeleton className="w-20 h-4 rounded-md" />
             <HeroUISkeleton className="w-28 h-3.5 rounded-md" />

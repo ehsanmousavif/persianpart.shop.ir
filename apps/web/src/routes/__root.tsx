@@ -5,6 +5,7 @@ import { MobileBottomNav } from '../components/layout/mobile-bottom-nav'
 import { ToastContainer } from '../components/feedback/toast'
 import { authStore, useAuth } from '../features/auth/auth-store'
 import { NuqsAdapter } from 'nuqs/adapters/tanstack-router'
+import { cn } from '../lib/utils'
 
 export const Route = createRootRoute({
   beforeLoad: ({ location }) => {
@@ -48,25 +49,28 @@ function RootComponent() {
   return (
     <NuqsAdapter>
       <div
-        className={`bg-white flex justify-center selection:bg-primary/20 selection:text-foreground ${
-          isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-screen'
-        }`}
+        className={cn(
+          'bg-background flex justify-center selection:bg-primary/20 selection:text-foreground',
+          isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+        )}
         dir="rtl"
       >
         <div
-          className={`w-full bg-white text-foreground font-sans antialiased flex flex-col ${
-            isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-screen'
-          }`}
+          className={cn(
+            'w-full bg-background text-foreground font-sans antialiased flex flex-col',
+            isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+          )}
         >
           <AppHeader />
           <ToastContainer />
           {/* Main App Content Area */}
           <main
-            className={
+            className={cn(
+              'flex-1 w-full flex flex-col',
               isLoginPage
-                ? 'flex-1 w-full flex flex-col overflow-hidden relative'
-                : 'flex-1 max-w-xl mx-auto w-full pb-12'
-            }
+                ? 'overflow-hidden relative'
+                : 'max-w-xl mx-auto pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]'
+            )}
           >
             <Outlet />
           </main>

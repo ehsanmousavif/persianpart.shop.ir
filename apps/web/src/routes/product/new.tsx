@@ -1,13 +1,17 @@
-import { useState, useMemo, useEffect } from 'react'
-import { createFileRoute, useNavigate, useLocation } from '@tanstack/react-router'
-import { Slider, NumberField, I18nProvider } from '@heroui/react'
-import { useProducts } from '../../features/products/product-store'
-import { useProductSelection } from '../../features/products/selection-store'
-import type { Product } from '../../types'
-import { calculateCartonRequirement } from '../../lib/utils/math'
-import { formatToman, toPersianDigits } from '../../lib/utils/currency'
-import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
-import { toast } from '../../components/feedback/toast'
+import { useState, useMemo, useEffect } from "react";
+import {
+  createFileRoute,
+  useNavigate,
+  useLocation,
+} from "@tanstack/react-router";
+import { Slider, NumberField, I18nProvider } from "@heroui/react";
+import { useProducts } from "../../features/products/product-store";
+import { useProductSelection } from "../../features/products/selection-store";
+import type { Product } from "../../types";
+import { calculateCartonRequirement } from "../../lib/utils/math";
+import { formatToman, toPersianDigits } from "../../lib/utils/currency";
+import { PreInvoiceModal } from "../../features/checkout/pre-invoice-modal";
+import { toast } from "../../components/feedback/toast";
 import {
   ArrowRightIcon,
   ArrowLeftIcon,
@@ -18,24 +22,25 @@ import {
   SolarLayersIcon,
   SolarTagIcon,
   TomanIcon,
-} from '../../components/ui/icons'
-import { useOrders } from '../../features/orders/order-store'
+} from "../../components/ui/icons";
+import { useOrders } from "../../features/orders/order-store";
 
-export const Route = createFileRoute('/product/new')({
+export const Route = createFileRoute("/product/new")({
   component: ProductNewConfigurationPage,
-})
+});
 
 function ProductNewConfigurationPage() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const searchObj = (location.search || {}) as Record<string, any>
+  const navigate = useNavigate();
+  const location = useLocation();
+  const searchObj = (location.search || {}) as Record<string, any>;
   const editOrderId: string | undefined =
     searchObj.editOrderId ||
-    (typeof window !== 'undefined'
-      ? new URLSearchParams(window.location.search).get('editOrderId') || undefined
-      : undefined)
-  const { allProducts } = useProducts()
-  const { getOrderById } = useOrders()
+    (typeof window !== "undefined"
+      ? new URLSearchParams(window.location.search).get("editOrderId") ||
+        undefined
+      : undefined);
+  const { allProducts } = useProducts();
+  const { getOrderById } = useOrders();
   const {
     selectedIds,
     quantities,
@@ -44,99 +49,103 @@ function ProductNewConfigurationPage() {
     clearSelection,
     setBatchSelection,
     reconcileWithProducts,
-  } = useProductSelection()
+  } = useProductSelection();
 
   // Modal state for Pre-Invoice
-  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false)
+  const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
 
   // Hydrate from order if editOrderId is provided and selection is empty
   useEffect(() => {
     if (editOrderId && selectedIds.length === 0) {
-      const order = getOrderById(editOrderId)
+      const order = getOrderById(editOrderId);
       if (order && order.items && order.items.length > 0) {
         setBatchSelection(
           order.items.map((item) => ({
             id: item.productId,
             quantity: item.requestedArea || item.deliverableArea,
-          }))
-        )
+          })),
+        );
       }
     }
-  }, [editOrderId, selectedIds.length, getOrderById, setBatchSelection])
+  }, [editOrderId, selectedIds.length, getOrderById, setBatchSelection]);
 
   // Reconcile selected IDs with live products
   useEffect(() => {
     if (allProducts && allProducts.length > 0) {
-      reconcileWithProducts(allProducts.map((p) => p.id))
+      reconcileWithProducts(allProducts.map((p) => p.id));
     }
-  }, [allProducts, reconcileWithProducts])
+  }, [allProducts, reconcileWithProducts]);
 
   // Selected products resolved from live products database
   const selectedProducts = useMemo(() => {
     return selectedIds
       .map((id) => {
-        const cleanId = String(id).replace(/["']/g, '').trim()
+        const cleanId = String(id).replace(/["']/g, "").trim();
         return allProducts.find(
           (p) =>
-            String(p.id) === cleanId ||
-            p.sku === cleanId ||
-            p.slug === cleanId
-        )
+            String(p.id) === cleanId || p.sku === cleanId || p.slug === cleanId,
+        );
       })
-      .filter((p): p is Product => p !== undefined)
-  }, [selectedIds, allProducts])
+      .filter((p): p is Product => p !== undefined);
+  }, [selectedIds, allProducts]);
 
   // Automatically initialize quantities for new products in selection
   useEffect(() => {
     selectedProducts.forEach((prod) => {
       if (quantities[prod.id] === undefined) {
-        setQuantity(prod.id, Math.max(prod.sqmPerCarton || 1, 10))
+        setQuantity(prod.id, Math.max(prod.sqmPerCarton || 1, 10));
       }
-    })
-  }, [selectedProducts, quantities, setQuantity])
+    });
+  }, [selectedProducts, quantities, setQuantity]);
 
-  const handleAreaChange = (productId: string, val: number, inventorySqm: number) => {
-    const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10
-    const clampedVal = Math.min(rawVal, inventorySqm)
-    setQuantity(productId, clampedVal)
-  }
+  const handleAreaChange = (
+    productId: string,
+    val: number,
+    inventorySqm: number,
+  ) => {
+    const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10;
+    const clampedVal = Math.min(rawVal, inventorySqm);
+    setQuantity(productId, clampedVal);
+  };
 
   const handleRemoveProduct = (productId: string) => {
-    unselectProduct(productId)
-  }
+    unselectProduct(productId);
+  };
 
   const handleBackToProducts = () => {
     navigate({
-      to: '/product',
-    })
-  }
+      to: "/product",
+    });
+  };
 
   // Calculate totals across all selected products
   const totals = useMemo(() => {
-    let totalCartons = 0
-    let totalDeliverableArea = 0
-    let totalPrice = 0
+    let totalCartons = 0;
+    let totalDeliverableArea = 0;
+    let totalPrice = 0;
 
     selectedProducts.forEach((product) => {
-      const area = quantities[product.id] ?? 0
+      const area = quantities[product.id] ?? 0;
       const calc = calculateCartonRequirement(
         area,
         product.sqmPerCarton,
         product.finalCustomerPricePerSqm,
-        product.inventorySqm
-      )
-      totalCartons += calc.cartonCount
-      totalDeliverableArea += calc.deliverableArea
-      totalPrice += calc.totalPrice
-    })
+        product.inventorySqm,
+      );
+      totalCartons += calc.cartonCount;
+      totalDeliverableArea += calc.deliverableArea;
+      totalPrice += calc.totalPrice;
+    });
 
     return {
       totalCartons,
       totalDeliverableArea: Math.round(totalDeliverableArea * 100) / 100,
       totalPrice,
-      hasValidQuantities: selectedProducts.length > 0 && selectedProducts.every((p) => (quantities[p.id] ?? 0) > 0),
-    }
-  }, [selectedProducts, quantities])
+      hasValidQuantities:
+        selectedProducts.length > 0 &&
+        selectedProducts.every((p) => (quantities[p.id] ?? 0) > 0),
+    };
+  }, [selectedProducts, quantities]);
 
   // Empty State if no products are selected
   if (selectedProducts.length === 0) {
@@ -149,18 +158,19 @@ function ProductNewConfigurationPage() {
           محصولی برای تعیین متراژ انتخاب نشده است
         </h2>
         <p className="text-xs text-muted max-w-sm mx-auto leading-relaxed">
-          لطفاً ابتدا به صفحه محصولات مراجعه کرده و با کلیک روی کارت‌ها، کاشی‌های مد نظر خود را انتخاب نمایید.
+          لطفاً ابتدا به صفحه محصولات مراجعه کرده و با کلیک روی کارت‌ها،
+          کاشی‌های مد نظر خود را انتخاب نمایید.
         </p>
         <button
           type="button"
-          onClick={() => navigate({ to: '/product' })}
+          onClick={() => navigate({ to: "/product" })}
           className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
           <span>بازگشت به لیست محصولات</span>
         </button>
       </div>
-    )
+    );
   }
 
   return (
@@ -175,20 +185,20 @@ function ProductNewConfigurationPage() {
           <ArrowRightIcon size={14} />
           <span>بازگشت به لیست محصولات</span>
         </button>
-
-       
       </div>
 
       {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}
       <div className="space-y-4">
         {selectedProducts.map((product) => {
-          const area = quantities[product.id] ?? Math.min(product.inventorySqm, Math.max(product.sqmPerCarton, 10))
+          const area =
+            quantities[product.id] ??
+            Math.min(product.inventorySqm, Math.max(product.sqmPerCarton, 10));
           const calc = calculateCartonRequirement(
             area,
             product.sqmPerCarton,
             product.finalCustomerPricePerSqm,
-            product.inventorySqm
-          )
+            product.inventorySqm,
+          );
 
           return (
             <div
@@ -200,12 +210,19 @@ function ProductNewConfigurationPage() {
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border bg-default/15">
                     <img
-                      src={product.images[0] || '/assets/images/placeholder.svg'}
+                      src={
+                        product.images[0] || "/assets/images/placeholder.svg"
+                      }
                       alt={product.name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
-                        if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                          e.currentTarget.src = '/assets/images/placeholder.svg'
+                        if (
+                          !e.currentTarget.src.endsWith(
+                            "/assets/images/placeholder.svg",
+                          )
+                        ) {
+                          e.currentTarget.src =
+                            "/assets/images/placeholder.svg";
                         }
                       }}
                     />
@@ -214,7 +231,8 @@ function ProductNewConfigurationPage() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-default/15 text-foreground border border-border">
-                        {toPersianDigits(product.dimensions.width)} × {toPersianDigits(product.dimensions.height)}
+                        {toPersianDigits(product.dimensions.width)} ×{" "}
+                        {toPersianDigits(product.dimensions.height)}
                       </span>
                       <span className="text-xs font-semibold text-muted">
                         {product.brand}
@@ -228,7 +246,9 @@ function ProductNewConfigurationPage() {
                     <div className="flex items-center gap-2 text-xs text-muted mt-0.5 flex-wrap">
                       {/* <span className="font-mono text-foreground font-bold" dir="ltr">{product.sku}</span> */}
                       <span className="inline-flex items-center gap-1">
-                        <strong className="font-bold text-foreground">{formatToman(product.finalCustomerPricePerSqm)}</strong>
+                        <strong className="font-bold text-foreground">
+                          {formatToman(product.finalCustomerPricePerSqm)}
+                        </strong>
                         <TomanIcon className="size-4" />
                       </span>
                     </div>
@@ -257,11 +277,13 @@ function ProductNewConfigurationPage() {
                       متراژ مورد نیاز:
                     </span>
                     <span className="text-xs text-muted">
-                      هر کارتن: <strong className="font-bold text-foreground">{toPersianDigits(product.sqmPerCarton)}</strong>
+                      هر کارتن:{" "}
+                      <strong className="font-bold text-foreground">
+                        {toPersianDigits(product.sqmPerCarton)}
+                      </strong>
                     </span>
                   </div>
 
-                  {/* Compact, Persian-Digit NumberField */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     <I18nProvider locale="fa-IR">
                       <NumberField
@@ -269,22 +291,31 @@ function ProductNewConfigurationPage() {
                         maxValue={product.inventorySqm}
                         step={0.1}
                         value={area}
-                        onChange={(val) => handleAreaChange(product.id, val, product.inventorySqm)}
-                        formatOptions={{ useGrouping: false, minimumFractionDigits: 0, maximumFractionDigits: 1 }}
+                        onChange={(val) =>
+                          handleAreaChange(
+                            product.id,
+                            val,
+                            product.inventorySqm,
+                          )
+                        }
+                        formatOptions={{
+                          useGrouping: false,
+                          minimumFractionDigits: 0,
+                          maximumFractionDigits: 1,
+                        }}
                         aria-label={`متراژ ${product.name}`}
-                        className="w-28"
+                        className="max-w-40"
                       >
-                        <NumberField.Group className="!h-7.5 !min-h-0 !grid-cols-[26px_1fr_26px] rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
-                          <NumberField.DecrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
-                          <NumberField.Input className="!text-xs font-bold text-center !px-0.5 !py-0 text-foreground !h-full" />
-                          <NumberField.IncrementButton className="!w-6.5 !h-6.5 flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
+                        <NumberField.Group className=" rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
+                          <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
+                          <NumberField.Input className="font-bold text-center  text-foreground" />
+                          <NumberField.IncrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
                         </NumberField.Group>
                       </NumberField>
                     </I18nProvider>
                   </div>
                 </div>
 
-                {/* Slider */}
                 <div dir="ltr" className="space-y-1 pt-0.5">
                   <div className="w-full py-1">
                     <Slider
@@ -293,15 +324,16 @@ function ProductNewConfigurationPage() {
                       step={0.1}
                       value={area}
                       onChange={(val) => {
-                        const num = typeof val === 'number' ? val : val[0] ?? 0
-                        handleAreaChange(product.id, num, product.inventorySqm)
+                        const num =
+                          typeof val === "number" ? val : (val[0] ?? 0);
+                        handleAreaChange(product.id, num, product.inventorySqm);
                       }}
                       aria-label={`اسلایدر متراژ ${product.name}`}
                       className="w-full"
                     >
-                      <Slider.Track>
+                      <Slider.Track className="rounded-full">
                         <Slider.Fill />
-                        <Slider.Thumb />
+                        <Slider.Thumb className="rounded-full! after:rounded-full!" />
                       </Slider.Track>
                     </Slider>
                   </div>
@@ -310,14 +342,22 @@ function ProductNewConfigurationPage() {
                   <div className="flex justify-between items-center text-xs font-semibold text-muted px-0.5">
                     <button
                       type="button"
-                      onClick={() => handleAreaChange(product.id, 0, product.inventorySqm)}
+                      onClick={() =>
+                        handleAreaChange(product.id, 0, product.inventorySqm)
+                      }
                       className="text-muted hover:text-foreground transition-colors cursor-pointer"
                     >
                       ۰
                     </button>
                     <button
                       type="button"
-                      onClick={() => handleAreaChange(product.id, product.inventorySqm, product.inventorySqm)}
+                      onClick={() =>
+                        handleAreaChange(
+                          product.id,
+                          product.inventorySqm,
+                          product.inventorySqm,
+                        )
+                      }
                       className="text-muted hover:text-foreground hover:underline cursor-pointer"
                     >
                       سقف موجودی: {toPersianDigits(product.inventorySqm)}
@@ -334,7 +374,9 @@ function ProductNewConfigurationPage() {
                     <SolarRulerIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">متراژ انتخابی</span>
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                      متراژ انتخابی
+                    </span>
                     <span className="font-bold text-foreground text-sm leading-normal truncate block">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
@@ -347,7 +389,9 @@ function ProductNewConfigurationPage() {
                     <SolarBoxIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">تعداد کارتن</span>
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                      تعداد کارتن
+                    </span>
                     <span className="font-bold text-primary text-sm leading-normal truncate block">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
@@ -360,7 +404,9 @@ function ProductNewConfigurationPage() {
                     <SolarLayersIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">متراژ تحویلی</span>
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                      متراژ تحویلی
+                    </span>
                     <span className="font-bold text-foreground text-sm leading-normal truncate block">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
@@ -373,7 +419,9 @@ function ProductNewConfigurationPage() {
                     <SolarTagIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">مبلغ برآورد</span>
+                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                      مبلغ برآورد
+                    </span>
                     <span className="font-bold text-foreground text-sm leading-normal truncate inline-flex items-center gap-1">
                       <span>{formatToman(calc.totalPrice)}</span>
                       <TomanIcon className="size-4" />
@@ -382,7 +430,7 @@ function ProductNewConfigurationPage() {
                 </div>
               </div>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -407,18 +455,15 @@ function ProductNewConfigurationPage() {
         quantities={quantities}
         editOrderId={editOrderId}
         onSuccess={(orderId) => {
-          setIsInvoiceOpen(false)
-          clearSelection()
-          toast.success(
-            'ثبت سفارش',
-            'سفارش با موفقیت ثبت شد.'
-          )
+          setIsInvoiceOpen(false);
+          clearSelection();
+          toast.success("ثبت سفارش", "سفارش با موفقیت ثبت شد.");
           navigate({
-            to: '/orders/$id',
+            to: "/orders/$id",
             params: { id: editOrderId || orderId },
-          })
+          });
         }}
       />
     </div>
-  )
+  );
 }

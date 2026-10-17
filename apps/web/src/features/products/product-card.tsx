@@ -1,6 +1,7 @@
 import React from "react";
 import type { Product } from "../../types";
 import { formatToman, toPersianDigits } from "../../lib/utils/currency";
+import { cn } from "../../lib/utils";
 import TomanIcon, { ZoomInIcon } from "../../components/ui/icons";
 import { formatGrade } from "./product-store";
 
@@ -11,6 +12,83 @@ export interface ProductCardProps {
   onToggleSelect: (product: Product) => void;
   onOpenBottomSheet?: (product: Product) => void;
 }
+
+interface ProductThumbnailProps {
+  src: string;
+  alt: string;
+  onOpenBottomSheet?: () => void;
+}
+
+const ProductThumbnail = React.memo(function ProductThumbnail({
+  src,
+  alt,
+  onOpenBottomSheet,
+}: ProductThumbnailProps) {
+  const [isLoaded, setIsLoaded] = React.useState(false);
+  const imgRef = React.useRef<HTMLImageElement>(null);
+
+  React.useEffect(() => {
+    setIsLoaded(false);
+    if (imgRef.current?.complete && imgRef.current.naturalWidth > 0) {
+      setIsLoaded(true);
+    }
+  }, [src]);
+
+  return (
+    <div
+      data-no-select
+      role="button"
+      tabIndex={0}
+      onClick={(e) => {
+        e.stopPropagation();
+        onOpenBottomSheet?.();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.stopPropagation();
+          onOpenBottomSheet?.();
+        }
+      }}
+      className="relative size-19 aspect-square shrink-0 group/img cursor-pointer transition-transform active:scale-95 bg-default/20 rounded-2xl overflow-hidden shadow-2xs"
+      title="مشاهده جزئیات کالا"
+      aria-label={`مشاهده جزئیات ${alt}`}
+    >
+      {/* Skeleton Shimmer / Pulse Placeholder */}
+      <div
+        className={cn(
+          "absolute inset-0 bg-muted/15 rounded-2xl transition-opacity duration-300 pointer-events-none",
+          isLoaded ? "opacity-0" : "opacity-100 animate-pulse",
+        )}
+      />
+
+      <img
+        ref={imgRef}
+        alt={alt}
+        src={src}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setIsLoaded(true)}
+        className={cn(
+          "size-19 aspect-square object-cover rounded-2xl transition-all duration-300 ease-out group-hover/img:scale-105",
+          isLoaded ? "opacity-100 scale-100" : "opacity-0 scale-95",
+        )}
+        onError={(e) => {
+          setIsLoaded(true);
+          const target = e.currentTarget;
+          if (!target.src.endsWith("/assets/images/placeholder.svg")) {
+            target.src = "/assets/images/placeholder.svg";
+          }
+        }}
+      />
+
+      <div className="absolute inset-0 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center rounded-2xl pointer-events-none">
+        <span className="p-1 rounded-md bg-primary flex flex-col items-center justify-center size-8 text-primary-foreground shadow-xs">
+          <ZoomInIcon size={16} />
+        </span>
+      </div>
+    </div>
+  );
+});
 
 export const ProductCard = React.memo(function ProductCard({
   product,
@@ -42,127 +120,75 @@ export const ProductCard = React.memo(function ProductCard({
           onToggleSelect(product);
         }
       }}
-      className={`group relative flex items-center justify-between p-2.5 sm:p-3 rounded-[20px] bg-surface border transition-all duration-150 cursor-pointer select-none text-start ${
+      className={cn(
+        "group relative flex items-center justify-between px-3.5 py-2.5 sm:p-3 rounded-2xl transition-all duration-300 cursor-pointer select-none text-start animate-card-fade-in",
         isSelected
-          ? "border-success/80 bg-success/10 scale-[0.985] shadow-xs ring-1 ring-success/30"
-          : "border-border hover:border-primary/40 shadow-xs"
-      }`}
-      style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
+          ? "bg-primary/8 ring-1 ring-primary scale-[0.98]"
+          : "bg-muted/5 shadow-xs",
+      )}
     >
-      {/* Leading Thumbnail (Image Click ONLY opens Bottom Sheet) */}
-      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-        <div
-          data-no-select
-          role="button"
-          tabIndex={0}
-          onClick={(e) => {
-            e.stopPropagation();
-            onOpenBottomSheet?.(product);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              e.stopPropagation();
-              onOpenBottomSheet?.(product);
-            }
-          }}
-          className="relative size-19 aspect-square shrink-0 group/img cursor-pointer transition-transform active:scale-95"
-          title="مشاهده جزئیات کالا"
-          aria-label={`مشاهده جزئیات ${product.name}`}
-        >
-          <img
-                  alt={product.name}
-            src={imgSrc}
-            loading="lazy"
-            decoding="async"
-            className="size-19 aspect-square object-cover rounded-[18px] border border-border transition-transform duration-200 group-hover/img:scale-105"
-            style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
-            onError={(e) => {
-              const target = e.currentTarget;
-              if (!target.src.endsWith("/assets/images/placeholder.svg")) {
-                target.src = "/assets/images/placeholder.svg";
-              }
-            }}
-          />
-          {/* Hover hint icon */}
-          <div
-                  className="absolute inset-0 bg-black/20 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center rounded-[18px] pointer-events-none"
-            style={{ cornerShape: "squircle", WebkitCornerShape: "squircle" } as React.CSSProperties}
-          >
-            <span className="p-1 rounded-md bg-primary text-primary-foreground shadow-xs">
-              <ZoomInIcon size={12} />
-            </span>
-          </div>
-        </div>
+      {/* Start (Right in RTL): Thumbnail + Brand, Name & (Dimension, Grade) Badges */}
+      <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
+        <ProductThumbnail
+          src={imgSrc}
+          alt={product.name}
+          onOpenBottomSheet={() => onOpenBottomSheet?.(product)}
+        />
 
-        {/* Center Content: Dimensions & Metadata */}
-        <div className="flex flex-col justify-center min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-semibold text-muted truncate max-w-[120px]">
+        <div className="flex flex-col justify-between self-stretch min-w-0 py-0.5">
+          <div className="min-w-0">
+            <span className="text-xs font-light text-muted/90 block">
               {product.brand}
             </span>
+            <h3 className="text-sm font-medium text-foreground leading-snug mt-0.5 max-w-[170px] sm:max-w-xs md:max-w-md">
+              {product.name}
+            </h3>
           </div>
 
-          <h3 className="text-sm font-bold text-foreground leading-2 mt-0.5">
-            {product.name}
-          </h3>
-
-          {/* Dimension and Grade Badges Below Title */}
-          <div className="flex items-center gap-1.5 flex-wrap mt-1">
-            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-default/15 text-foreground border border-border">
+          {/* Dimension and Grade Badges */}
+          <div className="flex items-center gap-1.5 flex-wrap mt-2">
+            <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-muted/10 text-foreground">
               {toPersianDigits(product.dimensions.width)} ×{" "}
               {toPersianDigits(product.dimensions.height)}
             </span>
-            <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-primary/10 text-primary border border-primary/25">
+            <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary">
               {formatGrade(product.grade)}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Trailing Section: Price and Status Badges */}
-      <div className="flex flex-col items-end shrink-0 ps-3 border-separator text-end">
-        {isInCart && (
-          <span className="px-2 py-0.5 rounded-[12px] text-xs font-semibold bg-primary/10 text-primary border border-primary/25 mb-0.5">
-            در سبد خرید
-          </span>
-        )}
+      {/* End (Left in RTL): Price centered vertically on top & Inventory Badge at bottom */}
+      <div className="flex flex-col justify-between items-end self-stretch shrink-0 ps-3 py-0.5 text-end">
+        {/* Top: Price & In-Cart Status - Centered vertically from top */}
+        <div className="flex-1 flex flex-col justify-center items-end">
+          {isInCart && (
+            <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary border border-primary/25 mb-1">
+              در سبد خرید
+            </span>
+          )}
 
-        {product.discountPercent ? (
-          <>
-            <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-danger/10 text-danger border border-danger/30 mb-0.5">
-              {toPersianDigits(product.discountPercent)}٪ تخفیف
-            </span>
-            <span className="text-[11px] text-muted line-through inline-flex items-center gap-0.5">
-              <span>
-                {formatToman(
-                  product.originalPricePerSqm || product.finalCustomerPricePerSqm,
-                )}
-              </span>
-              <TomanIcon className="size-2.5" />
-            </span>
-            <span className="text-sm font-bold text-danger inline-flex items-center gap-1">
-              <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
-              <TomanIcon className="size-3" />
-            </span>
-          </>
-        ) : (
           <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
             <span>{formatToman(product.finalCustomerPricePerSqm)}</span>
             <TomanIcon className="size-3.5" />
           </span>
-        )}
+        </div>
 
-        <span className="px-2 py-0.5 mt-1 rounded-[12px] flex text-[10px] font-semibold bg-success/10 text-success border border-success/30">
-          <span className="">
-            {Math.floor(
-              Number.isFinite(Number(product.inventorySqm))
-                ? Number(product.inventorySqm)
-                : 1,
-            ).toLocaleString("fa-IR")}{" "}
-            متر{" "}
+        {/* Bottom: Inventory Badge - Exactly opposite the other two tags, under the price */}
+        <div className="mt-auto">
+          <span className="px-2 py-1 rounded-lg flex text-[10px] font-semibold bg-[#252745] text-white">
+            <span className="flex items-center gap-0.5">
+              موجودی:{" "}
+              {Math.floor(
+                Number.isFinite(Number(product.inventorySqm))
+                  ? Number(product.inventorySqm)
+                  : 1,
+              ).toLocaleString("fa-IR")}{" "}
+              متر
+            </span>
           </span>
-        </span>
+        </div>
       </div>
     </div>
   );
-})
+});
