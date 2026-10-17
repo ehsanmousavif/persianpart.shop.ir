@@ -1,8 +1,9 @@
+
+import { useState } from "react";
 import { Drawer, Dropdown, ButtonGroup, Button, Label } from "@heroui/react";
-import { StarIcon } from "@solar-icons/react/bold/star";
+import { StarIcon } from "@solar-icons/react/linear";
 import { useProducts } from "./product-store";
 import {
-  CheckIcon,
   RefreshCwIcon,
   ChevronDownIcon,
   XIcon,
@@ -45,6 +46,7 @@ export function FilterDrawer({
   catalogHook,
 }: FilterDrawerProps) {
   const hook = productHook || catalogHook!;
+
   const {
     filters,
     toggleArrayFilter,
@@ -53,6 +55,9 @@ export function FilterDrawer({
     activeFilterCount,
     dimensions,
   } = hook;
+
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isDimOpen, setIsDimOpen] = useState(false);
 
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.id === filters.sortBy)?.label || "پیش‌فرض";
@@ -69,41 +74,44 @@ export function FilterDrawer({
       <Drawer.Backdrop
         isOpen={isOpen}
         onOpenChange={(open) => !open && onClose()}
-        className="fixed z-50 backdrop-blur-xs flex items-end justify-center fade-up transition-all duration-330"
+        className="fixed z-50 backdrop-blur-xs flex items-end justify-center fade-up transition-all duration-300"
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg fixed z-50 bottom-0 top-50 rounded-2xl shadow-2xl flex flex-col  overflow-hidden"
+          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-16 h-auto! rounded-2xl shadow-2xl flex flex-col overflow-hidden"
         >
-          <Drawer.Dialog className="flex flex-col h-full outline-none text-start">
-            <div className="pt-3 pb-1 flex justify-center w-full">
-              <Drawer.Handle className="w-12 h-1.5 rounded-full bg-muted/40 transition-colors cursor-grab" />
+          <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
+            {/* Drag Handle UI */}
+            <div className="pt-3 pb-2 flex justify-center w-full shrink-0">
+              <Drawer.Handle className="w-12 h-1.5 rounded-full bg-muted/40" />
             </div>
 
-            {/* 2. Drawer Header */}
-            <Drawer.Header className="w-full flex items-center justify-between px-5 pt-1 pb-3 border-b border-separator">
-              <Drawer.Heading className="text-sm w-full font-extrabold text-foreground flex items-center gap-2">
+            {/* Header */}
+            <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-1 pb-3 border-b border-separator shrink-0">
+              <Drawer.Heading className="text-sm font-extrabold text-foreground flex items-center gap-2">
                 <span>فیلترها و مرتب‌سازی</span>
+
                 {activeFilterCount > 0 && (
                   <span className="min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
                     {toPersianDigits(activeFilterCount)}
                   </span>
                 )}
               </Drawer.Heading>
+
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="بستن"
-                className="w-7 h-7 rounded-full bg-default/20 hover:bg-default/35 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors"
+                className="w-7 h-7 rounded-full bg-default/20 hover:bg-default/35 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
               >
                 <XIcon size={14} />
               </button>
             </Drawer.Header>
 
-            {/* 3. Drawer Body */}
-            <Drawer.Body className="overflow-y-auto px-5 py-4 space-y-4">
-              {/* Option A: Bolder Toggle Button (Only in Stock) */}
-              <div className="py-3 px-4 rounded-2xl bg-muted/5 border border-border/70 flex items-center justify-between">
+            {/* Body */}
+            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-thin">
+              {/* Only In Stock */}
+              <div className="py-2.5 px-4 rounded-2xl bg-muted/5 border border-border/70 flex items-center justify-between">
                 <div>
                   <span className="text-xs font-black text-foreground block">
                     فقط کالاهای موجود
@@ -117,7 +125,9 @@ export function FilterDrawer({
                   type="button"
                   role="switch"
                   aria-checked={filters.onlyInStock}
-                  onClick={() => setFilter("onlyInStock", !filters.onlyInStock)}
+                  onClick={() =>
+                    setFilter("onlyInStock", !filters.onlyInStock)
+                  }
                   className={cn(
                     "w-14 h-7.5 rounded-full transition-colors duration-200 relative cursor-pointer p-0.5 shadow-inner shrink-0",
                     filters.onlyInStock
@@ -136,10 +146,8 @@ export function FilterDrawer({
                 </button>
               </div>
 
-              {/* Option B: Sorting (HeroUI Dropdown) */}
-
-              {/* Option B: Sorting (HeroUI Dropdown) */}
-              <div className="space-y-1.5">
+              {/* Sorting */}
+              <div className="space-y-1">
                 <label className="text-xs font-bold text-foreground block">
                   مرتب‌سازی بر اساس
                 </label>
@@ -153,8 +161,13 @@ export function FilterDrawer({
                     <ChevronDownIcon size={16} className="text-muted" />
                   </Button>
 
-                  <Dropdown.Popover className="w-[calc(100vw-25%)] text-right max-w-md rounded-2xl p-1.5 shadow-xl border border-border bg-surface z-60">
+                  <Dropdown.Popover
+                    dir="rtl"
+                    className="w-[calc(100vw-25%)] text-right max-w-md rounded-2xl p-1.5 shadow-xl border border-border bg-surface z-60"
+                  >
                     <Dropdown.Menu
+                      dir="rtl"
+                      className="text-right"
                       selectionMode="single"
                       selectedKeys={new Set([filters.sortBy || "default"])}
                       onSelectionChange={(keys) => {
@@ -169,15 +182,16 @@ export function FilterDrawer({
                           <Dropdown.Item
                             key={opt.id}
                             id={opt.id}
+                            dir="rtl"
                             textValue={opt.label}
                             className={cn(
-                              "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between",
+                              "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-start text-right w-full",
                               isSelected
                                 ? "bg-primary/15 text-primary"
                                 : "hover:bg-default/20",
                             )}
                           >
-                            <Label className="cursor-pointer">
+                            <Label className="cursor-pointer text-right w-full">
                               {opt.label}
                             </Label>
                           </Dropdown.Item>
@@ -188,7 +202,8 @@ export function FilterDrawer({
                 </Dropdown>
               </div>
 
-              <div className="space-y-1.5 text-right">
+              {/* Dimensions */}
+              <div className="space-y-1 text-right">
                 <label className="text-xs font-bold text-foreground block">
                   ابعاد کاشی و سرامیک
                 </label>
@@ -202,8 +217,13 @@ export function FilterDrawer({
                     <ChevronDownIcon size={16} className="text-muted" />
                   </Button>
 
-                  <Dropdown.Popover className="w-[calc(100vw-25%)] max-w-md max-h- rounded-2xl p-1.5 shadow-xl border border-border bg-surface z-60">
+                  <Dropdown.Popover
+                    dir="rtl"
+                    className="w-[calc(100vw-25%)] text-right max-w-md max-h-60 overflow-y-auto rounded-2xl p-1.5 shadow-xl border border-border bg-surface z-60"
+                  >
                     <Dropdown.Menu
+                      dir="rtl"
+                      className="text-right"
                       selectionMode="single"
                       selectedKeys={
                         new Set([filters.selectedDimension || "all"])
@@ -218,15 +238,18 @@ export function FilterDrawer({
                     >
                       <Dropdown.Item
                         id="all"
+                        dir="rtl"
                         textValue="همه ابعاد"
                         className={cn(
-                          "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between",
+                          "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-start text-right w-full",
                           !filters.selectedDimension
                             ? "bg-primary/15 text-primary"
                             : "hover:bg-default/20",
                         )}
                       >
-                        <Label className="cursor-pointer">همه ابعاد</Label>
+                        <Label className="cursor-pointer text-right w-full">
+                          همه ابعاد
+                        </Label>
                       </Dropdown.Item>
 
                       {allDimensions.map((dim) => {
@@ -236,15 +259,16 @@ export function FilterDrawer({
                           <Dropdown.Item
                             key={dim}
                             id={dim}
+                            dir="rtl"
                             textValue={dim}
                             className={cn(
-                              "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between",
+                              "rounded-xl px-3 py-2 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-start text-right w-full",
                               isSelected
                                 ? "bg-primary/15 text-primary"
                                 : "hover:bg-default/20",
                             )}
                           >
-                            <Label className="cursor-pointer">
+                            <Label className="cursor-pointer text-right w-full">
                               {toPersianDigits(dim)}
                             </Label>
                           </Dropdown.Item>
@@ -255,8 +279,8 @@ export function FilterDrawer({
                 </Dropdown>
               </div>
 
-              {/* Option D: Quality Grade (HeroUI ButtonGroup with StarIcon) */}
-              <div className="space-y-2 pt-1">
+              {/* Quality Grade */}
+              <div className="space-y-1.5 pt-0.5">
                 <div className="flex items-center gap-1.5">
                   <StarIcon size={16} className="text-primary" />
                   <label className="text-xs font-bold text-foreground block">
@@ -267,6 +291,7 @@ export function FilterDrawer({
                 <ButtonGroup className="w-full rounded-xl overflow-hidden border border-border/80 shadow-2xs divide-x-reverse divide-x divide-border/60">
                   {AVAILABLE_GRADES.map((grade) => {
                     const isSelected = filters.selectedGrades.includes(grade);
+
                     return (
                       <Button
                         key={grade}
@@ -297,22 +322,22 @@ export function FilterDrawer({
               </div>
             </Drawer.Body>
 
-            {/* 4. Drawer Footer */}
-            <Drawer.Footer className="px-5 py-3 border-t border-border bg-surface grid grid-cols-2 gap-3">
+            {/* Footer */}
+            <Drawer.Footer className="px-5 py-3 border-t border-border bg-surface grid grid-cols-2 gap-3 shrink-0">
               <button
                 type="button"
                 onClick={resetFilters}
-                className="py-2.5 px-4 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/15 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="py-4 px-2 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/15 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <RefreshCwIcon size={14} />
                 <span>پاک کردن</span>
               </button>
+
               <button
                 type="button"
                 onClick={onClose}
-                className="py-2.5 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                className="py-4 px-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
               >
-                <CheckIcon size={14} />
                 <span>
                   مشاهده نتایج ({toPersianDigits(hook.products.length)})
                 </span>
