@@ -1,7 +1,6 @@
 
-import { useState } from "react";
 import { Drawer, Dropdown, ButtonGroup, Button, Label } from "@heroui/react";
-import { StarIcon } from "@solar-icons/react/linear";
+import { StarIcon } from "@solar-icons/react/Bold";
 import { useProducts } from "./product-store";
 import {
   RefreshCwIcon,
@@ -56,8 +55,6 @@ export function FilterDrawer({
     dimensions,
   } = hook;
 
-  const [isSortOpen, setIsSortOpen] = useState(false);
-  const [isDimOpen, setIsDimOpen] = useState(false);
 
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.id === filters.sortBy)?.label || "پیش‌فرض";
@@ -78,7 +75,7 @@ export function FilterDrawer({
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-16 h-auto! rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[20%] h-auto! rounded-2xl shadow-2xl flex flex-col overflow-hidden"
         >
           <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
             {/* Drag Handle UI */}
@@ -300,7 +297,7 @@ export function FilterDrawer({
                           toggleArrayFilter("selectedGrades", grade)
                         }
                         className={cn(
-                          "flex-1 h-10 px-1 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer",
+                          "flex-1 h-10 px-1 rounded-none text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer",
                           isSelected
                             ? "bg-primary text-primary-foreground font-black shadow-xs"
                             : "bg-surface hover:bg-default/15 text-foreground",
