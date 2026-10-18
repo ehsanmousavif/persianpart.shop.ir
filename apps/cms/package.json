@@ -8,6 +8,10 @@
       "types": "./src/payload.ts",
       "import": "./src/payload.ts"
     },
+    "./sdk": {
+      "types": "./src/sdk.ts",
+      "import": "./src/sdk.ts"
+    },
     "./types": {
       "types": "./src/payload-types.ts",
       "import": "./src/payload-types.ts"
@@ -36,6 +40,7 @@
     "@payloadcms/db-sqlite": "^3.90.2",
     "@payloadcms/next": "^3.90.2",
     "@payloadcms/richtext-lexical": "^3.90.2",
+    "@payloadcms/sdk": "^3.91.0",
     "@payloadcms/translations": "^3.90.2",
     "@payloadcms/ui": "^3.90.2",
     "@persianpart/contract": "workspace:*",

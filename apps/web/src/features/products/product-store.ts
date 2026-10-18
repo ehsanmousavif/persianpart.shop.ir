@@ -38,7 +38,7 @@ export function formatGrade(rawGrade?: string): string {
     grade_2: 'درجه ۲',
     grade_3: 'درجه ۳',
     grade_4: 'درجه ۴',
-    grade: 'درجه',
+    grade: 'درجه ۱',
     '1': 'درجه ۱',
     '2': 'درجه ۲',
     '3': 'درجه ۳',
@@ -47,7 +47,8 @@ export function formatGrade(rawGrade?: string): string {
     'درجه 2': 'درجه ۲',
     'درجه 3': 'درجه ۳',
     'درجه 4': 'درجه ۴',
-    'اصلی (Genuine)': 'درجه ۱ (اصلی)',
+    'اصلی (Genuine)': 'درجه ۱',
+    'درجه ۱ (اصلی)': 'درجه ۱',
   }
   if (mapping[gradeStr]) return mapping[gradeStr]
   if (gradeStr.startsWith('grade_')) {
@@ -202,11 +203,18 @@ export function useProducts() {
         piecesPerCarton: item.piecesPerCarton || 1,
         tilesPerCarton: item.piecesPerCarton || 1,
         cartonWeightKg: 28,
-        inventorySqm: item.availability === 'out_of_stock' ? 0 : 500,
+        inventorySqm:
+          item.availability === 'out_of_stock'
+            ? 0
+            : Number(item.inventorySqm || 0) > 0
+              ? Number(item.inventorySqm)
+              : 500,
         stockCartons:
           item.availability === 'out_of_stock'
             ? 0
-            : Math.floor(500 / (item.sqmPerCarton || 1)),
+            : Number(item.stockCartons || 0) > 0
+              ? Number(item.stockCartons)
+              : Math.floor(500 / (item.sqmPerCarton || 1)),
         inStock: item.availability !== 'out_of_stock',
         stockStatus:
           item.availability === 'out_of_stock'
@@ -253,12 +261,13 @@ export function useProducts() {
         }
       }
 
-      // Dimensions (Strict single dimension match)
-      if (
-        filters.selectedDimension &&
-        product.dimension !== filters.selectedDimension
-      ) {
-        return false
+      // Dimensions (Strict single dimension match with normalization)
+      if (filters.selectedDimension) {
+        const normSelectedDim = filters.selectedDimension.replace(/x/gi, '×').trim()
+        const normProdDim = product.dimension.replace(/x/gi, '×').trim()
+        if (normProdDim !== normSelectedDim) {
+          return false
+        }
       }
 
       // Brands
@@ -277,12 +286,13 @@ export function useProducts() {
         return false
       }
 
-      // Grades
-      if (
-        filters.selectedGrades.length > 0 &&
-        !filters.selectedGrades.includes(product.grade)
-      ) {
-        return false
+      // Grades (Normalized OR match across selected grades)
+      if (filters.selectedGrades.length > 0) {
+        const normSelectedGrades = filters.selectedGrades.map((g) => formatGrade(g))
+        const prodGrade = formatGrade(product.grade)
+        if (!normSelectedGrades.includes(prodGrade)) {
+          return false
+        }
       }
 
       // Tags
@@ -380,10 +390,12 @@ export function useProducts() {
       selectedTags: 'tags',
     }
     const queryKey = map[key]
-    const currentArr = queryFilters[queryKey] || []
-    const exists = currentArr.includes(value)
-    const nextArr = exists ? currentArr.filter((v) => v !== value) : [...currentArr, value]
-    setQueryFilters({ [queryKey]: nextArr.length > 0 ? nextArr : null })
+    setQueryFilters((prev) => {
+      const currentArr = prev[queryKey] || []
+      const exists = currentArr.includes(value)
+      const nextArr = exists ? currentArr.filter((v) => v !== value) : [...currentArr, value]
+      return { [queryKey]: nextArr.length > 0 ? nextArr : null }
+    })
   }
 
   return {

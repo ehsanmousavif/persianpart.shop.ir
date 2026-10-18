@@ -1,4 +1,4 @@
-
+import { useState } from "react";
 import { Drawer, Dropdown, ButtonGroup, Button, Label } from "@heroui/react";
 import { StarIcon } from "@solar-icons/react/Bold";
 import { useProducts } from "./product-store";
@@ -51,10 +51,11 @@ export function FilterDrawer({
     toggleArrayFilter,
     setFilter,
     resetFilters,
-    activeFilterCount,
     dimensions,
   } = hook;
 
+  const [isSortOpen, setIsSortOpen] = useState(false);
+  const [isDimOpen, setIsDimOpen] = useState(false);
 
   const currentSortLabel =
     SORT_OPTIONS.find((s) => s.id === filters.sortBy)?.label || "پیش‌فرض";
@@ -71,37 +72,30 @@ export function FilterDrawer({
       <Drawer.Backdrop
         isOpen={isOpen}
         onOpenChange={(open) => !open && onClose()}
-        className="fixed z-50 backdrop-blur-xs flex items-end justify-center fade-up transition-all duration-300"
+        className="fixed z-50 backdrop-blur-xs min-h-60 flex items-end justify-center fade-up transition-all duration-300"
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[20%] h-auto! rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[22%] h-auto! rounded-t-2xl shadow-2xl flex flex-col overflow-hidden"
         >
           <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
-            {/* Drag Handle UI */}
-            <div className="pt-3 pb-2 flex justify-center w-full shrink-0">
-              <Drawer.Handle className="w-12 h-1.5 rounded-full bg-muted/40" />
+        
+            <div className="flex justify-center w-full shrink-0">
+              <Drawer.Handle className="w-16 h-1.5 rounded-full" />
             </div>
 
-            {/* Header */}
             <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-1 pb-3 border-b border-separator shrink-0">
               <Drawer.Heading className="text-sm font-extrabold text-foreground flex items-center gap-2">
-                <span>فیلترها و مرتب‌سازی</span>
-
-                {activeFilterCount > 0 && (
-                  <span className="min-w-5 h-5 px-1.5 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
-                    {toPersianDigits(activeFilterCount)}
-                  </span>
-                )}
+                <span> و مرتب‌سازی</span>
               </Drawer.Heading>
 
               <button
                 type="button"
                 onClick={onClose}
                 aria-label="بستن"
-                className="w-7 h-7 rounded-full bg-default/20 hover:bg-default/35 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
+                className="size-10 rounded-xl bg-default/50 hover:bg-default/35 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
               >
-                <XIcon size={14} />
+                <XIcon />
               </button>
             </Drawer.Header>
 
@@ -149,13 +143,19 @@ export function FilterDrawer({
                   مرتب‌سازی بر اساس
                 </label>
 
-                <Dropdown>
+                <Dropdown isOpen={isSortOpen} onOpenChange={setIsSortOpen}>
                   <Button
                     variant="secondary"
                     className="w-full justify-between h-11 px-3.5 rounded-xl border border-border bg-surface text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-default/15 transition-colors"
                   >
                     <span>{currentSortLabel}</span>
-                    <ChevronDownIcon size={16} className="text-muted" />
+                    <ChevronDownIcon
+                      size={16}
+                      className={cn(
+                        "text-muted transition-transform duration-200",
+                        isSortOpen && "rotate-180",
+                      )}
+                    />
                   </Button>
 
                   <Dropdown.Popover
@@ -170,6 +170,7 @@ export function FilterDrawer({
                       onSelectionChange={(keys) => {
                         const selected = Array.from(keys)[0] as string;
                         if (selected) setFilter("sortBy", selected as any);
+                        setIsSortOpen(false);
                       }}
                     >
                       {SORT_OPTIONS.map((opt) => {
@@ -205,13 +206,19 @@ export function FilterDrawer({
                   ابعاد کاشی و سرامیک
                 </label>
 
-                <Dropdown>
+                <Dropdown isOpen={isDimOpen} onOpenChange={setIsDimOpen}>
                   <Button
                     variant="secondary"
                     className="w-full justify-between h-11 px-3.5 rounded-xl border border-border bg-surface text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-default/15 transition-colors"
                   >
                     <span>{currentDimLabel}</span>
-                    <ChevronDownIcon size={16} className="text-muted" />
+                    <ChevronDownIcon
+                      size={16}
+                      className={cn(
+                        "text-muted transition-transform duration-200",
+                        isDimOpen && "rotate-180",
+                      )}
+                    />
                   </Button>
 
                   <Dropdown.Popover
@@ -231,6 +238,7 @@ export function FilterDrawer({
                           "selectedDimension",
                           !selected || selected === "all" ? null : selected,
                         );
+                        setIsDimOpen(false);
                       }}
                     >
                       <Dropdown.Item

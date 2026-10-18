@@ -10,11 +10,9 @@ const update = base.user.update.handler(async ({ input, context, errors }) => {
   if (!context.user) throw errors.UNAUTHORIZED()
 
   // Customers can update personal, business, and address info, but phone is strictly immutable
-  const { phone: _phone, ...allowedData } = input as any
-
   return payload.crud.users.update({
     id: context.user.id,
-    data: allowedData,
+    data: input,
   })
 })
 

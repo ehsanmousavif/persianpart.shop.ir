@@ -119,9 +119,9 @@ export function ProfileView() {
   return (
     <div className="space-y-3.5 w-full">
       {/* User Header Card */}
-      <div className="bg-surface border border-border rounded-2xl p-3.5 sm:p-4 shadow-xs flex items-center justify-between gap-2">
+      <div className="bg-surface border border-border rounded-2xl p-3.5 sm:p-4  flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-base font-bold shadow-xs shrink-0">
+          <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-base font-bold  shrink-0">
             {user.name.slice(0, 1)}
           </div>
           <div>
@@ -151,7 +151,7 @@ export function ProfileView() {
 
       {/* Main Profile Content: Edit Form vs View Mode */}
       {isEditing ? (
-        <form onSubmit={handleSaveProfile} className="bg-surface border border-primary/30 rounded-2xl p-4 sm:p-5 shadow-sm">
+        <form onSubmit={handleSaveProfile} className="bg-surface border border-primary/30 rounded-2xl p-4 sm:p-5">
           <Fieldset className="space-y-4">
             <Fieldset.Legend className="w-full">
               <div className="flex items-center justify-between pb-3 border-b border-border w-full">
@@ -216,7 +216,7 @@ export function ProfileView() {
                   <span className="text-xs font-bold tracking-wider" dir="ltr">
                     {toPersianDigits(user.phone)}
                   </span>
-                  <span className="flex items-center gap-1 text-xs font-medium text-muted bg-surface px-2 py-0.5 rounded-lg border border-border shadow-2xs">
+                  <span className="flex items-center gap-1 text-xs font-medium text-muted bg-surface px-2 py-0.5 rounded-lg border border-border">
                     <LockIcon size={11} className="text-muted" />
                     <span>غیرقابل تغییر</span>
                   </span>
@@ -286,7 +286,7 @@ export function ProfileView() {
             <Fieldset.Actions className="pt-2 flex items-center gap-2">
               <button
                 type="submit"
-                className="flex-1 py-2.5 rounded-xl bg-success hover:bg-success/90 text-success-foreground font-bold text-xs shadow-md shadow-success/20 flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
+                className="flex-1 py-2.5 rounded-xl bg-success hover:bg-success/90 text-success-foreground font-bold text-xs  flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
               >
                 <CheckIcon size={15} />
                 <span>ذخیره تغییرات</span>
@@ -304,7 +304,7 @@ export function ProfileView() {
         </form>
       ) : (
         /* View Mode Card */
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xs divide-y divide-separator">
+        <div className="bg-surface border border-border rounded-2xl overflow-hidden  divide-y divide-separator">
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
@@ -321,17 +321,13 @@ export function ProfileView() {
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 flex items-start gap-3">
+          <div className="p-3.5 sm:p-4 flex items-start justify-start gap-3">
             <PhoneIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
-              <div className="flex items-center justify-between">
+              <div className="flex items-start justify-start">
                 <span className="text-xs font-semibold text-muted block">شماره تلفن همراه</span>
-                <span className="text-xs font-semibold text-success bg-success/15 border border-success/30 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                  <LockIcon size={11} className="text-success" />
-                  <span>احراز شده (ثابت)</span>
-                </span>
               </div>
-              <span className="text-xs sm:text-sm font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
+              <span className="text-xs sm:text-sm  text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
                 {toPersianDigits(user.phone)}
               </span>
             </div>
@@ -365,7 +361,7 @@ export function ProfileView() {
             <button
               type="button"
               onClick={handleStartEdit}
-              className="py-1.5 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95 transition-all"
+              className="py-1.5 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-1.5  cursor-pointer active:scale-95 transition-all"
             >
               <PencilIcon size={13} />
               <span>ویرایش اطلاعات</span>
@@ -381,7 +377,7 @@ export function ProfileView() {
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
         >
           <HeroUIModal.Container className="pointer-events-none w-full max-w-sm h-auto p-0 flex flex-col items-center">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl shadow-2xl flex flex-col z-10 border border-border overflow-hidden animate-modal-enter text-center p-6 space-y-4">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl flex flex-col z-10 border border-border overflow-hidden animate-modal-enter text-center p-6 space-y-4">
               <div className="w-12 h-12 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mx-auto border border-danger/20">
                 <LogOutIcon size={24} />
               </div>
@@ -404,7 +400,7 @@ export function ProfileView() {
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold shadow-md shadow-danger/20 cursor-pointer transition-all"
+                  className="py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold  cursor-pointer transition-all"
                 >
                   تأیید خروج
                 </button>

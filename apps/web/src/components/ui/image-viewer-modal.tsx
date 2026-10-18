@@ -254,7 +254,7 @@ export function ImageViewerModal({
                 src={imageUrl}
                 alt={title}
                 draggable={false}
-                className="max-w-full max-h-[75vh] object-contain transition-transform duration-75 ease-out shadow-2xl rounded-lg will-change-transform select-none pointer-events-none"
+                className="max-w-full max-h-[75vh] object-contain transition-transform duration-75 ease-out rounded-lg will-change-transform select-none pointer-events-none"
                 style={{
                   transform: `translate3d(${position.x}px, ${position.y}px, 0) scale(${scale})`,
                   transformOrigin: 'center center',

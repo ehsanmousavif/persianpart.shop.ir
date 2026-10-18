@@ -22,6 +22,9 @@ importers:
       '@orpc/server':
         specifier: 2.0.0-beta.42
         version: 2.0.0-beta.42
+      '@payloadcms/sdk':
+        specifier: ^3.91.0
+        version: 3.91.0(graphql@16.14.2)(typescript@6.0.3)
       '@persianpart/cms':
         specifier: workspace:*
         version: link:../cms
@@ -71,6 +74,9 @@ importers:
       '@payloadcms/richtext-lexical':
         specifier: ^3.90.2
         version: 3.90.2(@faceless-ui/modal@3.0.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@faceless-ui/scroll-info@2.0.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(@payloadcms/next@3.90.2(@types/react@19.3.0)(graphql@16.14.2)(monaco-editor@0.57.0)(next@16.3.8(@babel/core@7.29.7)(@types/node@24.19.1)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(payload@3.90.2(graphql@16.14.2)(typescript@6.0.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3))(@types/react@19.3.0)(monaco-editor@0.57.0)(next@16.3.8(@babel/core@7.29.7)(@types/node@24.19.1)(babel-plugin-macros@3.1.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(sass@1.77.4))(payload@3.90.2(graphql@16.14.2)(typescript@6.0.3))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(typescript@6.0.3)(yjs@13.6.33)
+      '@payloadcms/sdk':
+        specifier: ^3.91.0
+        version: 3.91.0(graphql@16.14.2)(typescript@6.0.3)
       '@payloadcms/translations':
         specifier: ^3.90.2
         version: 3.90.2
@@ -1508,8 +1514,14 @@ packages:
       react: ^19.0.1 || ^19.1.2 || ^19.2.1
       react-dom: ^19.0.1 || ^19.1.2 || ^19.2.1
 
+  '@payloadcms/sdk@3.91.0':
+    resolution: {integrity: sha512-E+98NMN17LgkU88L1WtC094qitMCY8PMVC2ronj5IBxdI48Modx4cd/AM/g1IwmaE3Q+SnIAuet/vSkQHAxIkQ==}
+
   '@payloadcms/translations@3.90.2':
     resolution: {integrity: sha512-BGpXyw22ndzL6URrK28qlk2qIsksH8mbWpU/n8vaTt8W6O87KoniX4lJ82m5o0FR/wjWqzcuVRsE0TNX3/7gHg==}
+
+  '@payloadcms/translations@3.91.0':
+    resolution: {integrity: sha512-QZzE2c+VJyP7VuuPQD7DeDOWrU6Gsgd+TxTLRb1v+kTqvUIfxRWy5yW90YkA1qDQrI0CRkASRx/YFbgaAAEWRQ==}
 
   '@payloadcms/ui@3.90.2':
     resolution: {integrity: sha512-9OXA/WI+3u+Xa8xcvVTv4VtpAecRxx/39k9uBRlRnI20lWPGRvbOG4vIWUZKxHFQjZGGQke71HdLV4x2kFveQg==}
@@ -3241,6 +3253,13 @@ packages:
     peerDependencies:
       graphql: ^16.8.1
 
+  payload@3.91.0:
+    resolution: {integrity: sha512-EF+PXc8iSuo561f82SnAY5YB8Ix6LDN4Xe4ndef0iLDNPkdEykq1vc1mgo82/HsZ4ljSv9u/wP6iP5hyIpM+wA==}
+    engines: {node: '>=20.18.1'}
+    hasBin: true
+    peerDependencies:
+      graphql: ^16.8.1
+
   pg-cloudflare@1.4.1:
     resolution: {integrity: sha512-6PQbsFWZcp9EmJEwy5cGQ2La+AMWpP46lgbb8X+U/XsHIUweYDNCpeuKck5RxL2MdVFi7krbbEi5nX4Zh7JhrQ==}
 
@@ -3703,6 +3722,10 @@ packages:
 
   undici@7.29.0:
     resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
+    engines: {node: '>=20.18.1'}
+
+  undici@7.29.1:
+    resolution: {integrity: sha512-RYONW2MeafgYlkVOKYKkA/Ag7BmXqgIWCa8t1m0JcxrQg9pI9lEqRhAOruOBCbAohOa/gkCF+iPi9hrgvTzu6Q==}
     engines: {node: '>=20.18.1'}
 
   unist-util-is@6.0.1:
@@ -5208,7 +5231,23 @@ snapshots:
       - utf-8-validate
       - yjs
 
+  '@payloadcms/sdk@3.91.0(graphql@16.14.2)(typescript@6.0.3)':
+    dependencies:
+      payload: 3.91.0(graphql@16.14.2)(typescript@6.0.3)
+      qs-esm: 8.0.1
+      ts-essentials: 10.0.3(typescript@6.0.3)
+    transitivePeerDependencies:
+      - bufferutil
+      - graphql
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   '@payloadcms/translations@3.90.2':
+    dependencies:
+      date-fns: 4.1.0
+
+  '@payloadcms/translations@3.91.0':
     dependencies:
       date-fns: 4.1.0
 
@@ -6899,6 +6938,47 @@ snapshots:
       - typescript
       - utf-8-validate
 
+  payload@3.91.0(graphql@16.14.2)(typescript@6.0.3):
+    dependencies:
+      '@next/env': 15.5.27
+      '@payloadcms/translations': 3.91.0
+      '@types/busboy': 1.5.4
+      ajv: 8.18.0
+      bson-objectid: 2.0.4
+      busboy: 1.6.0
+      ci-info: 4.4.0
+      console-table-printer: 2.12.1
+      croner: 10.0.1
+      dataloader: 2.2.3
+      deepmerge: 4.3.1
+      file-type: 21.3.4
+      get-tsconfig: 4.8.1
+      graphql: 16.14.2
+      http-status: 2.1.0
+      image-dimensions: 2.5.1
+      ipaddr.js: 2.2.0
+      jose: 5.10.0
+      json-schema-to-typescript: 15.0.3
+      minimist: 1.2.8
+      path-to-regexp: 6.3.0
+      pino: 9.14.0
+      pino-pretty: 13.1.2
+      pluralize: 8.0.0
+      qs-esm: 8.0.1
+      range-parser: 1.2.1
+      sanitize-filename: 1.6.3
+      sax: 1.6.1
+      ts-essentials: 10.0.3(typescript@6.0.3)
+      tsx: 4.23.15
+      undici: 7.29.1
+      uuid: 13.0.2
+      ws: 8.22.0
+    transitivePeerDependencies:
+      - bufferutil
+      - supports-color
+      - typescript
+      - utf-8-validate
+
   pg-cloudflare@1.4.1:
     optional: true
 
@@ -7433,6 +7513,8 @@ snapshots:
   undici-types@8.9.0: {}
 
   undici@7.29.0: {}
+
+  undici@7.29.1: {}
 
   unist-util-is@6.0.1:
     dependencies:

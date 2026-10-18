@@ -46,6 +46,21 @@ body,
   -webkit-corner-shape: round !important;
 }
 
+[data-slot="slider-thumb"],
+.slider__thumb {
+  translate: 0 0 !important;
+}
+
+[data-slot="slider-thumb"]::after,
+.slider__thumb::after {
+  display: none !important;
+}
+
+[dir="rtl"] .slider__fill {
+  left: auto !important;
+  right: 0 !important;
+}
+
 @theme {
   --font-sans:
     "Vazirmatn Variable", "Vazirmatn", -apple-system, BlinkMacSystemFont,

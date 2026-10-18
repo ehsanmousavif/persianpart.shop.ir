@@ -153,7 +153,7 @@ export function LoginCard() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-base flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/20 cursor-pointer disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-base flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-5 h-5 animate-spin" />
@@ -233,7 +233,7 @@ export function LoginCard() {
             type="button"
             onClick={() => handleVerifyOtp()}
             disabled={isLoading || otpCode.length !== 5}
-            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 transition-all shadow-md shadow-primary/20 cursor-pointer disabled:opacity-50"
+            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 transition-allcursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-5 h-5 animate-spin" />

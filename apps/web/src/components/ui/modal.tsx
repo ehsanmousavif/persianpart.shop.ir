@@ -38,7 +38,7 @@ export function Modal({
       >
         <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
           <HeroUIModal.Dialog
-            className={`pointer-events-auto relative w-full bg-surface shadow-2xl z-10 border border-border text-start overflow-hidden ${
+            className={`pointer-events-auto relative w-full bg-surface s z-10 border border-border text-start overflow-hidden ${
               isBottomSheetOnMobile
                 ? 'rounded-t-3xl sm:rounded-2xl max-h-[88vh] flex flex-col animate-drawer-slide-up sm:animate-modal-enter'
                 : 'rounded-2xl max-h-[90vh] my-auto animate-modal-enter'

@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Modal as HeroUIModal, Chip } from "@heroui/react";
+import { Drawer, Chip } from "@heroui/react";
 import type { Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
 import { ImageViewerModal } from "../../components/ui/image-viewer-modal";
@@ -47,15 +47,27 @@ export function ProductBottomSheet({
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
 
+  // Preserve rendered product for smooth close transitions
+  const [renderedProduct, setRenderedProduct] = useState<Product | null>(product);
+
+  useEffect(() => {
+    if (product) {
+      setRenderedProduct(product);
+    }
+  }, [product]);
+
+  const activeProduct = product || renderedProduct;
+
   // Consolidate tile angles and sample works into a unified gallery
   const mediaItems: GalleryMediaItem[] = useMemo(() => {
-    if (!product) return [];
+    if (!activeProduct) return [];
     const items: GalleryMediaItem[] = [];
     const seen = new Set<string>();
 
-    const all = [...(product.images || []), ...(product.gallery || [])].filter(
-      Boolean,
-    );
+    const all = [
+      ...(activeProduct.images || []),
+      ...(activeProduct.gallery || []),
+    ].filter(Boolean);
 
     all.forEach((url, idx) => {
       if (!seen.has(url)) {
@@ -79,60 +91,63 @@ export function ProductBottomSheet({
     }
 
     return items;
-  }, [product]);
+  }, [activeProduct]);
 
   // Sync active image when product changes
   useEffect(() => {
-    if (product && product.images.length > 0) {
-      setActiveImageUrl(product.images[0] ?? null);
+    if (activeProduct && activeProduct.images && activeProduct.images.length > 0) {
+      setActiveImageUrl(activeProduct.images[0] ?? null);
     }
-  }, [product]);
+  }, [activeProduct]);
 
-  if (!isOpen || !product) return null;
+  if (!activeProduct) return null;
 
-  const isOutOfStock = product.stockStatus === "out_of_stock";
-  const isLowStock = product.stockStatus === "low_stock";
-  const currentHeroUrl = activeImageUrl || product.images[0] || "";
+  const isOutOfStock = activeProduct.stockStatus === "out_of_stock";
+  const isLowStock = activeProduct.stockStatus === "low_stock";
+  const currentHeroUrl = activeImageUrl || activeProduct.images[0] || "";
   const currentMediaItem = mediaItems.find((m) => m.url === currentHeroUrl);
 
   return (
     <>
-      <HeroUIModal.Root
-        isOpen={isOpen}
-        onOpenChange={(open) => !open && onClose()}
-      >
-        <HeroUIModal.Backdrop
-          isDismissable
-          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end justify-center animate-backdrop-enter"
+      <Drawer>
+        <Drawer.Backdrop
+          isOpen={isOpen}
+          onOpenChange={(open) => !open && onClose()}
+          className="fixed z-50 backdrop-blur-xs min-h-60 flex items-end justify-center fade-up transition-all duration-300"
         >
-          <HeroUIModal.Container className="pointer-events-none w-full max-w-xl mx-auto h-auto p-0 flex flex-col items-center justify-end">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-3xl shadow-2xl flex flex-col h-[67dvh] max-h-[67dvh] min-h-[67dvh] z-10 border-t border-border overflow-hidden animate-drawer-slide-up text-start">
-              {/* Pull Handle Indicator */}
-              <div className="flex justify-center pt-2 pb-1 shrink-0">
-                <div className="w-8 h-1 rounded-full bg-border" />
+          <Drawer.Content
+            placement="bottom"
+            className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[22%] h-auto! rounded-t-2xl shadow-2xl flex flex-col overflow-hidden"
+          >
+            <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
+              {/* Drag Handle UI */}
+              <div className="flex justify-center w-full shrink-0">
+                <Drawer.Handle className="w-16 h-1.5 rounded-full" />
               </div>
 
-              <HeroUIModal.Header className="px-3.5 py-2 border-b border-separator flex items-start justify-between gap-2.5 shrink-0 text-start">
+              {/* Header */}
+              <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-1 pb-3 border-b border-separator shrink-0">
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
                   <span className="text-[10px] font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/25 self-start">
-                    {product.category}
+                    {activeProduct.category}
                   </span>
-                  <HeroUIModal.Heading className="text-sm font-bold text-foreground mt-1 line-clamp-2 text-start leading-snug">
-                    {product.name}
-                  </HeroUIModal.Heading>
+                  <Drawer.Heading className="text-sm font-extrabold text-foreground mt-1 line-clamp-2 text-start leading-snug">
+                    {activeProduct.name}
+                  </Drawer.Heading>
                 </div>
 
-                <HeroUIModal.CloseTrigger
+                <button
+                  type="button"
                   onClick={onClose}
-                  className="w-7 h-7 rounded-lg text-muted hover:text-foreground hover:bg-default/15 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
-                  aria-label="بستن پنجره جزئیات"
+                  aria-label="بستن"
+                  className="size-10 rounded-xl bg-default/50 hover:bg-default/35 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
                 >
-                  <XIcon size={16} />
-                </HeroUIModal.CloseTrigger>
-              </HeroUIModal.Header>
+                  <XIcon />
+                </button>
+              </Drawer.Header>
 
-              {/* Scrollable Body */}
-              <HeroUIModal.Body className="p-3.5 overflow-y-auto overscroll-contain flex-1 min-h-0 space-y-3 text-start">
+              {/* Body */}
+              <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-thin">
                 {/* 1. Main Hero Preview */}
                 <div className="space-y-2">
                   <div
@@ -146,7 +161,7 @@ export function ProductBottomSheet({
                   >
                     <img
                       src={currentHeroUrl || "/assets/images/placeholder.svg"}
-                      alt={product.name}
+                      alt={activeProduct.name}
                       className="w-full h-full object-cover rounded-[20px]"
                       style={
                         {
@@ -174,7 +189,7 @@ export function ProductBottomSheet({
                         </span>
                       ) : isLowStock ? (
                         <span className="px-2 py-0.5 rounded-lg bg-warning text-warning-foreground text-[10px] font-semibold shadow-xs">
-                          موجودی محدود ({toPersianDigits(product.inventorySqm)})
+                          موجودی محدود ({toPersianDigits(activeProduct.inventorySqm)})
                         </span>
                       ) : (
                         <span className="px-2 py-0.5 rounded-lg bg-success text-success-foreground text-[10px] font-semibold shadow-xs">
@@ -220,8 +235,8 @@ export function ProductBottomSheet({
                         ) : (
                           <>
                             موجودی انبار:{" "}
-                            {toPersianDigits(product.inventorySqm)} متر (
-                            {toPersianDigits(product.stockCartons)} کارتن)
+                            {toPersianDigits(activeProduct.inventorySqm)} متر (
+                            {toPersianDigits(activeProduct.stockCartons)} کارتن)
                           </>
                         )}
                       </Chip>
@@ -270,34 +285,34 @@ export function ProductBottomSheet({
                   </div>
                 </div>
 
-                {/* Price & Selection Action Strip (Strictly 1-Line, Cleaned per user specs) */}
+                {/* Price & Selection Action Strip */}
                 <div className="p-2.5 bg-default/10 rounded-2xl border border-border flex items-center justify-between gap-2">
                   <div className="min-w-0 flex items-baseline gap-1.5 whitespace-nowrap">
-                    {product.discountPercent ? (
+                    {activeProduct.discountPercent ? (
                       <>
                         <span className="text-sm font-extrabold text-danger inline-flex items-center gap-1">
                           <span>
-                            {formatToman(product.finalCustomerPricePerSqm)}
+                            {formatToman(activeProduct.finalCustomerPricePerSqm)}
                           </span>
                           <TomanIcon className="size-4" />
                         </span>
                         <span className="text-[10px] text-muted line-through inline-flex items-center gap-0.5">
                           <span>
                             {formatToman(
-                              product.originalPricePerSqm ||
-                                product.finalCustomerPricePerSqm,
+                              activeProduct.originalPricePerSqm ||
+                                activeProduct.finalCustomerPricePerSqm,
                             )}
                           </span>
                           <TomanIcon className="size-3" />
                         </span>
                         <span className="px-1 py-0.2 rounded text-[9px] font-bold bg-danger/15 text-danger">
-                          {toPersianDigits(product.discountPercent)}٪
+                          {toPersianDigits(activeProduct.discountPercent)}٪
                         </span>
                       </>
                     ) : (
                       <span className="text-sm font-extrabold text-foreground inline-flex items-center gap-1">
                         <span>
-                          {formatToman(product.finalCustomerPricePerSqm)}
+                          {formatToman(activeProduct.finalCustomerPricePerSqm)}
                         </span>
                         <TomanIcon className="size-4" />
                       </span>
@@ -335,7 +350,7 @@ export function ProductBottomSheet({
                     {onOrderDirect && !isOutOfStock && (
                       <button
                         type="button"
-                        onClick={() => onOrderDirect(product)}
+                        onClick={() => onOrderDirect(activeProduct)}
                         className="px-3 py-1.5 rounded-xl text-[11px] font-bold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1 transition-all cursor-pointer shadow-sm shadow-primary/20 active:scale-95 whitespace-nowrap shrink-0"
                       >
                         <span>ثبت سفارش</span>
@@ -364,8 +379,8 @@ export function ProductBottomSheet({
                           ابعاد
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {toPersianDigits(product.dimensions.width)} ×{" "}
-                          {toPersianDigits(product.dimensions.height)}
+                          {toPersianDigits(activeProduct.dimensions.width)} ×{" "}
+                          {toPersianDigits(activeProduct.dimensions.height)}
                         </span>
                       </div>
                     </div>
@@ -380,7 +395,7 @@ export function ProductBottomSheet({
                           متراژ در کارتن
                         </span>
                         <span className="font-bold text-primary text-xs leading-normal truncate block">
-                          {toPersianDigits(product.sqmPerCarton)}
+                          {toPersianDigits(activeProduct.sqmPerCarton)}
                         </span>
                       </div>
                     </div>
@@ -397,7 +412,7 @@ export function ProductBottomSheet({
                           className="font-mono font-bold text-foreground text-xs leading-normal truncate block"
                           dir="ltr"
                         >
-                          {product.sku}
+                          {activeProduct.sku}
                         </span>
                       </div>
                     </div>
@@ -411,7 +426,7 @@ export function ProductBottomSheet({
                           تعداد در کارتن
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {toPersianDigits(product.piecesPerCarton)} برگ
+                          {toPersianDigits(activeProduct.piecesPerCarton)} برگ
                         </span>
                       </div>
                     </div>
@@ -426,7 +441,7 @@ export function ProductBottomSheet({
                           برند
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {product.brand}
+                          {activeProduct.brand}
                         </span>
                       </div>
                     </div>
@@ -441,7 +456,7 @@ export function ProductBottomSheet({
                           درجه کیفی
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {formatGrade(product.grade)}
+                          {formatGrade(activeProduct.grade)}
                         </span>
                       </div>
                     </div>
@@ -456,7 +471,7 @@ export function ProductBottomSheet({
                           رنگ
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {product.color}
+                          {activeProduct.color}
                         </span>
                       </div>
                     </div>
@@ -471,7 +486,7 @@ export function ProductBottomSheet({
                           وزن هر کارتن
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
-                          {toPersianDigits(product.cartonWeightKg)} کیلوگرم
+                          {toPersianDigits(activeProduct.cartonWeightKg)} کیلوگرم
                         </span>
                       </div>
                     </div>
@@ -479,24 +494,24 @@ export function ProductBottomSheet({
                 </div>
 
                 {/* Optional Rich Description */}
-                {(product.richDescription || product.description) && (
+                {(activeProduct.richDescription || activeProduct.description) && (
                   <div className="p-2.5 bg-default/10 rounded-xl border border-border space-y-0.5">
                     <span className="text-[10px] font-bold text-muted block mb-0.5">
                       توضیحات
                     </span>
                     <p className="text-[11px] text-foreground leading-relaxed">
-                      {product.richDescription || product.description}
+                      {activeProduct.richDescription || activeProduct.description}
                     </p>
                   </div>
                 )}
 
                 {/* Tags */}
-                {product.tags.length > 0 && (
+                {activeProduct.tags.length > 0 && (
                   <div className="pt-2 border-t border-separator flex flex-wrap items-center gap-1">
                     <span className="text-[10px] text-muted font-medium">
                       ویژگی‌ها:
                     </span>
-                    {product.tags.map((tag) => (
+                    {activeProduct.tags.map((tag) => (
                       <span
                         key={tag}
                         className="px-2 py-0.5 rounded-md bg-default/15 text-muted text-[10px] font-semibold"
@@ -506,11 +521,11 @@ export function ProductBottomSheet({
                     ))}
                   </div>
                 )}
-              </HeroUIModal.Body>
-            </HeroUIModal.Dialog>
-          </HeroUIModal.Container>
-        </HeroUIModal.Backdrop>
-      </HeroUIModal.Root>
+              </Drawer.Body>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
+      </Drawer>
 
       {/* Standalone Image Viewer Lightbox */}
       {zoomImageUrl && (
@@ -518,7 +533,7 @@ export function ProductBottomSheet({
           isOpen={Boolean(zoomImageUrl)}
           onClose={() => setZoomImageUrl(null)}
           imageUrl={zoomImageUrl}
-          title={product.name}
+          title={activeProduct.name}
         />
       )}
     </>

@@ -30,6 +30,7 @@
     "@orpc/contract": "2.0.0-beta.42",
     "@orpc/openapi": "2.0.0-beta.42",
     "@orpc/server": "2.0.0-beta.42",
+    "@payloadcms/sdk": "^3.91.0",
     "@persianpart/cms": "workspace:*",
     "@persianpart/contract": "workspace:*",
     "cross-env": "^7.0.3",

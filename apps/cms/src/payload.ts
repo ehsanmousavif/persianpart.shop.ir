@@ -1,14 +1,11 @@
-import config from './payload.config'
-import { getPayload as getPayloadLocal, type Payload } from 'payload'
+import { sdk, createPayloadSDK, type TypedPayloadSDK, type PayloadSdkOptions } from './sdk.js'
+import type { Config, User } from './payload-types.js'
+import { PayloadSDKError } from '@payloadcms/sdk'
 
-let cachedPayload: Payload | null = null
+export { sdk, createPayloadSDK, PayloadSDKError }
+export type { TypedPayloadSDK, PayloadSdkOptions }
 
-export async function getPayloadClient(): Promise<Payload> {
-  if (!cachedPayload) {
-    cachedPayload = await getPayloadLocal({ config })
-  }
-  return cachedPayload
-}
+export type CollectionSlugs = keyof Config['collections']
 
 export interface CrudOperations<T = any> {
   find: (args?: {
@@ -26,49 +23,135 @@ export interface CrudOperations<T = any> {
   delete: (args: { id: string | number }) => Promise<T>
 }
 
-type CollectionSlugs =
-  | 'orders'
-  | 'products'
-  | 'categories'
-  | 'brands'
-  | 'tags'
-  | 'users'
-  | 'admins'
-  | 'media'
-  | 'plans'
-  | 'dimensions'
-  | 'customer-types'
+// Lazy-loaded local Node.js Payload instance for offline scripts/migrations/seeds
+let cachedLocalPayload: any = null
 
+export async function getLocalPayloadClient() {
+  if (!cachedLocalPayload) {
+    const { getPayload } = await import('payload')
+    const { default: config } = await import('./payload.config')
+    cachedLocalPayload = await getPayload({ config })
+  }
+  return cachedLocalPayload
+}
+
+/**
+ * Backward compatibility alias for offline scripts (e.g. seed.ts)
+ */
+export const getPayloadClient = getLocalPayloadClient
+
+/**
+ * Universal payload client:
+ * - `sdk`: Direct instance of typed Payload REST API SDK (@payloadcms/sdk)
+ * - `crud`: Collection-based CRUD proxy delegating all operations over the type-safe REST API SDK
+ * - `client`: Lazy getter for local Node.js engine (seeds, migrations, local scripts)
+ */
 export const payload = {
-  get client(): Promise<Payload> {
-    return getPayloadClient()
+  /**
+   * The typed Payload REST API SDK instance
+   */
+  sdk,
+
+  /**
+   * Lazy getter for the in-process Node.js Payload instance
+   */
+  get client() {
+    return getLocalPayloadClient()
   },
+
+  /**
+   * Collection-based CRUD proxy delegating to Payload REST API SDK
+   */
   crud: new Proxy({} as Record<CollectionSlugs, CrudOperations>, {
     get: (_, collection: string) => ({
       find: async (opts: any = {}) => {
-        const client = await getPayloadClient()
-        return client.find({ collection: collection as any, overrideAccess: true, ...opts })
+        return (await sdk.find({ collection: collection as any, ...opts })) as any
       },
       findByID: async ({ id, ...opts }: any) => {
-        const client = await getPayloadClient()
-        return client.findByID({ collection: collection as any, id, overrideAccess: true, ...opts })
+        return (await sdk.findByID({ collection: collection as any, id, ...opts })) as any
       },
       count: async (opts: any = {}) => {
-        const client = await getPayloadClient()
-        return client.count({ collection: collection as any, overrideAccess: true, ...opts })
+        return (await sdk.count({ collection: collection as any, ...opts })) as any
       },
       create: async ({ data, ...opts }: any) => {
-        const client = await getPayloadClient()
-        return client.create({ collection: collection as any, data, overrideAccess: true, ...opts })
+        return (await sdk.create({ collection: collection as any, data, ...opts })) as any
       },
       update: async ({ id, data, ...opts }: any) => {
-        const client = await getPayloadClient()
-        return client.update({ collection: collection as any, id, data, overrideAccess: true, ...opts })
+        return (await sdk.update({ collection: collection as any, id, data, ...opts })) as any
       },
       delete: async ({ id, ...opts }: any) => {
-        const client = await getPayloadClient()
-        return client.delete({ collection: collection as any, id, overrideAccess: true, ...opts })
+        return (await sdk.delete({ collection: collection as any, id, ...opts })) as any
       },
     }),
   }),
+}
+
+/**
+ * Unified authentication helper over Payload REST API SDK
+ * Resolves user from Authorization header (Admin JWT or Customer Bearer) or cookies.
+ */
+export async function payloadAuth(headers: Headers | Record<string, string>): Promise<User | null> {
+  const getHeader = (name: string): string | null => {
+    if (typeof (headers as any).get === 'function') {
+      return (headers as Headers).get(name)
+    }
+    const record = headers as Record<string, string>
+    return record[name] || record[name.toLowerCase()] || null
+  }
+
+  const authHeader = getHeader('authorization')
+  const cookieHeader = getHeader('cookie')
+
+  // 1. Try Admin auth if Authorization or Cookie present
+  if (authHeader || cookieHeader) {
+    try {
+      const meResult = await sdk.me(
+        { collection: 'admins' },
+        {
+          headers: {
+            ...(authHeader ? { Authorization: authHeader } : {}),
+            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+          },
+        },
+      )
+      if (meResult?.user) {
+        const a = meResult.user
+        return {
+          id: a.id,
+          phone: '',
+          fullName: a.name || 'مدیر سیستم',
+          role: 'admin',
+          status: 'active',
+          updatedAt: a.updatedAt,
+          createdAt: a.createdAt,
+        } as unknown as User
+      }
+    } catch {
+      // Continue to customer lookup
+    }
+  }
+
+  // 2. Customer Bearer fallback (token as user ID or phone number)
+  if (authHeader?.startsWith('Bearer ')) {
+    const token = authHeader.substring(7).trim()
+    try {
+      const res = await sdk.find({
+        collection: 'users',
+        where: {
+          or: [
+            { id: { equals: isNaN(Number(token)) ? token : Number(token) } },
+            { phone: { equals: token } },
+          ],
+        },
+        limit: 1,
+      })
+      if (res.docs.length > 0) {
+        return res.docs[0]
+      }
+    } catch {
+      // Ignored
+    }
+  }
+
+  return null
 }

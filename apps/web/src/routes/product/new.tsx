@@ -103,8 +103,9 @@ function ProductNewConfigurationPage() {
     val: number,
     inventorySqm: number,
   ) => {
+    const maxVal = inventorySqm > 0 ? inventorySqm : 500;
     const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10;
-    const clampedVal = Math.min(rawVal, inventorySqm);
+    const clampedVal = Math.min(rawVal, maxVal);
     setQuantity(productId, clampedVal);
   };
 
@@ -125,12 +126,13 @@ function ProductNewConfigurationPage() {
     let totalPrice = 0;
 
     selectedProducts.forEach((product) => {
+      const maxInv = product.inventorySqm > 0 ? product.inventorySqm : 500;
       const area = quantities[product.id] ?? 0;
       const calc = calculateCartonRequirement(
         area,
         product.sqmPerCarton,
         product.finalCustomerPricePerSqm,
-        product.inventorySqm,
+        maxInv,
       );
       totalCartons += calc.cartonCount;
       totalDeliverableArea += calc.deliverableArea;
@@ -190,15 +192,21 @@ function ProductNewConfigurationPage() {
       {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}
       <div className="space-y-4">
         {selectedProducts.map((product) => {
+          const maxInventory =
+            product.inventorySqm > 0 ? product.inventorySqm : 500;
           const area =
             quantities[product.id] ??
-            Math.min(product.inventorySqm, Math.max(product.sqmPerCarton, 10));
+            Math.min(maxInventory, Math.max(product.sqmPerCarton || 1, 10));
           const calc = calculateCartonRequirement(
             area,
             product.sqmPerCarton,
             product.finalCustomerPricePerSqm,
-            product.inventorySqm,
+            maxInventory,
           );
+          const percent =
+            maxInventory > 0
+              ? Math.min(100, Math.max(0, (area / maxInventory) * 100))
+              : 0;
 
           return (
             <div
@@ -284,18 +292,18 @@ function ProductNewConfigurationPage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 justify-center shrink-0">
                     <I18nProvider locale="fa-IR">
                       <NumberField
                         minValue={0}
-                        maxValue={product.inventorySqm}
-                        step={0.1}
+                        maxValue={maxInventory}
+                        step={1}
                         value={area}
                         onChange={(val) =>
                           handleAreaChange(
                             product.id,
                             val,
-                            product.inventorySqm,
+                            maxInventory,
                           )
                         }
                         formatOptions={{
@@ -306,9 +314,9 @@ function ProductNewConfigurationPage() {
                         aria-label={`متراژ ${product.name}`}
                         className="max-w-40"
                       >
-                        <NumberField.Group className=" rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
+                        <NumberField.Group className="rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
                           <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
-                          <NumberField.Input className="font-bold text-center  text-foreground" />
+                          <NumberField.Input className="font-bold text-center text-foreground" />
                           <NumberField.IncrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
                         </NumberField.Group>
                       </NumberField>
@@ -316,26 +324,32 @@ function ProductNewConfigurationPage() {
                   </div>
                 </div>
 
-                <div dir="ltr" className="space-y-1 pt-0.5">
+                <div className="space-y-1 pt-0.5">
                   <div className="w-full py-1">
-                    <Slider
-                      minValue={0}
-                      maxValue={product.inventorySqm}
-                      step={0.1}
-                      value={area}
-                      onChange={(val) => {
-                        const num =
-                          typeof val === "number" ? val : (val[0] ?? 0);
-                        handleAreaChange(product.id, num, product.inventorySqm);
-                      }}
-                      aria-label={`اسلایدر متراژ ${product.name}`}
-                      className="w-full"
-                    >
-                      <Slider.Track className="rounded-full">
-                        <Slider.Fill />
-                        <Slider.Thumb className="rounded-full! after:rounded-full!" />
-                      </Slider.Track>
-                    </Slider>
+                    <I18nProvider locale="fa-IR">
+                      <Slider
+                        minValue={0}
+                        maxValue={maxInventory}
+                        step={0.1}
+                        value={area}
+                        onChange={(val) => {
+                          const num =
+                            typeof val === "number" ? val : (val[0] ?? 0);
+                          handleAreaChange(product.id, num, maxInventory);
+                        }}
+                        aria-label={`اسلایدر متراژ ${product.name}`}
+                        className="w-full"
+                      >
+                        <Slider.Track className="relative h-2.5 w-full rounded-full bg-muted/20 border-none">
+                          {/* RTL Accurate Fill: expands from right edge to the thumb */}
+                          <div
+                            className="absolute top-0 bottom-0 rounded-full bg-primary pointer-events-none transition-[width] duration-75"
+                            style={{ right: 0, left: "auto", width: `${percent}%` }}
+                          />
+                          <Slider.Thumb className="w-5.5! h-5.5! min-w-0! rounded-full! bg-white border-2 border-primary shadow-md cursor-grab active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary/40 outline-none transition-transform" />
+                        </Slider.Track>
+                      </Slider>
+                    </I18nProvider>
                   </div>
 
                   {/* Presets */}
@@ -343,7 +357,7 @@ function ProductNewConfigurationPage() {
                     <button
                       type="button"
                       onClick={() =>
-                        handleAreaChange(product.id, 0, product.inventorySqm)
+                        handleAreaChange(product.id, 0, maxInventory)
                       }
                       className="text-muted hover:text-foreground transition-colors cursor-pointer"
                     >
@@ -354,13 +368,13 @@ function ProductNewConfigurationPage() {
                       onClick={() =>
                         handleAreaChange(
                           product.id,
-                          product.inventorySqm,
-                          product.inventorySqm,
+                          maxInventory,
+                          maxInventory,
                         )
                       }
                       className="text-muted hover:text-foreground hover:underline cursor-pointer"
                     >
-                      سقف موجودی: {toPersianDigits(product.inventorySqm)}
+                      سقف موجودی: {toPersianDigits(maxInventory)}
                     </button>
                   </div>
                 </div>
@@ -435,7 +449,7 @@ function ProductNewConfigurationPage() {
       </div>
 
       {/* Sticky Bottom Bar - ONLY "تایید" Button, Aligned with Container Width */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-surface/95 backdrop-blur-md border-t border-border shadow-2xl z-40 p-3 sm:p-4 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-surface/95 backdrop-blur-md border-t border-border shadow-2xl z-40 p-3 sm:p-4">
         <button
           type="button"
           onClick={() => setIsInvoiceOpen(true)}

@@ -149,7 +149,6 @@ function ProductListPage() {
 
   const virtualItems = virtualizer.getVirtualItems();
 
-  // Auto-load next batch when scrolling near the end of the virtual window
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
     if (!lastItem) return;
@@ -210,14 +209,14 @@ function ProductListPage() {
   return (
     <div className="w-full px-4 py-3 space-y-3 text-start pb-8 bg-background">
       {/* 1. Search Bar & Advanced Filters Trigger */}
-      <div className="flex items-stretch gap-2">
+      <div className="flex items-center gap-2">
         <div className="relative flex-1 text-base">
           <SearchField name="search">
-            <SearchField.Group className="py-6  border-0 shadow-none bg-muted/5">
+            <SearchField.Group className="h-10 border-0 shadow-none bg-muted/5 rounded-2xl px-3 flex items-center">
               <SearchField.SearchIcon />
               <SearchField.Input
                 onChange={(e) => setFilter("searchQuery", e.target.value)}
-                className="w-full text-[16px]"
+                className="w-full text-xs font-medium"
                 placeholder="جستجو محصولات"
               />
               <SearchField.ClearButton />
@@ -227,27 +226,28 @@ function ProductListPage() {
             <button
               type="button"
               onClick={() => setFilter("searchQuery", "")}
-              className="absolute end-s-2.5  top-2.5 w-6 h-6 rounded-xl text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
+              className="absolute end-s-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-xl text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
               aria-label="پاک کردن متن جستجو"
             >
               <XIcon size={14} />
             </button>
           )}
         </div>
-        {/* 2. Advanced Filter Button */}
+        {/* 2. Advanced Filter Button — Aligned strictly with Filter Tag standard */}
         <button
           type="button"
           onClick={() => setIsFilterOpen(true)}
+          aria-label="فیلترهای پیشرفته"
           className={cn(
-            "px-4 rounded-2xl font-bold text-xs flex items-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95",
+            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95  select-none",
             activeFilterCount > 0
-              ? "bg-primary/15 border-primary text-primary"
-              : "bg-muted/5 border-border text-foreground hover:bg-default/20",
+              ? "bg-[#252745] text-white"
+              : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
           )}
         >
-          <FilterIcon size={18} />
+          <FilterIcon size={16} />
           {activeFilterCount > 0 && (
-            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-xs animate-card-fade-in transition-all duration-300">
+            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
               {toPersianDigits(activeFilterCount)}
             </span>
           )}
@@ -267,7 +267,7 @@ function ProductListPage() {
             aria-selected={!filters.selectedDimension}
             onClick={() => setFilter("selectedDimension", null)}
             className={cn(
-              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
+              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none ",
               !filters.selectedDimension
                 ? "bg-[#252745] text-white"
                 : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
@@ -290,7 +290,7 @@ function ProductListPage() {
                   setFilter("selectedDimension", isSelected ? null : dim)
                 }
                 className={cn(
-                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
+                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none ",
                   isSelected
                     ? "bg-[#252745] text-white"
                     : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
