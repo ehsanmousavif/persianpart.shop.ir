@@ -1,8 +1,9 @@
-import { payload } from '../payload'
+import { sdk } from '../payload'
 import { base } from '../rpc/base'
 
 const all = base.order.all.handler(async ({ context }) => {
-  const allOrders = await payload.crud.orders.find({
+  const allOrders = await sdk.find({
+    collection: 'orders',
     where: {
       user: { equals: context.user!.id },
     },
@@ -16,7 +17,8 @@ const all = base.order.all.handler(async ({ context }) => {
 
 const summary = base.order.summary.handler(async ({ context }) => {
   const getOrderCount = async (status?: string) => {
-    const { totalDocs } = await payload.crud.orders.count({
+    const { totalDocs } = await sdk.count({
+      collection: 'orders',
       where: {
         user: { equals: context.user!.id },
         ...(status && { status: { equals: status } }),
@@ -37,7 +39,8 @@ const summary = base.order.summary.handler(async ({ context }) => {
 
 const detail = base.order.detail.handler(async ({ input, context, errors }) => {
   const id = input.orderId || input.id || ''
-  const orderDoc = await payload.crud.orders.findByID({
+  const orderDoc = await sdk.findByID({
+    collection: 'orders',
     id,
     depth: 3,
   })
@@ -57,10 +60,11 @@ const detail = base.order.detail.handler(async ({ input, context, errors }) => {
 const createCustomOrder = base.order.createCustomOrder.handler(
   async ({ input, context }) => {
     const orderNumber = `PP-REQ-${Date.now().toString().slice(-6)}`
-    const orderDoc = await payload.crud.orders.create({
+    const orderDoc = await sdk.create({
+      collection: 'orders',
       data: {
         orderNumber,
-        user: context.user!.id,
+        user: Number(context.user!.id),
         status: 'pending',
         items: [],
         subtotal: 0,
@@ -76,7 +80,8 @@ const createCustomOrder = base.order.createCustomOrder.handler(
 const submit = base.order.submit.handler(async ({ input, context, errors }) => {
   let userId = context.user?.id
   if (!userId) {
-    const activeUsers = await payload.crud.users.find({
+    const activeUsers = await sdk.find({
+      collection: 'users',
       where: { status: { equals: 'active' } },
       limit: 1,
     })
@@ -89,19 +94,28 @@ const submit = base.order.submit.handler(async ({ input, context, errors }) => {
 
   const itemsData = input.items.map((item) => {
     const requestedArea = item.requestedArea || item.requestedSqm || 1
-    const pId = isNaN(Number(item.productId)) ? item.productId : Number(item.productId)
+    const pId = isNaN(Number(item.productId)) ? 1 : Number(item.productId)
     return {
       product: pId,
       requestedArea,
+      cartonCount: 0,
+      deliverableArea: requestedArea,
+      unitPrice: 0,
+      totalPrice: 0,
     }
   })
 
+  const orderNumber = `PP-${Date.now().toString().slice(-8)}`
   // Leverage Payload collection hooks to calculate cartons, prices, orderNumber and initial timeline
-  const orderDoc = await payload.crud.orders.create({
+  const orderDoc = await sdk.create({
+    collection: 'orders',
     data: {
-      user: userId,
+      orderNumber,
+      user: Number(userId),
       status: 'pending',
       items: itemsData,
+      subtotal: 0,
+      finalTotal: 0,
       notes: input.notes,
       deliveryAddress: (input as any).deliveryAddress || 'انبار مرکزی بازرگانی دهقان',
     },
@@ -119,7 +133,8 @@ const list = base.order.list.handler(async ({ input, context }) => {
     where.status = { equals: input.status }
   }
 
-  const res = await payload.crud.orders.find({
+  const res = await sdk.find({
+    collection: 'orders',
     where,
     limit: input?.limit || 100,
     page: input?.page || 1,
@@ -142,7 +157,8 @@ const getById = base.order.getById.handler(async ({ input, errors }) => {
   // 1. If numeric ID, findByID
   if (!isNaN(Number(rawId))) {
     try {
-      return await payload.crud.orders.findByID({
+      return await sdk.findByID({
+        collection: 'orders',
         id: Number(rawId),
         depth: 3,
       })
@@ -152,7 +168,8 @@ const getById = base.order.getById.handler(async ({ input, errors }) => {
   }
 
   // 2. Query by orderNumber or string id
-  const res = await payload.crud.orders.find({
+  const res = await sdk.find({
+    collection: 'orders',
     where: {
       or: [
         { orderNumber: { equals: rawId } },
@@ -171,7 +188,8 @@ const getById = base.order.getById.handler(async ({ input, errors }) => {
 })
 
 const cancel = base.order.cancel.handler(async ({ input, errors }) => {
-  const orderDoc = await payload.crud.orders.findByID({
+  const orderDoc = await sdk.findByID({
+    collection: 'orders',
     id: input.id,
     depth: 0,
   })
@@ -182,7 +200,6 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
 
   if (
     orderDoc.status === 'cancel' ||
-    orderDoc.status === 'cancelled' ||
     orderDoc.status === 'cancelled_by_customer' ||
     orderDoc.status === 'cancelled_by_admin'
   ) {
@@ -197,7 +214,8 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
     })
   }
 
-  return await payload.crud.orders.update({
+  return await sdk.update({
+    collection: 'orders',
     id: input.id,
     data: {
       status: 'cancelled_by_customer',
@@ -208,7 +226,8 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
 })
 
 const prepareReorder = base.order.prepareReorder.handler(async ({ input }) => {
-  const orderDoc = await payload.crud.orders.findByID({
+  const orderDoc = await sdk.findByID({
+    collection: 'orders',
     id: input.id,
     depth: 2,
   })
@@ -225,10 +244,10 @@ const validateCart = base.order.pricing.validateCart.handler(async ({ input }) =
   let subtotal = 0
   const validatedItems = await Promise.all(
     input.items.map(async (item) => {
-      const product = await payload.crud.products.findByID({ id: item.productId })
+      const product = await sdk.findByID({ collection: 'products', id: item.productId })
       const requestedArea = item.requestedArea || item.requestedSqm || 1
-      const pricePerSqm = (product as any).basePricePerSqm || 500000
-      const sqmPerCarton = (product as any).sqmPerCarton || 1.44
+      const pricePerSqm = Number(product.basePricePerSqm) || 500000
+      const sqmPerCarton = Number(product.sqmPerCarton) || 1.44
       const cartonCount = Math.ceil(requestedArea / sqmPerCarton)
       const deliverableArea = Math.round(cartonCount * sqmPerCarton * 100) / 100
       const itemTotal = Math.round(deliverableArea * pricePerSqm)
@@ -236,7 +255,7 @@ const validateCart = base.order.pricing.validateCart.handler(async ({ input }) =
 
       return {
         productId: item.productId,
-        productName: (product as any).name || 'محصول',
+        productName: product.name || 'محصول',
         requestedArea,
         cartonCount,
         deliverableArea,
@@ -266,7 +285,8 @@ const staffList = base.order.staffList.handler(async ({ input }) => {
     where.user = { equals: input.customerId }
   }
 
-  const res = await payload.crud.orders.find({
+  const res = await sdk.find({
+    collection: 'orders',
     where,
     limit: input?.limit || 50,
     page: input?.page || 1,
@@ -281,17 +301,19 @@ const staffList = base.order.staffList.handler(async ({ input }) => {
 })
 
 const staffUpdateStatus = base.order.staffUpdateStatus.handler(async ({ input }) => {
-  return await payload.crud.orders.update({
+  return await sdk.update({
+    collection: 'orders',
     id: input.id,
     data: {
-      status: input.newStatus,
+      status: input.newStatus as any,
       notes: input.note,
     },
   })
 })
 
 const staffCancel = base.order.staffCancel.handler(async ({ input }) => {
-  return await payload.crud.orders.update({
+  return await sdk.update({
+    collection: 'orders',
     id: input.id,
     data: {
       status: 'cancel',

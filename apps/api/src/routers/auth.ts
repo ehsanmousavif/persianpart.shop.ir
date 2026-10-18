@@ -1,4 +1,4 @@
-import { payload } from '../payload'
+import { sdk } from '../payload'
 import { base } from '../rpc/base'
 import { ORPCError } from '@orpc/server'
 
@@ -20,7 +20,8 @@ const requestOtp = base.auth.requestOtp.handler(async ({ input }) => {
   }
 
   // Customers must be pre-registered by admin in Payload panel
-  const existing = await payload.crud.users.find({
+  const existing = await sdk.find({
+    collection: 'users',
     where: { phone: { equals: phone } },
     limit: 1,
   })
@@ -56,7 +57,8 @@ const verifyOtp = base.auth.verifyOtp.handler(async ({ input }) => {
     throw new ORPCError('BAD_REQUEST', { message: 'شماره تلفن همراه الزامی است.' })
   }
 
-  const existing = await payload.crud.users.find({
+  const existing = await sdk.find({
+    collection: 'users',
     where: { phone: { equals: phone } },
     limit: 1,
   })
@@ -84,7 +86,7 @@ const verifyOtp = base.auth.verifyOtp.handler(async ({ input }) => {
 const session = base.auth.session.handler(async ({ context }) => {
   if (!context.user) return { user: null }
   try {
-    const u = await payload.crud.users.findByID({ id: context.user.id })
+    const u = await sdk.findByID({ collection: 'users', id: context.user.id })
     return { user: u }
   } catch {
     return { user: null }
@@ -101,7 +103,8 @@ const customerRequestOtp = base.auth.customer.requestOtp.handler(async ({ input 
     throw new ORPCError('BAD_REQUEST', { message: 'شماره تلفن همراه الزامی است.' })
   }
 
-  const existing = await payload.crud.users.find({
+  const existing = await sdk.find({
+    collection: 'users',
     where: { phone: { equals: phone } },
     limit: 1,
   })
@@ -131,7 +134,8 @@ const customerVerifyOtp = base.auth.customer.verifyOtp.handler(async ({ input })
     throw new ORPCError('BAD_REQUEST', { message: 'شماره تلفن همراه الزامی است.' })
   }
 
-  const existing = await payload.crud.users.find({
+  const existing = await sdk.find({
+    collection: 'users',
     where: { phone: { equals: phone } },
     limit: 1,
   })
@@ -162,7 +166,7 @@ const customerVerifyOtp = base.auth.customer.verifyOtp.handler(async ({ input })
       address: userDoc.address || '',
       nationalCode: userDoc.nationalCode || '',
       economicCode: userDoc.economicCode || '',
-      creditLimit: userDoc.creditLimit || 0,
+      creditLimit: (userDoc as any).creditLimit || 0,
     },
   }
 })
@@ -170,7 +174,7 @@ const customerVerifyOtp = base.auth.customer.verifyOtp.handler(async ({ input })
 const customerMe = base.auth.customer.me.handler(async ({ context }) => {
   if (!context.user) return null
   try {
-    const userDoc = await payload.crud.users.findByID({ id: context.user.id })
+    const userDoc = await sdk.findByID({ collection: 'users', id: context.user.id })
     return {
       id: String(userDoc.id),
       contactName: userDoc.fullName || 'کاربر گرامی',
@@ -181,7 +185,7 @@ const customerMe = base.auth.customer.me.handler(async ({ context }) => {
       address: userDoc.address || '',
       nationalCode: userDoc.nationalCode || '',
       economicCode: userDoc.economicCode || '',
-      creditLimit: userDoc.creditLimit || 0,
+      creditLimit: (userDoc as any).creditLimit || 0,
     }
   } catch {
     return null

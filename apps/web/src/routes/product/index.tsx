@@ -149,6 +149,7 @@ function ProductListPage() {
 
   const virtualItems = virtualizer.getVirtualItems();
 
+  // Auto-load next batch when scrolling near the end of the virtual window
   useEffect(() => {
     const lastItem = virtualItems[virtualItems.length - 1];
     if (!lastItem) return;
@@ -239,7 +240,7 @@ function ProductListPage() {
           onClick={() => setIsFilterOpen(true)}
           aria-label="فیلترهای پیشرفته"
           className={cn(
-            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95  select-none",
+            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95 shadow-2xs select-none",
             activeFilterCount > 0
               ? "bg-[#252745] text-white"
               : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
@@ -267,7 +268,7 @@ function ProductListPage() {
             aria-selected={!filters.selectedDimension}
             onClick={() => setFilter("selectedDimension", null)}
             className={cn(
-              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none ",
+              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
               !filters.selectedDimension
                 ? "bg-[#252745] text-white"
                 : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
@@ -290,7 +291,7 @@ function ProductListPage() {
                   setFilter("selectedDimension", isSelected ? null : dim)
                 }
                 className={cn(
-                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none ",
+                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
                   isSelected
                     ? "bg-[#252745] text-white"
                     : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",

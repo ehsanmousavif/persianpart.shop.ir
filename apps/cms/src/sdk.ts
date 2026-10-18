@@ -1,7 +1,9 @@
 import { PayloadSDK, PayloadSDKError } from '@payloadcms/sdk'
 import type { Config } from './payload-types.js'
 
+export { PayloadSDK, PayloadSDKError }
 export type TypedPayloadSDK = PayloadSDK<Config>
+export type { Config }
 
 export interface PayloadSdkOptions {
   /**

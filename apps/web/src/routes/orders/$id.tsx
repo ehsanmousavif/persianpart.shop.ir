@@ -372,7 +372,7 @@ function OrderDetailPage() {
                   <Link
                     to="/product"
                     search={{ productname: item.productSlug }}
-                    className="text-sm font-extrabold text-foreground hover:text-primary transition-colors line-clamp-1"
+                    className="text-sm font-extrabold text-foreground hover:text-primary transition-colors"
                   >
                     {item.productName}
                   </Link>

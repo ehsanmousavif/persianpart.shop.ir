@@ -1,4 +1,4 @@
-import { payload } from '../payload'
+import { sdk } from '../payload'
 import { base } from '../rpc/base'
 
 const shippingMethods = base.shopping.shippingMethods.handler(async () => {
@@ -30,7 +30,8 @@ const shippingMethods = base.shopping.shippingMethods.handler(async () => {
 const cartProducts = base.shopping.cartProducts.handler(async ({ input }) => {
   if (!input || input.length === 0) return []
 
-  const products = await payload.crud.products.find({
+  const products = await sdk.find({
+    collection: 'products',
     where: {
       or: input.map((id) => ({
         id: { equals: isNaN(Number(id)) ? id : Number(id) },
@@ -48,7 +49,7 @@ const addressList = base.shopping.addressList.handler(async ({ context, errors }
     throw errors.UNAUTHORIZED({ message: 'برای مشاهده آدرس‌ها باید وارد حساب خود شوید.' })
   }
 
-  const userDoc: any = await payload.crud.users.findByID({ id: context.user.id })
+  const userDoc: any = await sdk.findByID({ collection: 'users', id: context.user.id })
   return userDoc?.addresses || []
 })
 
@@ -57,7 +58,7 @@ const mutateAddress = base.shopping.mutateAddress.handler(async ({ input, contex
     throw errors.UNAUTHORIZED({ message: 'برای ثبت یا ویرایش آدرس باید وارد حساب خود شوید.' })
   }
 
-  const userDoc: any = await payload.crud.users.findByID({ id: context.user.id })
+  const userDoc: any = await sdk.findByID({ collection: 'users', id: context.user.id })
   const currentAddresses: any[] = userDoc?.addresses || []
 
   let updatedAddresses: any[]
@@ -73,7 +74,8 @@ const mutateAddress = base.shopping.mutateAddress.handler(async ({ input, contex
     updatedAddresses = [...currentAddresses, newAddress]
   }
 
-  const updatedUser: any = await payload.crud.users.update({
+  const updatedUser: any = await sdk.update({
+    collection: 'users',
     id: context.user.id,
     data: {
       addresses: updatedAddresses,
@@ -84,8 +86,9 @@ const mutateAddress = base.shopping.mutateAddress.handler(async ({ input, contex
 })
 
 const categories = base.shopping.categories.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-  const res = await payload.crud.categories.find({
+  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+  const res = await sdk.find({
+    collection: 'categories',
     where,
     limit: 100,
     sort: 'ordering',
@@ -94,8 +97,9 @@ const categories = base.shopping.categories.handler(async ({ input }) => {
 })
 
 const brands = base.shopping.brands.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-  const res = await payload.crud.brands.find({
+  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+  const res = await sdk.find({
+    collection: 'brands',
     where,
     limit: 100,
     sort: 'name',
@@ -104,8 +108,9 @@ const brands = base.shopping.brands.handler(async ({ input }) => {
 })
 
 const tags = base.shopping.tags.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-  const res = await payload.crud.tags.find({
+  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+  const res = await sdk.find({
+    collection: 'tags',
     where,
     limit: 100,
     sort: 'name',
@@ -120,7 +125,7 @@ const calcHelper = async (input: any) => {
 
   if (input.productId && (!input.sqmPerCarton || !input.pricePerSqm)) {
     try {
-      const prod: any = await payload.crud.products.findByID({ id: input.productId })
+      const prod: any = await sdk.findByID({ collection: 'products', id: input.productId })
       if (prod) {
         sqmPerCarton = prod.sqmPerCarton || sqmPerCarton
         pricePerSqm = prod.basePricePerSqm || pricePerSqm
@@ -160,7 +165,8 @@ const all = base.shopping.all.handler(async ({ input }) => {
     where.brand = { equals: input.brandId }
   }
 
-  return await payload.crud.products.find({
+  return await sdk.find({
+    collection: 'products',
     where,
     limit: input?.limit || 50,
     page: input?.page || 1,
@@ -169,7 +175,8 @@ const all = base.shopping.all.handler(async ({ input }) => {
 })
 
 const detail = base.shopping.detail.handler(async ({ input }) => {
-  return payload.crud.products.findByID({
+  return sdk.findByID({
+    collection: 'products',
     id: input.id,
     depth: 2,
   })
@@ -181,12 +188,20 @@ const createOrder = base.shopping.createOrder.handler(async ({ input, context, e
   }
 
   const orderNumber = `PP-${Date.now().toString().slice(-8)}`
-  const order = await payload.crud.orders.create({
+  const order = await sdk.create({
+    collection: 'orders',
     data: {
       orderNumber,
-      user: context.user.id,
+      user: Number(context.user.id),
       status: 'pending',
-      items: input.items || [],
+      items: (input.items || []).map((item: any) => ({
+        product: Number(item.productId || item.product),
+        requestedArea: Number(item.requestedArea || item.requestedSqm || 1),
+        cartonCount: item.cartonCount || 0,
+        deliverableArea: item.deliverableArea || 0,
+        unitPrice: item.unitPrice || 0,
+        totalPrice: item.totalPrice || 0,
+      })),
       subtotal: input.subtotal || 0,
       finalTotal: input.finalTotal || input.subtotal || 0,
       notes: input.notes || '',
@@ -241,7 +256,8 @@ export const catalog = base.catalog.router({
         where.brand = { equals: input.brandId }
       }
 
-      const res = await payload.crud.products.find({
+      const res = await sdk.find({
+        collection: 'products',
         where,
         limit: input?.limit || 50,
         page: input?.page || 1,
@@ -252,7 +268,8 @@ export const catalog = base.catalog.router({
       let markupPercent = 0
       if (context?.user?.id) {
         try {
-          const userDoc: any = await payload.crud.users.findByID({
+          const userDoc: any = await sdk.findByID({
+            collection: 'users',
             id: context.user.id,
             depth: 1,
           })
@@ -260,7 +277,7 @@ export const catalog = base.catalog.router({
           if (ct && typeof ct === 'object') {
             markupPercent = Number(ct.markupPercent) || 0
           } else if (ct) {
-            const ctDoc: any = await payload.crud['customer-types'].findByID({ id: ct })
+            const ctDoc: any = await sdk.findByID({ collection: 'customer-types', id: ct })
             markupPercent = Number(ctDoc?.markupPercent) || 0
           }
         } catch {
@@ -289,7 +306,8 @@ export const catalog = base.catalog.router({
   }),
 
   getById: base.catalog.getById.handler(async ({ input, context }) => {
-    const prod: any = await payload.crud.products.findByID({
+    const prod: any = await sdk.findByID({
+      collection: 'products',
       id: input.id,
       depth: 2,
     })
@@ -299,7 +317,8 @@ export const catalog = base.catalog.router({
     let markupPercent = 0
     if (context?.user?.id) {
       try {
-        const userDoc: any = await payload.crud.users.findByID({
+        const userDoc: any = await sdk.findByID({
+          collection: 'users',
           id: context.user.id,
           depth: 1,
         })
@@ -307,7 +326,7 @@ export const catalog = base.catalog.router({
         if (ct && typeof ct === 'object') {
           markupPercent = Number(ct.markupPercent) || 0
         } else if (ct) {
-          const ctDoc: any = await payload.crud['customer-types'].findByID({ id: ct })
+          const ctDoc: any = await sdk.findByID({ collection: 'customer-types', id: ct })
           markupPercent = Number(ctDoc?.markupPercent) || 0
         }
       } catch {
@@ -326,8 +345,9 @@ export const catalog = base.catalog.router({
   }),
 
   categories: base.catalog.categories.handler(async ({ input }) => {
-    const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-    const res = await payload.crud.categories.find({
+    const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+    const res = await sdk.find({
+      collection: 'categories',
       where,
       limit: 100,
       sort: 'ordering',
@@ -336,8 +356,9 @@ export const catalog = base.catalog.router({
   }),
 
   brands: base.catalog.brands.handler(async ({ input }) => {
-    const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-    const res = await payload.crud.brands.find({
+    const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+    const res = await sdk.find({
+      collection: 'brands',
       where,
       limit: 100,
       sort: 'name',
@@ -346,8 +367,9 @@ export const catalog = base.catalog.router({
   }),
 
   tags: base.catalog.tags.handler(async ({ input }) => {
-    const where = input?.onlyActive ? { isActive: { equals: true } } : {}
-    const res = await payload.crud.tags.find({
+    const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
+    const res = await sdk.find({
+      collection: 'tags',
       where,
       limit: 100,
       sort: 'name',
@@ -356,8 +378,9 @@ export const catalog = base.catalog.router({
   }),
 
   dimensions: base.catalog.dimensions.handler(async ({ input }) => {
-    const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
-    const res = await (payload.crud as any).dimensions.find({
+    const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
+    const res = await sdk.find({
+      collection: 'dimensions',
       where,
       limit: 100,
       sort: 'width',
@@ -366,11 +389,11 @@ export const catalog = base.catalog.router({
   }),
 
   deleteProduct: base.catalog.deleteProduct.handler(async ({ input }) => {
-    return await payload.crud.products.delete({ id: input.id })
+    return await sdk.delete({ collection: 'products', id: input.id })
   }),
 
   deleteCategory: base.catalog.deleteCategory.handler(async ({ input }) => {
-    return await payload.crud.categories.delete({ id: input.id })
+    return await sdk.delete({ collection: 'categories', id: input.id })
   }),
 
   calculateCartons: base.catalog.calculateCartons.handler(async ({ input }) => {

@@ -21,7 +21,6 @@ function CustomerPlansPage() {
 
   return (
     <div className="w-full  px-3 py-3 space-y-3.5 text-start">
-      {/* Page Header */}
       <div className="flex items-center justify-between gap-2">
         <div>
           <h1 className="text-lg font-bold text-foreground flex items-center gap-1.5">
@@ -60,7 +59,7 @@ function CustomerPlansPage() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-4 items-stretch">
+        <div className="space-y-2 gap-4 items-stretch">
           {filteredPlans.map((plan) => (
             <PlanCard
               key={plan.id}

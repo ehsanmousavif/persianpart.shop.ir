@@ -118,7 +118,7 @@ export const CartItemRow = React.memo(function CartItemRow({
             <Link
               to="/product"
               search={{ productname: item.slug }}
-              className="text-sm font-bold text-foreground hover:text-primary transition-colors line-clamp-1"
+              className="text-sm font-bold text-foreground hover:text-primary transition-colors"
             >
               {item.name}
             </Link>

@@ -25,13 +25,13 @@ export function PlanCard({ plan, products }: PlanCardProps) {
 
   return (
     <div
-      className={`pt-2  px-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-2xl bg-surface border border-border shadow-xs ${
+      className={`pt-2 px-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-2xl bg-muted/5 ${
         !isActive ? "opacity-85" : ""
       }`}
     >
       <div className="space-y-5">
         <div className=" flex sm:flex-row flex-col items-start sm:items-center justify-between gap-3">
-          <h3 className="text-base sm:text-lg font-bold text-foreground leading-snug flex items-center gap-1.5 pt-0.5">
+          <h3 className="text-base sm:text-lg font-bold rounded-2xl text-foreground leading-snug flex items-center gap-1.5 pt-0.5">
             <SparklesIcon
               size={18}
               className={
@@ -40,19 +40,19 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             />
             <span className="truncate">{plan.title}</span>
           </h3>
-          <div className="flex flex-row sm:flex-col sm:items-end h-full justify-between w-full items-center gap-2">
+          <div className="flex flex-row sm:flex-col sm:items-end h-full justify-between w-full items-start gap-2">
             <span
-              className={`px-3 py-0.5 mt-2 rounded-full text-xs font-semibold border flex items-center gap-1.5 ${
+              className={`px-3 py-1 rounded-2xl text-xs font-semibold  flex items-center gap-1.5 ${
                 isActive
-                  ? "bg-success/15 text-success border-success/30 shadow-xs"
-                  : "text-muted bg-warning/10 border-warning/30"
+                  ? "bg-success/15 text-success"
+                  : "text-muted bg-warning/10"
               }`}
             >
               <span
-                className={`w-2 h-2 rounded-full ${
+                className={`w-2 h-2 rounded-2xl ${
                   isActive
-                    ? "bg-success animate-pulse"
-                    : "bg-warning/10 border border-warning/30"
+                    ? "bg-success"
+                    : "bg-warning "
                 }`}
               />
               <span>{isActive ? "طرح فعال" : "منقضی شده"}</span>
@@ -67,10 +67,10 @@ export function PlanCard({ plan, products }: PlanCardProps) {
         </div>
         {isActive ? (
           <div
-            className={`p-3.5 rounded-xl border space-y-1 ${
+            className={`p-3.5 rounded-2xl space-y-1 ${
               plan.type === "product_discount"
-                ? "bg-success/5 border-success/20"
-                : "bg-primary/5 border-primary/20"
+                ? "bg-success/15"
+                : "bg-primary/5"
             }`}
           >
             <div
@@ -80,34 +80,31 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                   : "text-primary"
               }`}
             >
-              <span>
+              <span className="text-sm font-medium">
                 {plan.type === "product_discount"
                   ? "شرایط تخفیف:"
                   : "شرایط پرداخت:"}
               </span>
             </div>
-            <p className="text-xs sm:text-sm font-medium text-foreground leading-relaxed whitespace-pre-wrap">
+            <p className="text-sm font-base text-foreground leading-relaxed whitespace-pre-wrap">
               {plan.content ||
                 plan.notes ||
                 "شرایط این طرح توسط مدیریت تعیین شده است."}
             </p>
           </div>
         ) : (
-          <Accordion className="w-full" variant="surface">
+          <Accordion className="w-full rounded-2xl" variant="surface">
             <Accordion.Item
               id="plan-terms"
-              className="border border-border/80 rounded-xl bg-default/10 overflow-hidden"
+              className="rounded-2xl bg-warning/15 overflow-hidden"
             >
-              <Accordion.Heading>
-                <Accordion.Trigger className="w-full p-3 flex items-center justify-between text-xs font-bold text-muted hover:text-foreground hover:bg-default/15 transition-colors cursor-pointer">
+              <Accordion.Heading className="rounded-2xl"> 
+                <Accordion.Trigger className="w-full p-3 flex items-center justify-between text-xs font-bold text-warning rounded-2xl transition-colors cursor-pointer">
                   <span className="flex items-center gap-1.5">
-                    <span>
+              <span className="text-sm font-medium">
                       {plan.type === "product_discount"
                         ? "شرایط تخفیف:"
                         : "شرایط پرداخت:"}
-                    </span>
-                    <span className="text-[11px] font-normal text-muted">
-                      (مشاهده توضیحات)
                     </span>
                   </span>
                   <Accordion.Indicator />
@@ -132,7 +129,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 <BoxIcon size={15} className="text-primary" />
                 <span>کالاهای طرح</span>
               </span>
-              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full border border-primary/25">
+              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
                 {toPersianDigits(planProducts.length)} محصول
               </span>
             </div>
@@ -151,13 +148,13 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 return (
                   <div
                     key={prod.id}
-                    className="h-17 flex items-center justify-between gap-2.5 p-2 rounded-xl bg-default/10 hover:bg-default/20 border border-border transition-colors"
+                    className="h-17 flex items-center justify-between gap-2.5 p-2 rounded-2xl bg-default/10 transition-colors"
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <img
                         src={prod.images[0] || "/assets/images/placeholder.svg"}
                         alt={prod.name}
-                        className="w-12 h-12 rounded-[14px] object-cover border border-border shrink-0"
+                        className="w-12 h-12 rounded-[14px] object-cover shrink-0"
                         onError={(e) => {
                           const target = e.currentTarget;
                           if (
@@ -219,7 +216,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
       </div>
 
       {/* Footer / CTA Section - Pinned to bottom */}
-      <div className="mt-auto border-separator">
+      <div className="mt-auto ">
         {isActive ?? (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <span className="text-xs text-muted">
@@ -227,7 +224,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             </span>
             <Link
               to="/product"
-              className="h-9 px-4 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer active:scale-95"
+              className="h-9 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer active:scale-95"
             >
               <span>مشاهده محصولات و ثبت سفارش</span>
               <ArrowLeftIcon size={14} />

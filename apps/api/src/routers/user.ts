@@ -1,23 +1,25 @@
-import { payload } from '../payload'
+import { sdk } from '../payload'
 import { base } from '../rpc/base'
 
 const profile = base.user.profile.handler(async ({ context, errors }) => {
   if (!context.user) throw errors.UNAUTHORIZED()
-  return payload.crud.users.findByID({ id: context.user.id })
+  return sdk.findByID({ collection: 'users', id: context.user.id })
 })
 
 const update = base.user.update.handler(async ({ input, context, errors }) => {
   if (!context.user) throw errors.UNAUTHORIZED()
 
   // Customers can update personal, business, and address info, but phone is strictly immutable
-  return payload.crud.users.update({
+  return sdk.update({
+    collection: 'users',
     id: context.user.id,
     data: input,
   })
 })
 
 const list = base.user.list.handler(async ({ input }) => {
-  const result = await payload.crud.users.find({
+  const result = await sdk.find({
+    collection: 'users',
     limit: input?.limit || 100,
     sort: '-createdAt',
   })
@@ -25,12 +27,13 @@ const list = base.user.list.handler(async ({ input }) => {
 })
 
 const deleteUser = base.user.delete.handler(async ({ input }) => {
-  return payload.crud.users.delete({ id: input.id })
+  return sdk.delete({ collection: 'users', id: input.id })
 })
 
 const userCustomerTypes = base.user.customerTypes.handler(async ({ input }) => {
-  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
-  const res = await payload.crud['customer-types'].find({
+  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
+  const res = await sdk.find({
+    collection: 'customer-types',
     where,
     limit: 100,
     sort: 'name',
@@ -48,13 +51,14 @@ export const user = base.user.router({
 
 const customerProfile = base.customer.profile.handler(async ({ context }) => {
   if (!context.user) return null
-  return payload.crud.users.findByID({ id: context.user.id })
+  return sdk.findByID({ collection: 'users', id: context.user.id })
 })
 
 const customerUpdateProfile = base.customer.updateProfile.handler(async ({ input, context }) => {
   if (!context.user) return null
 
-  return payload.crud.users.update({
+  return sdk.update({
+    collection: 'users',
     id: context.user.id,
     data: {
       fullName: input.contactName,
@@ -69,8 +73,9 @@ const customerUpdateProfile = base.customer.updateProfile.handler(async ({ input
 })
 
 const customerTypes = base.customer.types.handler(async ({ input }) => {
-  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : {}
-  const res = await payload.crud['customer-types'].find({
+  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
+  const res = await sdk.find({
+    collection: 'customer-types',
     where,
     limit: 100,
     sort: 'name',

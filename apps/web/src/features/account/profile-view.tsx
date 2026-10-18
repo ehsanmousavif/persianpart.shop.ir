@@ -32,7 +32,6 @@ export function ProfileView() {
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
 
-  // Local form state for draft changes
   const [formData, setFormData] = useState({
     name: user?.name || '',
     storeName: user?.storeName || '',
@@ -119,18 +118,16 @@ export function ProfileView() {
   return (
     <div className="space-y-3.5 w-full">
       {/* User Header Card */}
-      <div className="bg-surface border border-border rounded-2xl p-3.5 sm:p-4  flex items-center justify-between gap-2">
+      <div className="bg-muted/10 rounded-2xl p-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-xl bg-primary text-primary-foreground flex items-center justify-center text-base font-bold  shrink-0">
-            {user.name.slice(0, 1)}
-          </div>
+         
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="text-base font-bold text-foreground">{user.name}</h2>
             </div>
             <p className="text-xs text-muted mt-0.5 flex items-center gap-1">
               <StoreIcon size={12} className="text-muted shrink-0" />
-              <span className="truncate max-w-[200px]">{user.storeName}</span>
+              <span className="truncate max-w-50">{user.storeName}</span>
             </p>
           </div>
         </div>
@@ -140,7 +137,7 @@ export function ProfileView() {
           <button
             type="button"
             onClick={() => setShowLogoutConfirm(true)}
-            className="h-8 px-2.5 rounded-xl border border-danger/30 text-danger hover:bg-danger/10 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            className="h-8 px-2.5 rounded-xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
             aria-label="خروج از حساب"
           >
             <LogOutIcon size={14} />
