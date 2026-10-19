@@ -1,4 +1,10 @@
 import path from 'node:path'
+import { Hono } from 'hono'
+import type { Context } from 'hono'
+import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
+import { prettyJSON } from 'hono/pretty-json'
+import { trimTrailingSlash } from 'hono/trailing-slash'
 import { handler } from './rpc/handler'
 import { createContext } from './rpc/context'
 
@@ -16,121 +22,117 @@ const candidateMediaDirs = [
   path.resolve(process.cwd(), 'media'),
 ]
 
-export const server = Bun.serve({
-  port: PORT,
-  hostname: HOSTNAME,
+// Initialize Hono Application
+export const app = new Hono()
 
-  async fetch(req) {
-    const url = new URL(req.url)
+// Global Middlewares (Logger, Formatting, CORS)
+app.use('*', logger())
+app.use('*', prettyJSON())
+app.use(trimTrailingSlash())
+app.use(
+  '*',
+  cors({
+    origin: (origin) => origin || '*',
+    allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    credentials: true,
+    maxAge: 86400,
+  })
+)
 
-    // Handle CORS preflight
-    if (req.method === 'OPTIONS') {
-      const origin = req.headers.get('origin') || '*'
-      return new Response(null, {
-        status: 204,
+// 1. Health Checks
+const healthHandler = (c: Context) => {
+  return c.json({
+    status: 'ok',
+    framework: 'hono',
+    runtime: 'bun',
+    version: Bun.version,
+    port: PORT,
+    uptime: Math.round(process.uptime()),
+    timestamp: new Date().toISOString(),
+  })
+}
+
+app.get('/health', healthHandler)
+app.get('/api/health', healthHandler)
+
+// 2. Media Server Powered by Bun.file()
+app.get('/api/media/*', async (c) => {
+  const segments = c.req.path.split('/').filter(Boolean)
+  const rawFilename = segments[segments.length - 1]
+  if (!rawFilename) {
+    return c.text('Bad Request', 400)
+  }
+
+  // Prevent path traversal attacks
+  const filename = path.basename(decodeURIComponent(rawFilename))
+
+  for (const dir of candidateMediaDirs) {
+    const candidatePath = path.join(dir, filename)
+    const file = Bun.file(candidatePath)
+    if (await file.exists()) {
+      return new Response(file, {
+        status: 200,
         headers: {
-          'Access-Control-Allow-Origin': origin,
-          'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-          'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Max-Age': '86400',
+          'Cache-Control': 'public, max-age=31536000, immutable',
+          'Access-Control-Allow-Origin': '*',
         },
       })
     }
+  }
 
-    try {
-      // 1. Media server powered natively by Bun.file()
-      if (url.pathname.startsWith('/api/media/')) {
-        const segments = url.pathname.split('/').filter(Boolean)
-        const rawFilename = segments[segments.length - 1]
-        if (!rawFilename) {
-          return new Response('Bad Request', { status: 400 })
-        }
+  return c.text('File Not Found', 404)
+})
 
-        const filename = decodeURIComponent(rawFilename)
+// 3. oRPC Server Integration (/api/rpc/*)
+const rpcHandler = async (c: Context) => {
+  const { matched, response } = await handler.handle(c.req.raw, {
+    prefix: '/api/rpc',
+    context: async () => createContext(c.req.raw),
+  })
 
-        for (const dir of candidateMediaDirs) {
-          const candidatePath = path.join(dir, filename)
-          const file = Bun.file(candidatePath)
-          if (await file.exists()) {
-            return new Response(file, {
-              status: 200,
-              headers: {
-                'Cache-Control': 'public, max-age=31536000, immutable',
-                'Access-Control-Allow-Origin': '*',
-              },
-            })
-          }
-        }
+  if (matched && response) {
+    return response
+  }
 
-        return new Response('File Not Found', { status: 404 })
-      }
+  return c.json({ error: 'Procedure Not Found' }, 404)
+}
 
-      // 2. oRPC endpoints (/api/rpc/*)
-      if (url.pathname.startsWith('/api/rpc')) {
-        const { matched, response } = await handler.handle(req, {
-          prefix: '/api/rpc',
-          context: async () => createContext(req),
-        })
+app.all('/api/rpc', rpcHandler)
+app.all('/api/rpc/*', rpcHandler)
 
-        if (matched) {
-          return response
-        }
+// 4. OpenAPI Forward Proxy to CMS (/api/openapi/*)
+const openApiHandler = async (c: Context) => {
+  const url = new URL(c.req.url)
+  const targetUrl = new URL(url.pathname + url.search, CMS_ORIGIN)
+  const forwardHeaders = new Headers(c.req.raw.headers)
+  forwardHeaders.set('host', targetUrl.host)
 
-        return new Response(
-          JSON.stringify({ error: 'Procedure Not Found' }),
-          {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' },
-          }
-        )
-      }
+  try {
+    return await fetch(targetUrl.toString(), {
+      method: c.req.method,
+      headers: forwardHeaders,
+      body:
+        c.req.method !== 'GET' && c.req.method !== 'HEAD'
+          ? await c.req.raw.arrayBuffer()
+          : undefined,
+    })
+  } catch {
+    return c.json({ error: 'OpenAPI not configured or CMS offline' }, 502)
+  }
+}
 
-      // 3. OpenAPI forward proxy (/api/openapi/*)
-      if (url.pathname.startsWith('/api/openapi')) {
-        const targetUrl = new URL(url.pathname + url.search, CMS_ORIGIN)
-        const forwardHeaders = new Headers(req.headers)
-        forwardHeaders.set('host', targetUrl.host)
+app.all('/api/openapi', openApiHandler)
+app.all('/api/openapi/*', openApiHandler)
 
-        try {
-          return await fetch(targetUrl.toString(), {
-            method: req.method,
-            headers: forwardHeaders,
-            body:
-              req.method !== 'GET' && req.method !== 'HEAD'
-                ? await req.arrayBuffer()
-                : undefined,
-          })
-        } catch {
-          return new Response(
-            JSON.stringify({ error: 'OpenAPI not configured or CMS offline' }),
-            {
-              status: 502,
-              headers: { 'Content-Type': 'application/json' },
-            }
-          )
-        }
-      }
-
-      // 4. Health Check (/health & /api/health)
-      if (url.pathname === '/health' || url.pathname === '/api/health') {
-        return Response.json({
-          status: 'ok',
-          runtime: 'bun',
-          version: Bun.version,
-          port: PORT,
-          uptime: Math.round(process.uptime()),
-        })
-      }
-
-      // 5. Root status landing page (/)
-      if (url.pathname === '/' || url.pathname === '') {
-        const html = `<!DOCTYPE html>
+// 5. Root Status & Dashboard Landing Page
+app.get('/', (c) => {
+  const html = `<!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سرویس API پرشین پارت (Bun Runtime)</title>
+  <title>سرویس API پرشین پارت (Hono + Bun)</title>
   <style>
     body {
       font-family: system-ui, -apple-system, sans-serif;
@@ -161,17 +163,28 @@ export const server = Bun.serve({
       margin: 0;
       color: #0f172a;
     }
+    .badges {
+      display: flex;
+      gap: 8px;
+    }
     .badge {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      background: #ecfdf5;
-      color: #047857;
-      border: 1px solid #a7f3d0;
       padding: 4px 12px;
       border-radius: 9999px;
       font-size: 12px;
       font-weight: 700;
+    }
+    .badge-hono {
+      background: #fff7ed;
+      color: #ea580c;
+      border: 1px solid #fed7aa;
+    }
+    .badge-bun {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
     }
     p {
       color: #475569;
@@ -217,17 +230,20 @@ export const server = Bun.serve({
   <div class="card">
     <div class="header">
       <h1>سرویس API پرشین پارت</h1>
-      <span class="badge">⚡ Bun v${Bun.version} Active</span>
+      <div class="badges">
+        <span class="badge badge-hono">🔥 Hono v4</span>
+        <span class="badge badge-bun">⚡ Bun v${Bun.version}</span>
+      </div>
     </div>
     <p>
-      این سرویس به صورت بومی روی ران‌تایم پرسرعت <strong>Bun</strong> و فریم‌ورک ارتباطی تایپ‌سیف <strong>oRPC v2</strong> اجرا شده است. سرو تمامی تصاویر رسانه‌ای به شکل بهینه و با وب‌استریم‌های <code>Bun.file()</code> انجام می‌شود.
+      این سرویس با معماری فوق‌سریع بر پایه فریم‌ورک استاندارد وب <strong>Hono</strong>، ران‌تایم مدرن <strong>Bun</strong> و لایه ارتباطی تایپ‌سیف <strong>oRPC v2</strong> پیکربندی شده است.
     </p>
     <h2>اندپوینت‌های فعال:</h2>
     <ul>
       <li><strong>oRPC API:</strong> <code>/api/rpc</code> (فراخوانی متدهای تایپ‌سیف کاتالوگ، سفارشات، سبد و احراز هویت)</li>
-      <li><strong>Media Server:</strong> <code>/api/media/file/:filename</code> (سرو استریمینگ تصاویر با Bun.file)</li>
-      <li><strong>OpenAPI REST:</strong> <code>/api/openapi</code> (دسترسی REST به پایگاه داده و CMS)</li>
-      <li><strong>Health Check:</strong> <code>/health</code> (بررسی سلامت سرور)</li>
+      <li><strong>Media Server:</strong> <code>/api/media/:filename</code> (سرو استریمینگ بومی رسانه‌ها با Bun.file)</li>
+      <li><strong>OpenAPI REST:</strong> <code>/api/openapi</code> (هدایت درخواست‌ها به پایگاه داده و CMS)</li>
+      <li><strong>Health Check:</strong> <code>/health</code> و <code>/api/health</code> (بررسی وضعیت زنده سرور)</li>
     </ul>
     <div class="footer">
       <span>PersianPart 2.0 API Server</span>
@@ -236,30 +252,32 @@ export const server = Bun.serve({
   </div>
 </body>
 </html>`
-
-        return new Response(html, {
-          status: 200,
-          headers: {
-            'Content-Type': 'text/html; charset=utf-8',
-          },
-        })
-      }
-
-      return new Response('Not Found', { status: 404 })
-    } catch (err: any) {
-      console.error('[Bun server error]:', err)
-      return new Response(
-        JSON.stringify({
-          error: 'Internal Server Error',
-          message: err?.message || 'Unknown error',
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      )
-    }
-  },
+  return c.html(html)
 })
 
-console.log(`🚀 PersianPart API running on http://localhost:${PORT} (Bun v${Bun.version})`)
+// 6. Global Error & 404 Handlers
+app.onError((err, c) => {
+  console.error('[Hono Server Error]:', err)
+  return c.json(
+    {
+      error: 'Internal Server Error',
+      message: err instanceof Error ? err.message : 'Unknown error',
+    },
+    500
+  )
+})
+
+app.notFound((c) => {
+  return c.json({ error: 'Route Not Found', path: c.req.path }, 404)
+})
+
+console.log(
+  `🚀 PersianPart API running on http://${HOSTNAME === '0.0.0.0' ? 'localhost' : HOSTNAME}:${PORT} (Hono + Bun v${Bun.version})`
+)
+
+// Export for Bun's native HTTP server
+export default {
+  port: PORT,
+  hostname: HOSTNAME,
+  fetch: app.fetch,
+}

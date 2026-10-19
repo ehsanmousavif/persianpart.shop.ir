@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { Modal as HeroUIModal } from "@heroui/react";
+import { Modal as HeroUIModal, Button } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product, OrderItem } from "../../types";
@@ -227,9 +227,9 @@ export function PreInvoiceModal({
         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 animate-backdrop-enter"
       >
         <HeroUIModal.Container className="pointer-events-none w-full max-w-2xl h-auto p-0 flex flex-col items-center">
-          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl shadow-2xl flex flex-col max-h-[92vh] z-10 border border-border overflow-hidden animate-modal-enter text-start">
+          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-2xl flex flex-col max-h-[92vh] z-10 overflow-hidden animate-modal-enter text-start">
             {/* Header */}
-            <HeroUIModal.Header className="px-4 sm:px-6 py-3.5 border-b border-separator flex items-center justify-between shrink-0 bg-default/10">
+            <HeroUIModal.Header className="px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2.5">
                 <div>
                   <HeroUIModal.Heading className="text-sm sm:text-base font-bold text-foreground">
@@ -240,7 +240,7 @@ export function PreInvoiceModal({
 
               <HeroUIModal.CloseTrigger
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl text-muted hover:text-foreground hover:bg-default/20 flex items-center justify-center transition-colors cursor-pointer"
+                className="w-8 h-8 px-2 py-1.5 rounded-2xl text-muted hover:text-foreground hover:bg-muted/10 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="بستن پیش‌فاکتور"
               >
                 <XIcon size={18} />
@@ -250,9 +250,9 @@ export function PreInvoiceModal({
             {/* Scrollable Body */}
             <HeroUIModal.Body className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
               {/* 10-Minute Expiration Warning Banner with Stable Non-Jittering Live Countdown */}
-              <div className="p-3 bg-warning/10 border border-warning/30 rounded-2xl flex items-center justify-between gap-2.5 text-foreground">
+              <div className="p-3 bg-warning/15 rounded-2xl flex items-center justify-between gap-2.5 text-foreground">
                 <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className="w-8 h-8 rounded-xl bg-warning/20 text-warning flex items-center justify-center shrink-0 border border-warning/30">
+                  <div className="w-8 h-8 rounded-2xl bg-warning/20 text-warning flex items-center justify-center shrink-0">
                     <ClockIcon size={18} />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -263,8 +263,7 @@ export function PreInvoiceModal({
                   </div>
                 </div>
 
-                {/* Countdown Badge: Invariant Fixed Width (Cannot Resize or Push Text) */}
-                <div className="w-[82px] h-8 shrink-0 flex items-center justify-center gap-1.5 rounded-xl bg-surface border border-warning/40 shadow-2xs select-none">
+                <div className="w-fit px-2 h-8 shrink-0 flex items-center justify-center gap-1.5 rounded-2xl bg-muted/10 select-none">
                   <span
                     className={`w-2 h-2 rounded-full shrink-0 ${secondsRemaining < 120 ? "bg-danger animate-ping" : "bg-warning"}`}
                   />
@@ -282,7 +281,7 @@ export function PreInvoiceModal({
                 {invoiceItems.map((item) => (
                   <div
                     key={item.product.id}
-                    className="p-3 bg-surface border border-border rounded-2xl shadow-2xs space-y-2.5 text-xs hover:border-border transition-colors text-start"
+                    className="p-3 bg-muted/5 rounded-2xl space-y-2.5 text-xs text-start"
                   >
                     {/* Product Thumbnail & Details */}
                     <div className="flex items-center gap-3 min-w-0">
@@ -292,7 +291,7 @@ export function PreInvoiceModal({
                           "/assets/images/placeholder.svg"
                         }
                         alt={item.product.name}
-                        className="w-13 h-13 rounded-[14px] object-cover border border-border bg-default/15 shrink-0"
+                        className="w-13 h-13 rounded-2xl object-cover shrink-0"
                         onError={(e) => {
                           if (
                             !e.currentTarget.src.endsWith(
@@ -309,7 +308,7 @@ export function PreInvoiceModal({
                           {item.product.name}
                         </h4>
                         <div className="flex items-center gap-1.5 text-xs text-muted mt-1 flex-wrap">
-                          <span className="px-1.5 py-0.5 rounded-md bg-default/15 text-foreground font-semibold border border-border text-[11px]">
+                          <span className="px-2 py-1 rounded-lg bg-muted/10 text-foreground font-semibold text-xs">
                             ابعاد:{" "}
                             {toPersianDigits(item.product.dimensions.width)} ×{" "}
                             {toPersianDigits(item.product.dimensions.height)}
@@ -323,7 +322,7 @@ export function PreInvoiceModal({
                     </div>
 
                     {/* Calculation Metrics: 3-column bottom strip like mobile */}
-                    <div className="flex items-center justify-between text-xs pt-2 border-t border-separator -mx-3 -mb-3 px-3 py-2 rounded-b-2xl bg-default/5">
+                    <div className="flex items-center justify-between text-xs pt-2 -mx-3 -mb-3 px-3 py-2 rounded-b-2xl bg-muted/5">
                       <div className="text-start">
                         <span className="font-bold text-primary">
                           {toPersianDigits(item.cartonCount)} کارتن
@@ -348,14 +347,14 @@ export function PreInvoiceModal({
               </div>
 
               {/* Financial Summary */}
-              <div className="pt-3 border-t border-separator space-y-2 text-xs">
-                <div className="flex flex-col w-full px-1">
+              <div className="pt-3 space-y-2 text-xs">
+                <div className="flex flex-col w-full px-1 gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-foreground">
                       تعداد کارتون ها:
                     </span>
-                    <span className="text-base font-bold text-foreground">
-                      {formatToman(invoiceTotals.totalCartons)}{" "}
+                    <span className="text-sm font-bold text-foreground">
+                      {formatToman(invoiceTotals.totalCartons)}عدد
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
@@ -372,26 +371,26 @@ export function PreInvoiceModal({
             </HeroUIModal.Body>
 
             {/* Modal Footer with Two Required Action Buttons */}
-            <HeroUIModal.Footer className="p-3 sm:p-4 border-t w-full flex border-separator bg-default/10 shrink-0">
-              <div className="flex items-stretch gap-2.5 w-full">
+            <HeroUIModal.Footer className="w-full px-4 flex shrink-0">
+              <div className="flex w-full items-stretch gap-2">
                 {/* Button 1: ویرایش مقادیر */}
-                <button
+                <Button
                   type="button"
-                  onClick={handleEditClick}
-                  className="sm:col-span-4 w-30 rounded-2xl bg-surface hover:bg-default/15 text-foreground text-xs font-bold border border-border shadow-2xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
+                  onPress={handleEditClick}
+                  className="shrink-0 px-2 py-6 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer active:scale-95 touch-manipulation"
                 >
-                  <PencilIcon size={16} />
+                  <PencilIcon size={15} />
                   <span>ویرایش</span>
-                </button>
+                </Button>
 
-                <div className="sm:col-span-8 flex-1">
+                <div className="flex-1 min-w-0">
                   <HoldConfirmButton
                     onConfirmed={handleFinalConfirm}
                     holdDurationMs={3000}
                     disabled={
                       secondsRemaining === 0 || invoiceItems.length === 0
                     }
-                    idleText="برای ثبت سفارش، ۳ ثانیه نگه دارید"  
+                    idleText="برای ثبت سفارش نگه دارید "
                     holdingText="در حال تایید..."
                     confirmedText="تایید شد"
                   />

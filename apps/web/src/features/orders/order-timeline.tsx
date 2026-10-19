@@ -29,15 +29,14 @@ export function OrderTimeline({ steps }: OrderTimelineProps) {
 
             {/* Circle Node */}
             <div
-              className={`relative z-10 mx-0.5 w-6 h-6 rounded-full flex items-center  justify-center ring-4 ring-surface shrink-0 shadow-xs ${
+              className={`relative z-10 mx-0.5 w-6 h-6 rounded-full flex items-center justify-center ring-4 ring-muted/20 shrink-0 ${
                 isCompleted
                   ? 'bg-success text-success-foreground'
                   : isCurrent
-                  ? 'bg-primary text-primary-foreground shadow-sm shadow-primary/30'
+                  ? 'bg-primary text-primary-foreground'
                   : isCancelled
-                  ? 'bg-danger text-danger-foreground ring-danger/10'
-                  : 'bg-primary/30 text-muted'
-                  
+                  ? 'bg-danger text-danger-foreground ring-danger/20'
+                  : 'bg-muted/40 text-muted'
               }`}
             >
               {isCompleted ? (
@@ -69,7 +68,7 @@ export function OrderTimeline({ steps }: OrderTimelineProps) {
                     {step.title}
                   </h4>
                   {isCancelled && (
-                    <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-danger/15 text-danger border border-danger/25">
+                    <span className="px-2 py-0.5 rounded-lg text-xs font-bold bg-danger/15 text-danger">
                       لغو نهایی
                     </span>
                   )}

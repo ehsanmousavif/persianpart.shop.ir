@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
-import { InputOTP } from '@heroui/react'
+import { InputOTP, Button } from '@heroui/react'
 import { useAuth } from './auth-store'
 import { toast } from '../../components/feedback/toast'
 import { PhoneIcon, ArrowLeftIcon, RefreshCwIcon, AlertCircleIcon } from '../../components/ui/icons'
@@ -98,7 +98,7 @@ export function LoginCard() {
   }
 
   return (
-    <div className="w-full bg-surface rounded-2xl  py-4 p-4 max-w-2xl flex flex-col gap-2">
+    <div className="w-full bg-muted/5 rounded-2xl py-4 p-4 max-w-2xl flex flex-col gap-2">
       {/* Header */}
       <div className="mb-5">
         <h2 className="text-xl font-bold text-primary text-center">
@@ -111,7 +111,7 @@ export function LoginCard() {
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="mb-4 p-3 rounded-xl bg-danger/10 border border-danger/25 text-danger text-sm flex items-start gap-2 animate-in fade-in">
+        <div className="mb-4 p-3 rounded-2xl bg-danger/15 text-danger text-sm flex items-start gap-2">
           <AlertCircleIcon size={18} className="shrink-0 text-danger mt-0.5" />
           <span className="leading-relaxed font-medium">{errorMessage}</span>
         </div>
@@ -140,7 +140,7 @@ export function LoginCard() {
                 }}
                 placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                 dir="ltr"
-                className="w-full h-12 px-4 rounded-xl border border-border bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 text-foreground font-bold tracking-wider text-lg text-start transition-all outline-hidden"
+                className="w-full h-12 px-4 rounded-2xl bg-muted/10 text-foreground font-bold tracking-wider text-lg text-start transition-all outline-hidden"
                 disabled={isLoading}
               />
               <PhoneIcon size={18} className="absolute start-4 top-4 text-muted pointer-events-none" />
@@ -150,10 +150,10 @@ export function LoginCard() {
             </p>
           </div>
 
-          <button
+          <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-base flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
+            isDisabled={isLoading}
+            className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-base flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-5 h-5 animate-spin" />
@@ -163,27 +163,27 @@ export function LoginCard() {
                 <ArrowLeftIcon size={16} />
               </>
             )}
-          </button>
+          </Button>
         </form>
       ) : (
         <div className="space-y-4">
-          <div className="p-3 bg-default/15 border border-border rounded-xl flex items-center justify-between">
+          <div className="p-3 bg-muted/10 rounded-2xl flex items-center justify-between">
             <div className="text-right">
               <span className="text-sm text-muted block">ارسال کد به شماره:</span>
               <span className="text-base font-extrabold text-foreground" dir="ltr">
                 {toPersianDigits(phone)}
               </span>
             </div>
-            <button
+            <Button
               type="button"
-              onClick={() => {
+              onPress={() => {
                 setStep('phone')
                 setErrorMessage(null)
               }}
-              className="text-sm font-bold text-primary hover:opacity-80 cursor-pointer"
+              className="text-sm font-bold text-primary hover:opacity-80 cursor-pointer bg-transparent h-auto p-0 min-w-0"
             >
               ویرایش شماره
-            </button>
+            </Button>
           </div>
 
           <div className="w-full">
@@ -201,11 +201,11 @@ export function LoginCard() {
                 autoFocus
               >
                 <InputOTP.Group className="gap-2 sm:gap-2.5 flex justify-center">
-                  <InputOTP.Slot index={0} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
-                  <InputOTP.Slot index={1} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
-                  <InputOTP.Slot index={2} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
-                  <InputOTP.Slot index={3} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
-                  <InputOTP.Slot index={4} className="size-15 text-xl font-bold rounded-xl border border-border bg-surface text-foreground" />
+                  <InputOTP.Slot index={0} className="size-15 text-xl font-bold rounded-2xl bg-muted/10 text-foreground" />
+                  <InputOTP.Slot index={1} className="size-15 text-xl font-bold rounded-2xl bg-muted/10 text-foreground" />
+                  <InputOTP.Slot index={2} className="size-15 text-xl font-bold rounded-2xl bg-muted/10 text-foreground" />
+                  <InputOTP.Slot index={3} className="size-15 text-xl font-bold rounded-2xl bg-muted/10 text-foreground" />
+                  <InputOTP.Slot index={4} className="size-15 text-xl font-bold rounded-2xl bg-muted/10 text-foreground" />
                 </InputOTP.Group>
               </InputOTP>
             </div>
@@ -218,29 +218,29 @@ export function LoginCard() {
                 ارسال مجدد تا: <strong className="text-foreground">{formatTimer(countdown)}</strong>
               </span>
             ) : (
-              <button
+              <Button
                 type="button"
-                onClick={() => handleSendPhone()}
-                className="text-primary hover:opacity-80 font-bold flex items-center gap-1 cursor-pointer text-sm"
+                onPress={() => handleSendPhone()}
+                className="text-primary hover:opacity-80 font-bold flex items-center gap-1 cursor-pointer text-sm bg-transparent h-auto p-0 min-w-0"
               >
                 <RefreshCwIcon size={14} />
                 <span>ارسال مجدد کد</span>
-              </button>
+              </Button>
             )}
           </div>
 
-          <button
+          <Button
             type="button"
-            onClick={() => handleVerifyOtp()}
-            disabled={isLoading || otpCode.length !== 5}
-            className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 transition-allcursor-pointer disabled:opacity-50"
+            onPress={() => handleVerifyOtp()}
+            isDisabled={isLoading || otpCode.length !== 5}
+            className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:bg-primary/80 text-primary-foreground font-bold text-base flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50"
           >
             {isLoading ? (
               <RefreshCwIcon className="w-5 h-5 animate-spin" />
             ) : (
               <span>تأیید و ورود به سامانه</span>
             )}
-          </button>
+          </Button>
         </div>
       )}
     </div>

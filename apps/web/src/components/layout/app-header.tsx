@@ -56,7 +56,7 @@ export function AppHeader() {
         {isAuthenticated && user ? (
           <Link
             to="/account"
-            className="w-9.5 h-9.5 rounded-xl px-2 ml-1 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
+            className="size-10 rounded-2xl px-2 ml-1 bg-muted/5 hover:bg-muted/15 text-foreground transition-all flex items-center justify-center active:scale-95"
             aria-label="حساب کاربری"
           >
             <UserIcon size={20} className="text-primary" />
@@ -64,7 +64,7 @@ export function AppHeader() {
         ) : (
           <Link
             to="/login"
-            className="w-9.5 h-9.5 rounded-xl border border-border bg-default/15 hover:bg-default/25 text-foreground transition-all flex items-center justify-center active:scale-95"
+            className="size-10 rounded-2xl bg-muted/10 hover:bg-muted/20 text-foreground transition-all flex items-center justify-center active:scale-95"
             aria-label="ورود همکاران"
           >
             <UserIcon size={20} className="text-primary" />

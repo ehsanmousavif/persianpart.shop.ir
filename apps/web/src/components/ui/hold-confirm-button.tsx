@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react'
+import { Button } from '@heroui/react'
 import { LockIcon, CheckIcon } from './icons'
 
 export interface HoldConfirmButtonProps {
@@ -86,27 +87,27 @@ export function HoldConfirmButton({
 
   return (
     <div className={`relative w-full overflow-hidden select-none ${className}`}>
-      <button
+      <Button
         type="button"
-        disabled={disabled || isConfirmed}
+        isDisabled={disabled || isConfirmed}
         onPointerDown={startHolding}
         onPointerUp={stopHolding}
         onPointerLeave={stopHolding}
         onPointerCancel={stopHolding}
         onContextMenu={(e) => e.preventDefault()}
-        className={`relative w-50 whitespace-pre-wrap h-13 sm:h-14 px-3 rounded-2xl border-2 transition-all duration-200 overflow-hidden flex items-center justify-between cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
+        className={`relative w-full px-1 py-6 rounded-2xl transition-all duration-200 overflow-hidden flex items-center justify-between cursor-pointer select-none touch-manipulation active:scale-[0.99] ${
           isConfirmed
-            ? 'bg-success border-success text-success-foreground shadow-success/25 shadow-lg'
+            ? 'bg-success text-success-foreground'
             : isHolding
-            ? 'bg-success/15 border-success text-foreground scale-[0.99]'
-            : 'bg-success/10 hover:bg-success/20 border-success/40 text-foreground hover:border-success'
+            ? 'bg-success/15 text-foreground scale-[0.99]'
+            : 'bg-success/10 hover:bg-success/20 text-foreground'
         } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
         aria-label={isConfirmed ? confirmedText : idleText}
       >
         {/* Animated Background Progress Fill (RTL Start-to-End Fill) */}
         {!isConfirmed && (
           <div
-            className="absolute inset-y-0 start-0 bg-success/40 transition-[width] ease-linear pointer-events-none"
+            className="absolute inset-y-0 inset-s-0 bg-success/40 transition-[width] ease-linear pointer-events-none"
             style={{
               width: `${progress}%`,
               transitionDuration: isHolding ? '50ms' : '200ms',
@@ -115,19 +116,18 @@ export function HoldConfirmButton({
         )}
 
         {/* Content Container (Layered above progress fill) */}
-        <div className="relative z-10 w-full flex items-center justify-between gap-3">
+        <div className="relative z-10 w-full flex items-center justify-between gap-2 px-1">
           {/* Status Label & Micro-Prompt */}
           <div className="flex flex-col text-start min-w-0">
-            <span className="text-xs sm:text-sm font-bold truncate text-wrap">
+            <span className="text-xs sm:text-sm font-bold whitespace-nowrap">
               {isConfirmed ? confirmedText : isHolding ? holdingText : idleText}
             </span>
-            
           </div>
 
           {/* Morphing & Rotating Icon (App Store Confirmation Style) */}
           <div className="relative shrink-0 flex items-center justify-center">
             <div
-              className={`w-9 h-9 rounded-xl flex items-center justify-center shadow-xs transition-all duration-500 ${
+              className={`w-7 h-7 rounded-xl flex items-center justify-center transition-all duration-500 ${
                 isConfirmed
                   ? 'bg-surface text-success rotate-[360deg] scale-110'
                   : isHolding
@@ -136,14 +136,14 @@ export function HoldConfirmButton({
               } ${isSpinning ? 'rotate-[360deg]' : ''}`}
             >
               {isConfirmed ? (
-                <CheckIcon size={20} className="stroke-[3] animate-in zoom-in-75 duration-200" />
+                <CheckIcon size={16} className="stroke-[3] animate-in zoom-in-75 duration-200" />
               ) : (
-                <LockIcon size={18} className="stroke-[2.2]" />
+                <LockIcon size={15} className="stroke-[2.2]" />
               )}
             </div>
           </div>
         </div>
-      </button>
+      </Button>
     </div>
   )
 }

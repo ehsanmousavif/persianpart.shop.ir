@@ -8,7 +8,8 @@ import {
 } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useWindowVirtualizer } from "@tanstack/react-virtual";
-import { cn, SearchField } from "@heroui/react";
+import { cn, SearchField, Button } from "@heroui/react";
+import { AnimatePresence, motion } from "framer-motion";
 import { useProducts } from "../../features/products/product-store";
 import { ProductCard } from "../../features/products/product-card";
 import { ProductBottomSheet } from "../../features/products/product-bottom-sheet";
@@ -224,35 +225,81 @@ function ProductListPage() {
             </SearchField.Group>
           </SearchField>
           {filters.searchQuery && (
-            <button
+            <Button
               type="button"
               onClick={() => setFilter("searchQuery", "")}
-              className="absolute end-s-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-xl text-muted hover:text-foreground flex items-center justify-center cursor-pointer"
+              className="absolute end-s-2.5 top-1/2 -translate-y-1/2 w-6 h-6 rounded-xl text-muted hidden hover:text-foreground  items-center justify-center cursor-pointer"
               aria-label="پاک کردن متن جستجو"
             >
               <XIcon size={14} />
-            </button>
+            </Button>
           )}
         </div>
-        {/* 2. Advanced Filter Button — Aligned strictly with Filter Tag standard */}
-        <button
+        <Button
           type="button"
           onClick={() => setIsFilterOpen(true)}
           aria-label="فیلترهای پیشرفته"
           className={cn(
-            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-1.5 shrink-0 transition-all cursor-pointer active:scale-95 shadow-2xs select-none",
+            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 cursor-pointer active:scale-95 select-none transition-colors duration-250",
             activeFilterCount > 0
-              ? "bg-[#252745] text-white"
+              ? "bg-[#252745] text-background"
               : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
           )}
         >
           <FilterIcon size={16} />
-          {activeFilterCount > 0 && (
-            <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-[10px] font-bold flex items-center justify-center">
-              {toPersianDigits(activeFilterCount)}
-            </span>
-          )}
-        </button>
+          <AnimatePresence initial={false}>
+            {activeFilterCount > 0 && (
+              <motion.span
+                key="filter-badge-wrap"
+                variants={{
+                  initial: {
+                    width: 0,
+                    opacity: 0,
+                    scale: 0.2,
+                    marginInlineStart: 0,
+                  },
+                  animate: {
+                    width: "auto",
+                    opacity: [0, 0.8, 1, 1],
+                    scale: [0.2, 1.25, 0.92, 1],
+                    marginInlineStart: 6,
+                    transition: {
+                      duration: 0.28,
+                      times: [0, 0.45, 0.75, 1],
+                      ease: "easeOut",
+                    },
+                  },
+                  exit: {
+                    width: 0,
+                    opacity: [1, 0.7, 0],
+                    scale: [1, 1.08, 0],
+                    marginInlineStart: 0,
+                    transition: {
+                      duration: 0.18,
+                      times: [0, 0.25, 1],
+                      ease: [0.4, 0, 0.2, 1],
+                    },
+                  },
+                }}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                className="overflow-hidden flex items-center justify-center shrink-0 whitespace-nowrap"
+              >
+                <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 select-none">
+                  <motion.span
+                    key={activeFilterCount}
+                    initial={{ scale: 0.6, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                  >
+                    {toPersianDigits(activeFilterCount)}
+                  </motion.span>
+                </span>
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </Button>
       </div>
 
       {/* 3. Dimensions Filter Strip (Smooth, zero-flicker selection) */}
@@ -262,43 +309,39 @@ function ProductListPage() {
         aria-label="فیلتر ابعاد کاشی و سرامیک"
       >
         <div className="flex items-center gap-1.5 min-w-max">
-          <button
+          <Button
             type="button"
-            role="tab"
-            aria-selected={!filters.selectedDimension}
-            onClick={() => setFilter("selectedDimension", null)}
+            onPress={() => setFilter("selectedDimension", null)}
             className={cn(
-              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
+              "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none",
               !filters.selectedDimension
-                ? "bg-[#252745] text-white"
+                ? "bg-[#252745] text-background"
                 : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
             )}
           >
             همه
-          </button>
+          </Button>
           {(dimensions && dimensions.length > 0
             ? dimensions
             : PRODUCT_DIMENSIONS
           ).map((dim) => {
             const isSelected = filters.selectedDimension === dim;
             return (
-              <button
+              <Button
                 key={dim}
                 type="button"
-                role="tab"
-                aria-selected={isSelected}
-                onClick={() =>
+                onPress={() =>
                   setFilter("selectedDimension", isSelected ? null : dim)
                 }
                 className={cn(
-                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none shadow-2xs",
+                  "h-10 px-4 text-xs font-bold rounded-2xl whitespace-nowrap transition-colors duration-200 cursor-pointer shrink-0 select-none",
                   isSelected
-                    ? "bg-[#252745] text-white"
+                    ? "bg-[#252745] text-background"
                     : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
                 )}
               >
                 {toPersianDigits(dim)}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -318,13 +361,13 @@ function ProductListPage() {
           </span>
 
           {activeFilterCount > 0 && (
-            <button
+            <Button
               type="button"
               onClick={resetFilters}
-              className="text-xs font-semibold text-danger hover:underline cursor-pointer"
+              className="text-xs font-semibold text-background  cursor-pointer"
             >
               پاک کردن فیلترها ({toPersianDigits(activeFilterCount)})
-            </button>
+            </Button>
           )}
         </div>
       </div>
@@ -337,8 +380,8 @@ function ProductListPage() {
           ))}
         </div>
       ) : products.length === 0 ? (
-        <div className="bg-surface border border-border rounded-3xl p-8 text-center my-4 space-y-2.5 shadow-xs">
-          <div className="w-12 h-12 rounded-xl bg-default/20 text-muted flex items-center justify-center mx-auto">
+        <div className="bg-muted/5 rounded-2xl p-8 text-center my-4 space-y-2.5">
+          <div className="size-12 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
             <BoxIcon size={24} />
           </div>
           <h3 className="text-sm font-extrabold text-foreground">
@@ -347,14 +390,14 @@ function ProductListPage() {
           <p className="text-xs text-muted max-w-xs mx-auto leading-relaxed">
             با تغییر یا حذف فیلترها، مجدداً جستجو کنید.
           </p>
-          <button
+          <Button
             type="button"
             onClick={resetFilters}
-            className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors cursor-pointer"
           >
             <RefreshCwIcon size={13} />
             <span>پاک کردن فیلترها</span>
-          </button>
+          </Button>
         </div>
       ) : (
         <div className="w-full">
@@ -408,7 +451,7 @@ function ProductListPage() {
                 </div>
               ) : (
                 <div className="pt-2 text-center">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setIsLoadingMore(true);
@@ -419,11 +462,11 @@ function ProductListPage() {
                         setIsLoadingMore(false);
                       }, LOAD_MORE_DELAY_MS);
                     }}
-                    className="text-xs text-primary hover:text-primary/90 font-bold py-2 px-4 rounded-xl bg-primary/15 hover:bg-primary/25 transition-all cursor-pointer"
+                    className="h-10 px-4 rounded-2xl text-xs text-primary hover:text-primary/90 font-bold bg-primary/15 hover:bg-primary/25 transition-all cursor-pointer"
                   >
                     نمایش بیشتر (
                     {toPersianDigits(products.length - displayLimit)} کالا)
-                  </button>
+                  </Button>
                 </div>
               )}
             </div>
@@ -433,13 +476,13 @@ function ProductListPage() {
 
       {/* Floating Action Bar (FAB) */}
       {selectedCount > 0 && (
-        <div className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom,0px))] sm:bottom-24 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
+        <div className="fixed bottom-24 1 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in-95 duration-200 pointer-events-auto">
           <Link
             to="/product/new"
             aria-label={`تعیین متراژ و ثبت سفارش ${toPersianDigits(selectedCount)} محصول انتخاب شده`}
-            className="h-12 px-5 rounded-full bg-foreground/95 backdrop-blur-md text-background flex items-center gap-3 shadow-2xl border border-border ring-1 ring-background/15 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-foreground"
+            className="h-12 px-5 rounded-2xl bg-[#252745] text-background flex items-center gap-3 cursor-pointer active:scale-95 transition-all select-none touch-manipulation hover:bg-[#2e3155]"
           >
-            <span className="min-w-6 h-6 px-1.5 rounded-full bg-success text-success-foreground font-bold text-xs flex items-center justify-center shadow-xs">
+            <span className="min-w-6 h-6 px-1.5 rounded-lg bg-success/15 text-success font-bold text-xs flex items-center justify-center">
               {toPersianDigits(selectedCount)}
             </span>
             <span className="text-sm font-bold">ثبت سفارش</span>

@@ -4,7 +4,7 @@ import {
   useNavigate,
   useLocation,
 } from "@tanstack/react-router";
-import { Slider, NumberField, I18nProvider } from "@heroui/react";
+import { Slider, NumberField, I18nProvider, Button } from "@heroui/react";
 import { useProducts } from "../../features/products/product-store";
 import { useProductSelection } from "../../features/products/selection-store";
 import type { Product } from "../../types";
@@ -153,7 +153,7 @@ function ProductNewConfigurationPage() {
   if (selectedProducts.length === 0) {
     return (
       <div className="w-full max-w-2xl mx-auto px-4 py-12 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-2xl text-muted flex items-center justify-center mx-auto">
           <BoxIcon size={32} />
         </div>
         <h2 className="text-base font-bold text-foreground">
@@ -163,14 +163,14 @@ function ProductNewConfigurationPage() {
           لطفاً ابتدا به صفحه محصولات مراجعه کرده و با کلیک روی کارت‌ها،
           کاشی‌های مد نظر خود را انتخاب نمایید.
         </p>
-        <button
+        <Button
           type="button"
           onClick={() => navigate({ to: "/product" })}
-          className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold shadow-md cursor-pointer transition-all active:scale-95"
+          className="inline-flex items-center gap-2 h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
           <span>بازگشت به لیست محصولات</span>
-        </button>
+        </Button>
       </div>
     );
   }
@@ -178,15 +178,15 @@ function ProductNewConfigurationPage() {
   return (
     <div className="w-full max-w-xl mx-auto px-3.5 py-3 space-y-4 text-start pb-28">
       {/* Top Navigation & Step Indicator */}
-      <div className="flex items-center justify-between gap-2 border-b border-separator pb-3">
-        <button
+      <div className="flex items-center justify-between gap-2 pb-3">
+        <Button
           type="button"
           onClick={handleBackToProducts}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-default/15 hover:bg-default/30 text-foreground text-xs font-bold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 h-10 px-2 py-1.5 rounded-2xl bg-muted/5 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors cursor-pointer"
         >
           <ArrowRightIcon size={14} />
           <span>بازگشت به لیست محصولات</span>
-        </button>
+        </Button>
       </div>
 
       {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}
@@ -211,12 +211,12 @@ function ProductNewConfigurationPage() {
           return (
             <div
               key={product.id}
-              className="bg-surface border border-border rounded-2xl p-3.5 sm:p-4 shadow-xs transition-all space-y-3.5 hover:border-primary/40"
+              className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 transition-all space-y-3.5"
             >
               {/* 1. Header Row: Thumbnail + Product Info + Delete Button */}
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-16 h-16 rounded-xl overflow-hidden shrink-0 border border-border bg-default/15">
+                  <div className="size-16 rounded-2xl overflow-hidden shrink-0 bg-muted/10">
                     <img
                       src={
                         product.images[0] || "/assets/images/placeholder.svg"
@@ -238,7 +238,7 @@ function ProductNewConfigurationPage() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <span className="px-2 py-0.5 rounded-md text-xs font-semibold bg-default/15 text-foreground border border-border">
+                      <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-muted/10 text-foreground">
                         {toPersianDigits(product.dimensions.width)} ×{" "}
                         {toPersianDigits(product.dimensions.height)}
                       </span>
@@ -247,7 +247,7 @@ function ProductNewConfigurationPage() {
                       </span>
                     </div>
 
-                    <h3 className="text-sm font-bold text-foreground truncate mt-1">
+                    <h3 className="text-sm font-bold text-foreground  mt-1">
                       {product.name}
                     </h3>
 
@@ -264,15 +264,14 @@ function ProductNewConfigurationPage() {
                 </div>
 
                 {/* Remove button */}
-                <button
+                <Button
                   type="button"
-                  onClick={() => handleRemoveProduct(product.id)}
-                  className="w-7 h-7 rounded-lg text-muted hover:text-danger hover:bg-danger/15 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
-                  title="حذف از لیست"
+                  onPress={() => handleRemoveProduct(product.id)}
+                  className="size-8 px-2 py-1.5 rounded-lg text-foregorund hover:text-danger hover:bg-danger/15 flex items-center justify-center transition-colors cursor-pointer shrink-0 mt-0.5"
                   aria-label={`حذف ${product.name}`}
                 >
                   <Trash2Icon size={15} />
-                </button>
+                </Button>
               </div>
 
               <div className="h-px bg-separator" />
@@ -300,11 +299,7 @@ function ProductNewConfigurationPage() {
                         step={1}
                         value={area}
                         onChange={(val) =>
-                          handleAreaChange(
-                            product.id,
-                            val,
-                            maxInventory,
-                          )
+                          handleAreaChange(product.id, val, maxInventory)
                         }
                         formatOptions={{
                           useGrouping: false,
@@ -314,7 +309,7 @@ function ProductNewConfigurationPage() {
                         aria-label={`متراژ ${product.name}`}
                         className="max-w-40"
                       >
-                        <NumberField.Group className="rounded-lg border border-border bg-surface shadow-2xs hover:border-border focus-within:!border-primary focus-within:!ring-1 focus-within:!ring-primary/20 transition-colors">
+                        <NumberField.Group className="rounded-2xl bg-muted/10 transition-colors overflow-hidden">
                           <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
                           <NumberField.Input className="font-bold text-center text-foreground" />
                           <NumberField.IncrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
@@ -341,102 +336,100 @@ function ProductNewConfigurationPage() {
                         className="w-full"
                       >
                         <Slider.Track className="relative h-2.5 w-full rounded-full bg-muted/20 border-none">
-                          {/* RTL Accurate Fill: expands from right edge to the thumb */}
+                          {/* RTL Accurate Fill: expands synchronously from right edge to the thumb without delay */}
                           <div
-                            className="absolute top-0 bottom-0 rounded-full bg-primary pointer-events-none transition-[width] duration-75"
-                            style={{ right: 0, left: "auto", width: `${percent}%` }}
+                            className="absolute top-0 bottom-0 rounded-full bg-primary pointer-events-none"
+                            style={{
+                              right: 0,
+                              left: "auto",
+                              width: `${percent}%`,
+                            }}
                           />
-                          <Slider.Thumb className="w-5.5! h-5.5! min-w-0! rounded-full! bg-white border-2 border-primary shadow-md cursor-grab active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary/40 outline-none transition-transform" />
+                          <Slider.Thumb className="w-5.5! h-5.5! min-w-0! rounded-full! bg-white border-2 border-primary cursor-grab active:cursor-grabbing focus-visible:ring-2 focus-visible:ring-primary/40 outline-none" />
                         </Slider.Track>
                       </Slider>
                     </I18nProvider>
                   </div>
 
                   {/* Presets */}
-                  <div className="flex justify-between items-center text-xs font-semibold text-muted px-0.5">
-                    <button
+                  <div className="flex justify-between items-center text-xs text-foreground font-bold px-0.5">
+                    <Button
                       type="button"
                       onClick={() =>
                         handleAreaChange(product.id, 0, maxInventory)
                       }
-                      className="text-muted hover:text-foreground transition-colors cursor-pointer"
+                      className="px-2 py-1.5 mt-2 aspect-square hover:text-foreground transition-colors cursor-pointer"
                     >
                       ۰
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
                       onClick={() =>
-                        handleAreaChange(
-                          product.id,
-                          maxInventory,
-                          maxInventory,
-                        )
+                        handleAreaChange(product.id, maxInventory, maxInventory)
                       }
-                      className="text-muted hover:text-foreground hover:underline cursor-pointer"
+                      className="px-2 py-1.5 hover:text-foreground  cursor-pointer"
                     >
                       سقف موجودی: {toPersianDigits(maxInventory)}
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
 
-              {/* 3. Carton Calculation Metrics: 2x2 Clean Grid (Generous Space, No Crushing) */}
-              <div className="p-2.5 rounded-xl bg-default/10 border border-border grid grid-cols-2 gap-2 text-xs">
-                {/* 1. متراژ انتخابی */}
-                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+              <div className="p-2.5 rounded-2xl  grid grid-cols-2 gap-2 text-xs">
+                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
                     <SolarRulerIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-xs text-muted font-medium block leading-tight mb-1">
                       متراژ انتخابی
                     </span>
-                    <span className="font-bold text-foreground text-sm leading-normal truncate block">
+                    <span className="font-bold text-foreground text-sm leading-normal  block">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* 2. تعداد کارتن */}
-                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
                     <SolarBoxIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-xs text-muted font-medium block leading-tight mb-1">
                       تعداد کارتن
                     </span>
-                    <span className="font-bold text-primary text-sm leading-normal truncate block">
+                    <span className="font-bold text-primary text-sm leading-normal  block">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
                   </div>
                 </div>
 
                 {/* 3. متراژ تحویلی واقعی */}
-                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-primary/15 text-primary flex items-center justify-center shrink-0 border border-primary/20">
+                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
                     <SolarLayersIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-xs text-muted font-medium block leading-tight mb-1">
                       متراژ تحویلی
                     </span>
-                    <span className="font-bold text-foreground text-sm leading-normal truncate block">
+                    <span className="font-bold text-foreground text-sm leading-normal  block">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* 4. مبلغ برآورد */}
-                <div className="p-2 bg-surface rounded-lg border border-border flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-md bg-success/15 text-success flex items-center justify-center shrink-0 border border-success/20">
+                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-success/15 text-success flex items-center justify-center shrink-0">
                     <SolarTagIcon size={14} />
                   </div>
                   <div className="min-w-0 flex-1">
                     <span className="text-xs text-muted font-medium block leading-tight mb-1">
                       مبلغ برآورد
                     </span>
-                    <span className="font-bold text-foreground text-sm leading-normal truncate inline-flex items-center gap-1">
+                    <span className="font-bold text-foreground text-sm leading-normal  inline-flex items-center gap-1">
                       <span>{formatToman(calc.totalPrice)}</span>
                       <TomanIcon className="size-4" />
                     </span>
@@ -449,16 +442,16 @@ function ProductNewConfigurationPage() {
       </div>
 
       {/* Sticky Bottom Bar - ONLY "تایید" Button, Aligned with Container Width */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-surface/95 backdrop-blur-md border-t border-border shadow-2xl z-40 p-3 sm:p-4">
-        <button
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 backdrop-blur-md z-40 p-3 sm:p-4">
+        <Button
           type="button"
-          onClick={() => setIsInvoiceOpen(true)}
-          disabled={!totals.hasValidQuantities}
-          className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-primary/25 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          onPress={() => setIsInvoiceOpen(true)}
+          isDisabled={!totals.hasValidQuantities}
+          className="w-full h-12 px-2 py-1.5 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
         >
           <span>تایید</span>
           <ArrowLeftIcon size={16} />
-        </button>
+        </Button>
       </div>
 
       {/* Pre-Invoice Modal */}

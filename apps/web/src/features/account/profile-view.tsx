@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   Modal as HeroUIModal,
+  Button,
   Fieldset,
   FieldGroup,
   TextField,
@@ -43,17 +44,17 @@ export function ProfileView() {
 
   if (!user) {
     return (
-      <div className="bg-surface border border-border rounded-2xl p-8 text-center max-w-md mx-auto my-12">
+      <div className="bg-muted/5 rounded-2xl p-8 text-center max-w-md mx-auto my-12">
         <AlertCircleIcon size={36} className="text-muted mx-auto mb-3" />
         <h3 className="text-base font-bold text-foreground">حساب کاربری یافت نشد</h3>
         <p className="text-xs text-muted mt-1 mb-5">جهت مشاهده حساب کاربری لطفاً وارد سامانه شوید.</p>
-        <button
+        <Button
           type="button"
-          onClick={() => navigate({ to: '/login' })}
-          className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs cursor-pointer"
+          onPress={() => navigate({ to: '/login' })}
+          className="w-full h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs cursor-pointer"
         >
           ورود به حساب کاربری
-        </button>
+        </Button>
       </div>
     )
   }
@@ -118,9 +119,8 @@ export function ProfileView() {
   return (
     <div className="space-y-3.5 w-full">
       {/* User Header Card */}
-      <div className="bg-muted/10 rounded-2xl p-4 flex items-center justify-between gap-2">
+      <div className="bg-muted/5 rounded-2xl p-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-         
           <div>
             <div className="flex items-center gap-1.5">
               <h2 className="text-base font-bold text-foreground">{user.name}</h2>
@@ -133,34 +133,33 @@ export function ProfileView() {
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
-          
-          <button
+          <Button
             type="button"
-            onClick={() => setShowLogoutConfirm(true)}
-            className="h-8 px-2.5 rounded-xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+            onPress={() => setShowLogoutConfirm(true)}
+            className="h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer active:scale-95"
             aria-label="خروج از حساب"
           >
             <LogOutIcon size={14} />
             <span>خروج</span>
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Main Profile Content: Edit Form vs View Mode */}
       {isEditing ? (
-        <form onSubmit={handleSaveProfile} className="bg-surface border border-primary/30 rounded-2xl p-4 sm:p-5">
+        <form onSubmit={handleSaveProfile} className="bg-muted/5 rounded-2xl p-4 sm:p-5">
           <Fieldset className="space-y-4">
             <Fieldset.Legend className="w-full">
-              <div className="flex items-center justify-between pb-3 border-b border-border w-full">
+              <div className="flex items-center justify-between pb-2 w-full">
                 <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                  <span className="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <PencilIcon size={14} />
                   </span>
                   <span className="text-sm font-bold text-foreground">
                     ویرایش اطلاعات حساب کاربری
                   </span>
                 </div>
-                <span className="text-xs font-semibold text-warning bg-warning/15 px-2 py-0.5 rounded-xl border border-warning/30">
+                <span className="text-xs font-semibold text-warning bg-warning/15 px-2 py-0.5 rounded-lg">
                   حالت ویرایش
                 </span>
               </div>
@@ -177,7 +176,7 @@ export function ProfileView() {
                 <Input
                   value={formData.name}
                   onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                   placeholder="مثال: آرش دهقان"
                 />
               </TextField>
@@ -192,7 +191,7 @@ export function ProfileView() {
                 <Input
                   value={formData.storeName}
                   onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                   placeholder="مثال: بازرگانی پرشین پارت"
                 />
               </TextField>
@@ -204,16 +203,16 @@ export function ProfileView() {
                     <PhoneIcon size={13} className="text-muted" />
                     <span>شماره همراه</span>
                   </label>
-                  <span className="text-xs font-semibold text-muted bg-default/20 px-2 py-0.5 rounded-lg flex items-center gap-1">
+                  <span className="text-xs font-semibold text-muted bg-muted/10 px-2 py-0.5 rounded-lg flex items-center gap-1">
                     <LockIcon size={10} className="text-muted" />
                     <span>ثابت</span>
                   </span>
                 </div>
-                <div className="flex items-center justify-between px-3 py-2 bg-default/15 border border-border rounded-xl text-foreground select-none">
+                <div className="flex items-center justify-between px-3 py-2 bg-muted/10 rounded-2xl text-foreground select-none">
                   <span className="text-xs font-bold tracking-wider" dir="ltr">
                     {toPersianDigits(user.phone)}
                   </span>
-                  <span className="flex items-center gap-1 text-xs font-medium text-muted bg-surface px-2 py-0.5 rounded-lg border border-border">
+                  <span className="flex items-center gap-1 text-xs font-medium text-muted bg-muted/20 px-2 py-0.5 rounded-lg">
                     <LockIcon size={11} className="text-muted" />
                     <span>غیرقابل تغییر</span>
                   </span>
@@ -230,7 +229,7 @@ export function ProfileView() {
                   dir="ltr"
                   value={formData.economicCode}
                   onChange={(e) => setFormData((prev) => ({ ...prev, economicCode: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all text-start"
+                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all text-start"
                   placeholder="مثال: 411589324156"
                 />
               </TextField>
@@ -245,7 +244,7 @@ export function ProfileView() {
                   <Input
                     value={formData.province}
                     onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                     placeholder="تهران"
                   />
                 </TextField>
@@ -257,7 +256,7 @@ export function ProfileView() {
                   <Input
                     value={formData.city}
                     onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                     placeholder="تهران"
                   />
                 </TextField>
@@ -273,7 +272,7 @@ export function ProfileView() {
                   rows={3}
                   value={formData.address}
                   onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-medium text-foreground bg-default/15 border border-border rounded-xl focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all leading-relaxed"
+                  className="w-full px-3 py-2 text-xs font-medium text-foreground bg-muted/10 rounded-2xl outline-none transition-all leading-relaxed"
                   placeholder="نشانی کامل انبار یا محل تحویل سفارش..."
                 />
               </TextField>
@@ -281,27 +280,27 @@ export function ProfileView() {
 
             {/* Form Actions */}
             <Fieldset.Actions className="pt-2 flex items-center gap-2">
-              <button
+              <Button
                 type="submit"
-                className="flex-1 py-2.5 rounded-xl bg-success hover:bg-success/90 text-success-foreground font-bold text-xs  flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
+                className="flex-1 h-10 px-4 rounded-2xl bg-success/15 text-success hover:bg-success/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
               >
                 <CheckIcon size={15} />
                 <span>ذخیره تغییرات</span>
-              </button>
-              <button
+              </Button>
+              <Button
                 type="button"
-                onClick={handleCancelEdit}
-                className="px-4 py-2.5 rounded-xl border border-border hover:bg-default/15 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                onPress={handleCancelEdit}
+                className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
               >
                 <XIcon size={15} />
                 <span>انصراف</span>
-              </button>
+              </Button>
             </Fieldset.Actions>
           </Fieldset>
         </form>
       ) : (
         /* View Mode Card */
-        <div className="bg-surface border border-border rounded-2xl overflow-hidden  divide-y divide-separator">
+        <div className="bg-muted/5 rounded-2xl overflow-hidden divide-y divide-separator/50">
           <div className="p-3.5 sm:p-4 flex items-start gap-3">
             <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
@@ -324,7 +323,7 @@ export function ProfileView() {
               <div className="flex items-start justify-start">
                 <span className="text-xs font-semibold text-muted block">شماره تلفن همراه</span>
               </div>
-              <span className="text-xs sm:text-sm  text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
+              <span className="text-xs sm:text-sm text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
                 {toPersianDigits(user.phone)}
               </span>
             </div>
@@ -354,15 +353,15 @@ export function ProfileView() {
           </div>
 
           {/* Quick Edit CTA Footer inside View Card */}
-          <div className="p-3 bg-default/10 flex items-center justify-between">
-            <button
+          <div className="p-3 flex items-center justify-between">
+            <Button
               type="button"
-              onClick={handleStartEdit}
-              className="py-1.5 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-1.5  cursor-pointer active:scale-95 transition-all"
+              onPress={handleStartEdit}
+              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             >
               <PencilIcon size={13} />
               <span>ویرایش اطلاعات</span>
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -374,8 +373,8 @@ export function ProfileView() {
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
         >
           <HeroUIModal.Container className="pointer-events-none w-full max-w-sm h-auto p-0 flex flex-col items-center">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl flex flex-col z-10 border border-border overflow-hidden animate-modal-enter text-center p-6 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-danger/10 text-danger flex items-center justify-center mx-auto border border-danger/20">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-2xl flex flex-col z-10 overflow-hidden animate-modal-enter text-center p-6 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-danger/15 text-danger flex items-center justify-center mx-auto">
                 <LogOutIcon size={24} />
               </div>
               <div>
@@ -386,21 +385,21 @@ export function ProfileView() {
                   آیا از خروج از حساب کاربری همکاران اطمینان دارید؟
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
+              <div className="w-full flex items-center justify-center gap-3 pt-2">
+                <Button
                   type="button"
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="py-2.5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/15 cursor-pointer transition-all"
+                  onPress={() => setShowLogoutConfirm(false)}
+                  className="h-10 px-4 rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  onClick={handleLogout}
-                  className="py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold  cursor-pointer transition-all"
+                  onPress={handleLogout}
+                  className="h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 font-bold text-xs cursor-pointer transition-all"
                 >
                   تأیید خروج
-                </button>
+                </Button>
               </div>
             </HeroUIModal.Dialog>
           </HeroUIModal.Container>

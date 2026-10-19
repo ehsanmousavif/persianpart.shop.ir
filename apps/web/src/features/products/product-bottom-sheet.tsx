@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import { Drawer } from "@heroui/react";
+import { Drawer, Button } from "@heroui/react";
 import type { Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
 import { ImageViewerModal } from "../../components/ui/image-viewer-modal";
@@ -40,7 +40,7 @@ export function ProductBottomSheet({
   isSelected = false,
   onClose,
   onToggleSelect,
-  onOrderDirect,
+  onOrderDirect: _onOrderDirect,
 }: ProductBottomSheetProps) {
   const [activeImageUrl, setActiveImageUrl] = useState<string | null>(null);
   const [zoomImageUrl, setZoomImageUrl] = useState<string | null>(null);
@@ -133,14 +133,14 @@ export function ProductBottomSheet({
                   </Drawer.Heading>
                 </div>
 
-                <button
+                <Button
                   type="button"
                   onClick={onClose}
                   aria-label="بستن"
                   className="size-10 rounded-2xl bg-muted/10 hover:bg-muted/20 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
                 >
                   <XIcon />
-                </button>
+                </Button>
               </Drawer.Header>
 
               {/* Body */}
@@ -154,27 +154,27 @@ export function ProductBottomSheet({
                       className="w-full h-full object-cover rounded-2xl"
                     />
 
-                    <button
+                    <Button
                       type="button"
                       onClick={() => setZoomImageUrl(currentHeroUrl)}
-                      className="absolute bottom-2 inset-e-2 px-3 py-1.5 rounded-2xl bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95 shadow-xs"
+                      className="absolute bottom-2 inset-e-2 px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                     >
                       <ZoomInIcon size={14} />
                       <span>بزرگ‌نمایی</span>
-                    </button>
+                    </Button>
 
                     {/* Stock Status Badge */}
                     <div className="absolute top-2 inset-s-2 flex items-center gap-1">
                       {isOutOfStock ? (
-                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-danger text-danger-foreground">
+                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-danger/15 text-danger backdrop-blur-xs">
                           ناموجود در انبار
                         </span>
                       ) : isLowStock ? (
-                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-warning text-warning-foreground">
+                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-warning/15 text-warning backdrop-blur-xs">
                           موجودی محدود ({toPersianDigits(activeProduct.inventorySqm)})
                         </span>
                       ) : (
-                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-success text-success-foreground">
+                        <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-success/15 text-success backdrop-blur-xs">
                           موجود در انبار
                         </span>
                       )}
@@ -189,7 +189,7 @@ export function ProductBottomSheet({
                       </span>
 
                       <span
-                        className={`px-2 py-1 rounded-lg text-xs font-semibold ${
+                        className={`px-2 py-2 rounded-lg text-xs font-semibold ${
                           isOutOfStock
                             ? "bg-danger/15 text-danger"
                             : isLowStock
@@ -201,7 +201,7 @@ export function ProductBottomSheet({
                           "ناموجود در انبار"
                         ) : (
                           <>
-                            موجودی انبار:{" "}
+                            موجودی انبار:
                             {toPersianDigits(activeProduct.inventorySqm)} متر (
                             {toPersianDigits(activeProduct.stockCartons)} کارتن)
                           </>
@@ -213,12 +213,11 @@ export function ProductBottomSheet({
                       {mediaItems.map((item) => {
                         const isActive = item.url === currentHeroUrl;
                         return (
-                          <button
+                          <Button
                             key={item.id}
                             type="button"
-                            onClick={() => setActiveImageUrl(item.url)}
+                            onPress={() => setActiveImageUrl(item.url)}
                             aria-label={item.label}
-                            title={item.label}
                             className={`group relative size-14 shrink-0 rounded-2xl p-0.5 transition-all cursor-pointer select-none active:scale-95 ${
                               isActive
                                 ? "bg-primary scale-[1.03]"
@@ -240,7 +239,7 @@ export function ProductBottomSheet({
                                 }
                               }}
                             />
-                          </button>
+                          </Button>
                         );
                       })}
                     </div>
@@ -283,7 +282,7 @@ export function ProductBottomSheet({
 
                   <div className="flex items-center gap-1.5 shrink-0 whitespace-nowrap">
                     {onToggleSelect && !isOutOfStock && (
-                      <button
+                      <Button
                         type="button"
                         onClick={onToggleSelect}
                         className={`h-9 px-3.5 rounded-2xl text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 whitespace-nowrap shrink-0 ${
@@ -306,18 +305,9 @@ export function ProductBottomSheet({
                             <span>افزودن به لیست</span>
                           </>
                         )}
-                      </button>
+                      </Button>
                     )}
 
-                    {onOrderDirect && !isOutOfStock && (
-                      <button
-                        type="button"
-                        onClick={() => onOrderDirect(activeProduct)}
-                        className="h-9 px-4 rounded-2xl text-xs font-bold bg-primary hover:bg-primary/90 text-primary-foreground flex items-center gap-1.5 transition-all cursor-pointer active:scale-95 whitespace-nowrap shrink-0"
-                      >
-                        <span>ثبت سفارش</span>
-                      </button>
-                    )}
                   </div>
                 </div>
 

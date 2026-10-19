@@ -38,9 +38,9 @@ export function Modal({
       >
         <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
           <HeroUIModal.Dialog
-            className={`pointer-events-auto relative w-full bg-surface s z-10 border border-border text-start overflow-hidden ${
+            className={`pointer-events-auto relative w-full bg-surface z-10 text-start overflow-hidden ${
               isBottomSheetOnMobile
-                ? 'rounded-t-3xl sm:rounded-2xl max-h-[88vh] flex flex-col animate-drawer-slide-up sm:animate-modal-enter'
+                ? 'rounded-t-2xl sm:rounded-2xl max-h-[88vh] flex flex-col animate-drawer-slide-up sm:animate-modal-enter'
                 : 'rounded-2xl max-h-[90vh] my-auto animate-modal-enter'
             } ${className}`}
           >
@@ -53,13 +53,13 @@ export function Modal({
 
             {/* Header */}
             {title && (
-              <HeroUIModal.Header className="flex items-center justify-between px-4.5 py-3 border-b border-separator">
+              <HeroUIModal.Header className="flex items-center justify-between px-4.5 py-3">
                 <HeroUIModal.Heading className="text-sm font-bold text-foreground">
                   {title}
                 </HeroUIModal.Heading>
                 <HeroUIModal.CloseTrigger
                   onClick={onClose}
-                  className="w-8 h-8 rounded-xl -me-1 text-muted hover:text-foreground hover:bg-default/20 flex items-center justify-center transition-all cursor-pointer active:scale-90"
+                  className="size-9 rounded-2xl -me-1 text-muted hover:text-foreground bg-muted/10 hover:bg-muted/20 flex items-center justify-center transition-all cursor-pointer active:scale-90"
                   aria-label="بستن پنجره"
                 >
                   <XIcon size={18} />

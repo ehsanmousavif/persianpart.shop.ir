@@ -1,4 +1,6 @@
 import 'dotenv/config'
+import fs from 'fs'
+import path from 'path'
 import { getPayloadClient } from './payload.js'
 
 interface CategorySeed {
@@ -304,6 +306,7 @@ interface ProductSeed {
   sqmPerCarton: number
   basePricePerSqm: number
   stockCartons: number
+  imageFile?: string
 }
 
 const CATEGORIES: CategorySeed[] = [
@@ -356,6 +359,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 820000,
     stockCartons: 450,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-MRQ-120240-P',
@@ -372,6 +376,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.88,
     basePricePerSqm: 1950000,
     stockCartons: 120,
+    imageFile: 'tile-marquina-black.jpg',
   },
   {
     sku: 'PP-CEM-100100-M',
@@ -388,6 +393,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.0,
     basePricePerSqm: 760000,
     stockCartons: 380,
+    imageFile: 'tile-cement-grey.jpg',
   },
   {
     sku: 'PP-WOD-20120-R',
@@ -404,6 +410,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.2,
     basePricePerSqm: 610000,
     stockCartons: 520,
+    imageFile: 'tile-wood-honey.jpg',
   },
   {
     sku: 'PP-ONX-80160-P',
@@ -420,6 +427,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.56,
     basePricePerSqm: 1480000,
     stockCartons: 200,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-PAN-3090-G',
@@ -436,6 +444,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.08,
     basePricePerSqm: 540000,
     stockCartons: 600,
+    imageFile: 'tile-marquina-black.jpg',
   },
   {
     sku: 'PP-PLM-60120-M',
@@ -452,6 +461,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 590000,
     stockCartons: 400,
+    imageFile: 'tile-pietra-grey.jpg',
   },
   {
     sku: 'PP-TRV-40120-R',
@@ -468,6 +478,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 520000,
     stockCartons: 700,
+    imageFile: 'tile-travertine-beige.jpg',
   },
   {
     sku: 'PP-HEX-3060-G',
@@ -484,6 +495,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 680000,
     stockCartons: 250,
+    imageFile: 'tile-marquina-black.jpg',
   },
   {
     sku: 'PP-ACD-3030-M',
@@ -500,6 +512,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.08,
     basePricePerSqm: 710000,
     stockCartons: 850,
+    imageFile: 'tile-cement-grey.jpg',
   },
   {
     sku: 'PP-EXT-8080-P',
@@ -516,6 +529,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.92,
     basePricePerSqm: 690000,
     stockCartons: 420,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-STT-3090-P',
@@ -532,6 +546,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.08,
     basePricePerSqm: 570000,
     stockCartons: 360,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-WLN-20120-M',
@@ -548,6 +563,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.2,
     basePricePerSqm: 620000,
     stockCartons: 480,
+    imageFile: 'tile-wood-walnut.jpg',
   },
   {
     sku: 'PP-PTR-120240-M',
@@ -564,6 +580,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.88,
     basePricePerSqm: 1890000,
     stockCartons: 95,
+    imageFile: 'tile-pietra-grey.jpg',
   },
   {
     sku: 'PP-ZEU-60120-M',
@@ -580,6 +597,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 640000,
     stockCartons: 310,
+    imageFile: 'tile-pietra-grey.jpg',
   },
   {
     sku: 'PP-AND-3060-R',
@@ -596,6 +614,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 440000,
     stockCartons: 550,
+    imageFile: 'tile-travertine-beige.jpg',
   },
   {
     sku: 'PP-DIA-3060-G',
@@ -612,6 +631,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 720000,
     stockCartons: 180,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-QRT-8080-M',
@@ -628,6 +648,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.92,
     basePricePerSqm: 580000,
     stockCartons: 620,
+    imageFile: 'tile-travertine-beige.jpg',
   },
   {
     sku: 'PP-ARM-40120-S',
@@ -644,6 +665,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 890000,
     stockCartons: 240,
+    imageFile: 'tile-pietra-grey.jpg',
   },
   {
     sku: 'PP-NER-6060-P',
@@ -660,6 +682,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 510000,
     stockCartons: 430,
+    imageFile: 'tile-marquina-black.jpg',
   },
   {
     sku: 'PP-HRD-6060-R',
@@ -676,6 +699,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 495000,
     stockCartons: 750,
+    imageFile: 'tile-cement-grey.jpg',
   },
   {
     sku: 'PP-TTN-80160-M',
@@ -692,6 +716,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.56,
     basePricePerSqm: 1350000,
     stockCartons: 170,
+    imageFile: 'tile-cement-grey.jpg',
   },
   {
     sku: 'PP-CWL-3090-G',
@@ -708,6 +733,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.08,
     basePricePerSqm: 530000,
     stockCartons: 390,
+    imageFile: 'tile-calacatta-gold.jpg',
   },
   {
     sku: 'PP-EMP-100100-P',
@@ -724,6 +750,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 2.0,
     basePricePerSqm: 980000,
     stockCartons: 220,
+    imageFile: 'tile-wood-walnut.jpg',
   },
   {
     sku: 'PP-BRK-3060-R',
@@ -740,6 +767,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 460000,
     stockCartons: 310,
+    imageFile: 'tile-travertine-beige.jpg',
   },
   {
     sku: 'PP-TRZ-60120-M',
@@ -756,6 +784,7 @@ const PRODUCTS: ProductSeed[] = [
     sqmPerCarton: 1.44,
     basePricePerSqm: 740000,
     stockCartons: 360,
+    imageFile: 'tile-terrazzo-milano.jpg',
   },
 ]
 
@@ -933,16 +962,63 @@ export async function runSeed() {
     }
   }
 
-  // 4. Retrieve available Media IDs
-  const mediaList = await payload.find({
+  // 4. Synchronize Demo Tile Media
+  console.log('🖼️ Synchronizing Demo Tile Media...')
+  const DEMO_MEDIA_FILES = [
+    { filename: 'tile-calacatta-gold.jpg', alt: 'کاشی پرسلان کلاکاتا گلد پالرمو' },
+    { filename: 'tile-marquina-black.jpg', alt: 'اسلب پرسلان مارکوئینا بلک لوکس' },
+    { filename: 'tile-cement-grey.jpg', alt: 'سرامیک پرسلان بتن اکسپوز شیلی گری' },
+    { filename: 'tile-wood-honey.jpg', alt: 'سرامیک طرح چوب و پارکت رویال هانی' },
+    { filename: 'tile-travertine-beige.jpg', alt: 'سرامیک نما و محوطه تراورتن کرم سیلور' },
+    { filename: 'tile-terrazzo-milano.jpg', alt: 'سرامیک پرسلان کف ترازو گرانیتی میلان' },
+    { filename: 'tile-pietra-grey.jpg', alt: 'اسلب پرسلان پیترا گری اصفهان مات' },
+    { filename: 'tile-wood-walnut.jpg', alt: 'سرامیک پرسلان طرح چوب گردو ناتورال' },
+  ]
+
+  const mediaByFilename = new Map<string, number>()
+  const existingMedia = await payload.find({
     collection: 'media',
-    limit: 10,
+    limit: 100,
   })
-  const defaultMediaId = mediaList.docs.length > 0 ? mediaList.docs[0].id : null
-  const secondaryMediaId = mediaList.docs.length > 1 ? mediaList.docs[1].id : defaultMediaId
+  for (const doc of existingMedia.docs) {
+    if (doc.filename) {
+      mediaByFilename.set(doc.filename, doc.id)
+    }
+  }
+
+  const candidateMediaDirs = [
+    path.resolve(process.cwd(), 'apps/cms/media'),
+    path.resolve(process.cwd(), 'media'),
+  ]
+  const mediaDir = candidateMediaDirs.find((d) => fs.existsSync(d)) || candidateMediaDirs[0]
+
+  for (const item of DEMO_MEDIA_FILES) {
+    if (!mediaByFilename.has(item.filename)) {
+      const diskPath = path.join(mediaDir, item.filename)
+      if (fs.existsSync(diskPath)) {
+        try {
+          const created = await payload.create({
+            collection: 'media',
+            data: { alt: item.alt },
+            filePath: diskPath,
+          })
+          mediaByFilename.set(item.filename, created.id)
+          console.log(`  ✓ Seeded media doc for: ${item.filename} (ID: ${created.id})`)
+        } catch (err: any) {
+          console.warn(`  ! Could not seed media doc for ${item.filename}:`, err?.message)
+        }
+      }
+    }
+  }
+
+  const defaultMediaId =
+    mediaByFilename.get('tile-calacatta-gold.jpg') ||
+    (existingMedia.docs.length > 0 ? existingMedia.docs[0].id : null)
+  const secondaryMediaId =
+    mediaByFilename.get('tile-cement-grey.jpg') || defaultMediaId
 
   // 5. Seed Products
-  console.log(`💎 Seeding ${PRODUCTS.length} realistic Products...`)
+  console.log(`💎 Seeding ${PRODUCTS.length} realistic Products with distinct tile textures...`)
   let createdCount = 0
   let updatedCount = 0
 
@@ -953,6 +1029,8 @@ export async function runSeed() {
     const dimensionId = dimensionMap.get(`${prod.width}x${prod.height}`) || null
 
     const inventorySqm = Math.round(prod.stockCartons * prod.sqmPerCarton * 100) / 100
+
+    const targetMediaId = (prod.imageFile && mediaByFilename.get(prod.imageFile)) || defaultMediaId
 
     const productData: any = {
       sku: prod.sku,
@@ -974,10 +1052,17 @@ export async function runSeed() {
       isActive: true,
     }
 
-    if (defaultMediaId) {
-      productData.cover = defaultMediaId
-      if (secondaryMediaId) {
-        productData.gallery = [{ image: secondaryMediaId }]
+    if (targetMediaId) {
+      productData.cover = targetMediaId
+      // Provide a complementary secondary image in gallery if available
+      const altMediaId =
+        (prod.imageFile === 'tile-calacatta-gold.jpg'
+          ? mediaByFilename.get('tile-marquina-black.jpg')
+          : mediaByFilename.get('tile-calacatta-gold.jpg')) || secondaryMediaId
+      if (altMediaId && altMediaId !== targetMediaId) {
+        productData.gallery = [{ image: altMediaId }]
+      } else {
+        productData.gallery = [{ image: targetMediaId }]
       }
     }
 

@@ -54,18 +54,36 @@ function getStoredState(): SelectionState {
 }
 
 let memoryState: SelectionState = getStoredState()
+let persistTimeout: ReturnType<typeof setTimeout> | null = null
 
 function persistAndNotify(nextState: SelectionState) {
   memoryState = nextState
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.setItem(SELECTED_STORAGE_KEY, JSON.stringify(nextState.selectedIds))
-      localStorage.setItem(QUANTITIES_STORAGE_KEY, JSON.stringify(nextState.quantities))
-    } catch {
-      // Ignore storage quota errors
-    }
-  }
+  // Notify UI subscribers synchronously for immediate 0ms reaction
   listeners.forEach((listener) => listener())
+
+  // Debounce expensive localStorage disk writes so drag events never drop frames
+  if (typeof window !== 'undefined') {
+    if (persistTimeout) clearTimeout(persistTimeout)
+    persistTimeout = setTimeout(() => {
+      try {
+        localStorage.setItem(SELECTED_STORAGE_KEY, JSON.stringify(nextState.selectedIds))
+        localStorage.setItem(QUANTITIES_STORAGE_KEY, JSON.stringify(nextState.quantities))
+      } catch {
+        // Ignore storage quota errors
+      }
+    }, 150)
+  }
+}
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeunload', () => {
+    try {
+      localStorage.setItem(SELECTED_STORAGE_KEY, JSON.stringify(memoryState.selectedIds))
+      localStorage.setItem(QUANTITIES_STORAGE_KEY, JSON.stringify(memoryState.quantities))
+    } catch {
+      // Ignore
+    }
+  })
 }
 
 export const selectionStore = {

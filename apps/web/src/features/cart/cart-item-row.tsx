@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "@tanstack/react-router";
+import { Button } from "@heroui/react";
 import type { CartItem } from "./cart-store";
 import { useCart } from "./cart-store";
 import { formatToman, toPersianDigits } from "../../lib/utils/currency";
@@ -23,10 +24,10 @@ export const CartItemRow = React.memo(function CartItemRow({
   const { updateRequestedArea, removeItem } = useCart();
 
   return (
-    <div className="p-3 space-y-2.5 rounded-[20px] bg-surface border border-border shadow-xs">
+    <div className="p-3 space-y-2.5 rounded-2xl bg-muted/5">
       {/* Warning states banners */}
       {item.statusWarning === "low_stock" && (
-        <div className="p-2 rounded-xl bg-warning/10 border border-warning/30 text-warning text-xs flex items-center justify-between gap-1.5">
+        <div className="p-2 rounded-xl bg-warning/15 text-warning text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertTriangleIcon size={15} className="text-warning shrink-0" />
             <span className="text-xs">
@@ -39,7 +40,7 @@ export const CartItemRow = React.memo(function CartItemRow({
               م²).
             </span>
           </div>
-          <button
+          <Button
             type="button"
             onClick={() =>
               updateRequestedArea(
@@ -50,30 +51,30 @@ export const CartItemRow = React.memo(function CartItemRow({
             className="text-xs font-semibold text-warning underline cursor-pointer shrink-0"
           >
             اصلاح به سقف
-          </button>
+          </Button>
         </div>
       )}
 
       {item.statusWarning === "out_of_stock" && (
-        <div className="p-2 rounded-xl bg-danger/10 border border-danger/30 text-danger text-xs flex items-center justify-between gap-1.5">
+        <div className="p-2 rounded-xl bg-danger/15 text-danger text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-danger shrink-0" />
             <span className="text-xs">
               این محصول متأسفانه در انبار ناموجود شده است.
             </span>
           </div>
-          <button
+          <Button
             type="button"
             onClick={() => removeItem(item.productId)}
             className="text-xs font-semibold text-danger underline cursor-pointer shrink-0"
           >
             حذف از سبد
-          </button>
+          </Button>
         </div>
       )}
 
       {item.statusWarning === "price_changed" && (
-        <div className="p-2 rounded-xl bg-primary/10 border border-primary/25 text-primary text-xs flex items-center justify-between gap-1.5">
+        <div className="p-2 rounded-xl bg-primary/10 text-primary text-xs flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5">
             <AlertCircleIcon size={15} className="text-primary shrink-0" />
             <span className="text-xs inline-flex items-center gap-1">
@@ -84,7 +85,7 @@ export const CartItemRow = React.memo(function CartItemRow({
               <span>).</span>
             </span>
           </div>
-          <span className="text-xs font-semibold text-primary bg-surface px-2 py-0.5 rounded-xl border border-primary/25">
+          <span className="text-xs font-semibold text-primary bg-primary/15 px-2 py-0.5 rounded-lg">
             نرخ جدید
           </span>
         </div>
@@ -102,7 +103,7 @@ export const CartItemRow = React.memo(function CartItemRow({
           <img
             src={item.image || "/assets/images/placeholder.svg"}
             alt={item.name}
-            className="size-18 object-cover rounded-4xl border border-border"
+            className="size-18 object-cover rounded-2xl"
             onError={(e) => {
               const target = e.currentTarget;
               if (!target.src.endsWith("/assets/images/placeholder.svg")) {
@@ -122,15 +123,14 @@ export const CartItemRow = React.memo(function CartItemRow({
             >
               {item.name}
             </Link>
-            <button
+            <Button
               type="button"
-              onClick={() => removeItem(item.productId)}
+              onPress={() => removeItem(item.productId)}
               className="w-6 h-6 rounded-lg text-muted hover:text-danger flex items-center justify-center transition-colors cursor-pointer"
-              title="حذف از سبد خرید"
               aria-label="حذف از سبد"
             >
               <Trash2Icon size={15} />
-            </button>
+            </Button>
           </div>
 
           <div className="flex items-center gap-1.5 text-xs text-muted mt-0.5">
@@ -160,13 +160,13 @@ export const CartItemRow = React.memo(function CartItemRow({
       </div>
 
       {/* Meter Stepper & Total Price Row */}
-      <div className="pt-2 border-t border-separator flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
+      <div className="pt-2 flex items-center justify-between gap-2 flex-wrap sm:flex-nowrap">
         {/* Meter Stepper */}
         <div className="flex items-center gap-2">
-          <div className="flex items-center border border-border rounded-xl bg-default/15 h-8.5 overflow-hidden">
-            <button
+          <div className="flex items-center rounded-2xl bg-muted/10 h-8.5 overflow-hidden">
+            <Button
               type="button"
-              onClick={() =>
+              onPress={() =>
                 updateRequestedArea(
                   item.productId,
                   Math.round(
@@ -175,19 +175,19 @@ export const CartItemRow = React.memo(function CartItemRow({
                 )
               }
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-default/25 transition-colors cursor-pointer active:bg-default/35"
-              title="افزایش متراژ (متر مربع)"
+              aria-label="افزایش متراژ (متر مربع)"
             >
               <PlusIcon size={14} />
-            </button>
+            </Button>
             <span
               className="px-2 text-xs font-bold text-foreground select-none min-w-[56px] text-center"
               dir="ltr"
             >
               {toPersianDigits(item.requestedArea || item.deliverableArea)} م²
             </span>
-            <button
+            <Button
               type="button"
-              onClick={() =>
+              onPress={() =>
                 updateRequestedArea(
                   item.productId,
                   Math.max(
@@ -199,10 +199,10 @@ export const CartItemRow = React.memo(function CartItemRow({
                 )
               }
               className="w-8 h-full flex items-center justify-center text-foreground hover:bg-default/25 transition-colors cursor-pointer active:bg-default/35"
-              title="کاهش متراژ (متر مربع)"
+              aria-label="کاهش متراژ (متر مربع)"
             >
               <MinusIcon size={14} />
-            </button>
+            </Button>
           </div>
         </div>
 

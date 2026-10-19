@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import { ScrollShadow } from '@heroui/react'
+import { ScrollShadow, Button } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus, type Order, type Product } from '../../types'
 import { Badge } from '../../components/ui/badge'
@@ -73,13 +73,12 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
 
   return (
     <div
-      
-      className="p-3.5 space-y-3 rounded-[20px] bg-surface border border-border shadow-xs"
+      className="p-3.5 space-y-3 rounded-2xl bg-muted/5"
     >
       {/* Order Top Bar */}
-      <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-separator flex-wrap sm:flex-nowrap">
+      <div className="flex items-center justify-between gap-2 pb-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="px-2.5 py-0.5 rounded-lg bg-default/15 border border-border text-xs font-bold text-foreground flex items-center gap-1">
+          <span className="px-2 py-1.5 rounded-lg bg-muted/10 text-xs font-bold text-foreground flex items-center gap-1">
             <span className="text-muted text-[11px] font-normal">سفارش</span>
             <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
           </span>
@@ -99,10 +98,9 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
           {order.items.map((item, idx) => (
             <img
               key={idx}
-              
               src={item.productImage || '/assets/images/placeholder.svg'}
               alt={item.productName}
-              className="w-12 h-12 rounded-[14px] object-cover border border-border bg-default/15 shrink-0"
+              className="w-12 h-12 rounded-2xl object-cover shrink-0"
               title={item.productName}
               onError={(e) => {
                 const target = e.currentTarget
@@ -123,7 +121,7 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
         </div>
 
         {/* Financials & Action Buttons */}
-        <div className="flex items-center justify-between gap-2 pt-2 border-t border-separator">
+        <div className="flex items-center justify-between gap-2 pt-2">
           <div>
             <span className="text-xs text-muted block font-medium leading-tight mb-0.5">مبلغ کل:</span>
             <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
@@ -133,20 +131,20 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
           </div>
 
           <div className="flex items-center gap-1.5">
-            <button
+            <Button
               type="button"
-              onClick={() => onReorder(order.id)}
-              className="h-8 px-2.5 rounded-xl border border-border hover:bg-default/20 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
-              title="سفارش مجدد اقلام"
+              onPress={() => onReorder(order.id)}
+              className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+              aria-label="سفارش مجدد اقلام"
             >
               <RefreshCwIcon size={13} />
               <span>تکرار</span>
-            </button>
+            </Button>
 
             <Link
               to="/orders/$id"
               params={{ id: order.id }}
-              className="h-8 px-3 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center gap-1 shadow-primary/20 cursor-pointer active:scale-95 shrink-0"
+              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
             >
               <span>پیگیری</span>
               <ArrowLeftIcon size={13} />
@@ -327,7 +325,7 @@ function OrdersListPage() {
     <div className="w-full h-full  px-3 py-3 space-y-3">
       {/* Header */}
       <div>
-        <h1 className="text-lg font-bold text-foreground flex items-center gap-1.5">
+        <h1 className="text-lg font-bold text-foreground flex items-center  gap-1.5">
           <PackageIcon size={20} className="text-primary" />
           <span>سفارش‌ها</span>
         </h1>
@@ -342,18 +340,18 @@ function OrdersListPage() {
             const isSelected = selectedStatusTab === tab.key
 
             return (
-              <button
+              <Button
                 key={tab.key}
                 type="button"
-                onClick={() => setSelectedStatusTab(tab.key as any)}
-                className={`h-10 w-fit px-4 text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 shadow-2xs rounded-2xl ${
+                onPress={() => setSelectedStatusTab(tab.key as any)}
+                className={`h-10 w-fit px-4 py-2 text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 rounded-2xl ${
                   isSelected
                         ? "bg-[#252745] text-background"
-                  : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground"
+                  : "bg-muted/5 text-muted hover:bg-muted/10 hover:text-foreground"
                 }`}
               >
                 <span>{tab.label}</span>
-              </button>
+              </Button>
             )
           })}
         </div>
@@ -367,8 +365,8 @@ function OrdersListPage() {
           <OrderCardSkeleton />
         </div>
       ) : filteredOrders.length === 0 ? (
-        <div className="bg-surface border border-border rounded-2xl p-8 text-center shadow-xs space-y-2.5">
-          <div className="w-12 h-12 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
+        <div className="bg-muted/5 rounded-2xl p-8 text-center space-y-2.5">
+          <div className="w-12 h-12 rounded-2xl bg-muted/10 text-muted flex items-center justify-center mx-auto">
             <PackageIcon size={24} />
           </div>
           <h3 className="text-sm font-bold text-foreground">

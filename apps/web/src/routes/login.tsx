@@ -36,7 +36,7 @@ function LoginPage() {
       </div>
 
       {/* Login Card with ReactBits BorderGlow */}
-      <div className="relative z-10  max-w-xl flex justify-center shadow-0!  pointer-events-auto">
+      <div className="relative z-10  max-w-xl flex justify-center shadow-0! pointer-events-auto">
         <BorderGlow
           borderRadius={16}
           backgroundColor="rgba(255, 255, 255, 0.1)"
@@ -46,7 +46,7 @@ function LoginPage() {
           glowRadius={36}
           glowIntensity={1.0}
           animated={true}
-          className="w-full shadow-lg backdrop-blur-md"
+          className="w-full backdrop-blur-md"
         >
           <LoginCard />
         </BorderGlow>

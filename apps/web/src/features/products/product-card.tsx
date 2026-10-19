@@ -49,7 +49,7 @@ const ProductThumbnail = React.memo(function ProductThumbnail({
           onOpenBottomSheet?.();
         }
       }}
-      className="relative size-19 aspect-square shrink-0 group/img cursor-pointer transition-transform active:scale-95 bg-default/20 rounded-2xl overflow-hidden shadow-2xs"
+      className="relative size-19 aspect-square shrink-0 group/img cursor-pointer transition-transform active:scale-95 bg-default/20 rounded-2xl overflow-hidden"
       title="مشاهده جزئیات کالا"
       aria-label={`مشاهده جزئیات ${alt}`}
     >
@@ -82,7 +82,7 @@ const ProductThumbnail = React.memo(function ProductThumbnail({
       />
 
       <div className="absolute inset-0 opacity-0 group-hover/img:opacity-100 transition-opacity flex items-center justify-center rounded-2xl pointer-events-none">
-        <span className="p-1 rounded-md bg-primary flex flex-col items-center justify-center size-8 text-primary-foreground shadow-xs">
+        <span className="p-1 rounded-md bg-primary flex flex-col items-center justify-center size-8 text-primary-foreground">
           <ZoomInIcon size={16} />
         </span>
       </div>
@@ -124,7 +124,7 @@ export const ProductCard = React.memo(function ProductCard({
         "group relative flex items-center justify-between px-3.5 py-2.5 sm:p-3 rounded-2xl transition-all duration-300 cursor-pointer select-none text-start animate-card-fade-in",
         isSelected
           ? "bg-primary/8 ring-1 ring-primary scale-[0.98]"
-          : "bg-muted/5 shadow-xs",
+          : "bg-muted/5",
       )}
     >
       {/* Start (Right in RTL): Thumbnail + Brand, Name & (Dimension, Grade) Badges */}
@@ -163,7 +163,7 @@ export const ProductCard = React.memo(function ProductCard({
         {/* Top: Price & In-Cart Status - Centered vertically from top */}
         <div className="flex-1 flex flex-col justify-center items-end">
           {isInCart && (
-            <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary border border-primary/25 mb-1">
+            <span className="px-2 py-0.5 rounded-lg text-xs font-semibold bg-primary/10 text-primary mb-1">
               در سبد خرید
             </span>
           )}
@@ -176,7 +176,7 @@ export const ProductCard = React.memo(function ProductCard({
 
         {/* Bottom: Inventory Badge - Exactly opposite the other two tags, under the price */}
         <div className="mt-auto">
-          <span className="px-2 py-1 rounded-lg flex text-[10px] font-semibold bg-[#252745] text-white">
+          <span className="px-2 py-1 rounded-lg flex text-xs font-semibold bg-[#252745] text-background">
             <span className="flex items-center gap-0.5">
               موجودی:{" "}
               {Math.floor(

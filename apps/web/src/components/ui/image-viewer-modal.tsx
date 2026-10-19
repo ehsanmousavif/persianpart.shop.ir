@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback, type TouchEvent as ReactTouchEvent, type MouseEvent as ReactMouseEvent } from 'react'
-import { Modal as HeroUIModal } from '@heroui/react'
+import { Modal as HeroUIModal, Button } from '@heroui/react'
 import { XIcon, ZoomInIcon, ZoomOutIcon, RefreshCwIcon } from './icons'
 import { toPersianDigits } from '../../lib/utils/currency'
 
@@ -187,7 +187,7 @@ export function ImageViewerModal({
             {/* Top Floating Control Bar */}
             <div className="w-full max-w-xl mx-auto px-3 h-12 flex items-center justify-between gap-2 z-20 shrink-0 text-foreground">
               <div className="flex items-center gap-1.5 min-w-0">
-                <span className="text-xs font-bold truncate max-w-30 sm:max-w-xs text-foreground">
+                <span className="text-xs font-bold  max-w-30 sm:max-w-xs text-foreground">
                   {title}
                 </span>
                 <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-foreground/10 text-foreground/90 shrink-0">
@@ -196,43 +196,39 @@ export function ImageViewerModal({
               </div>
 
               <div className="flex items-center gap-1 shrink-0">
-                <button
+                <Button
                   type="button"
-                  onClick={() => handleZoom(0.3)}
-                  aria-label="بزرگ‌نمایی تصویر"
+                  onPress={() => handleZoom(0.3)}
+                  aria-label="بزرگ‌نمایی تصویر (+)"
                   className="w-8 h-8 rounded-lg bg-foreground/10 hover:bg-foreground/20 active:scale-95 text-foreground flex items-center justify-center transition-colors cursor-pointer"
-                  title="بزرگ‌نمایی (+)"
                 >
                   <ZoomInIcon size={16} />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  onClick={() => handleZoom(-0.3)}
-                  disabled={scale <= 1}
-                  aria-label="کوچک‌نمایی تصویر"
+                  onPress={() => handleZoom(-0.3)}
+                  isDisabled={scale <= 1}
+                  aria-label="کوچک‌نمایی تصویر (-)"
                   className="w-8 h-8 rounded-lg bg-foreground/10 hover:bg-foreground/20 active:scale-95 text-foreground flex items-center justify-center transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                  title="کوچک‌نمایی (-)"
                 >
                   <ZoomOutIcon size={16} />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  onClick={resetZoom}
-                  aria-label="بازنشانی اندازه تصویر"
+                  onPress={resetZoom}
+                  aria-label="بازنشانی اندازه تصویر (0)"
                   className="w-8 h-8 rounded-lg bg-foreground/10 hover:bg-foreground/20 active:scale-95 text-foreground flex items-center justify-center transition-colors cursor-pointer"
-                  title="بازنشانی (0)"
                 >
                   <RefreshCwIcon size={14} />
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  onClick={onClose}
-                  aria-label="بستن گالری تصویر"
+                  onPress={onClose}
+                  aria-label="بستن گالری تصویر (Esc)"
                   className="w-8 h-8 rounded-lg bg-danger hover:bg-danger/90 active:scale-95 text-foreground flex items-center justify-center transition-colors cursor-pointer ms-0.5"
-                  title="بستن (Esc)"
                 >
                   <XIcon size={16} />
-                </button>
+                </Button>
               </div>
             </div>
 

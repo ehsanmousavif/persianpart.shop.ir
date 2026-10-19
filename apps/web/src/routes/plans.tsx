@@ -38,8 +38,8 @@ function CustomerPlansPage() {
           <PlanCardSkeleton />
         </div>
       ) : filteredPlans.length === 0 ? (
-        <div className="bg-surface border discount border-border rounded-3xl p-8 text-center space-y-3 shadow-xs">
-          <div className="w-14 h-14 rounded-2xl bg-primary/15 text-primary flex items-center justify-center mx-auto border border-primary/20">
+        <div className="bg-muted/5 rounded-2xl p-8 text-center space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
             <SparklesIcon size={26} />
           </div>
           <div className="space-y-1 max-w-sm mx-auto">
@@ -52,7 +52,7 @@ function CustomerPlansPage() {
           </div>
           <Link
             to="/product"
-            className="inline-flex items-center gap-1.5 h-9 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90"
+            className="inline-flex items-center gap-1.5 h-10 px-4 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
           >
             <span>مشاهده محصولات</span>
             <ArrowLeftIcon size={14} />

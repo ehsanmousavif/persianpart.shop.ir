@@ -49,8 +49,7 @@ export function MobileBottomNav() {
   return (
     <>
       <nav
-        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] inset-x-0 mx-auto w-[calc(100%-32px)] max-w-xl z-40 p-1.5 rounded-3xl bg-[#252745] backdrop-blur-xl border border-border/80 shadow-[1px_50px_10px_rgba(255,255,255,1)]"
-        style={{ boxShadow: "1px 50px 10px rgba(255,255,255,1)" }}
+        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] inset-x-0 mx-auto w-[calc(100%-32px)] max-w-xl z-40 p-1.5 rounded-2xl bg-[#252745] backdrop-blur-xl"
       >
         <div className="flex h-14 w-full items-center justify-between gap-1 px-1">
           {navItems.map((item) => {
@@ -60,7 +59,7 @@ export function MobileBottomNav() {
                 key={item.to}
                 to={item.to}
                 className={cn(
-                  "flex flex-col w-fit rounded-3xl px-4 text-muted hover:bg-default/15 items-center justify-center gap-0.5 transition-all relative cursor-pointer active:scale-95 py-1",
+                  "flex flex-col w-fit rounded-2xl px-4 text-muted hover:bg-default/15 items-center justify-center gap-0.5 transition-all relative cursor-pointer active:scale-95 py-1",
                   item.isActive
                     ? "text-primary"
                     : "text-muted hover:text-foreground"
@@ -68,7 +67,7 @@ export function MobileBottomNav() {
               >
                 <div
                   className={cn(
-                    "relative px-3 py-1 rounded-[12px] transition-all flex items-center justify-center",
+                    "relative px-3 py-1 rounded-xl transition-all flex items-center justify-center",
                     item.isActive && "bg-primary/10 text-primary"
                   )}
                 >

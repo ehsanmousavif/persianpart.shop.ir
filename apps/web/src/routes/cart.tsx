@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@heroui/react'
 import { useCart } from '../features/cart/cart-store'
 import { CartItemRow } from '../features/cart/cart-item-row'
 import { api } from '../lib/api-client'
@@ -106,21 +107,21 @@ function CartPage() {
         </div>
 
         {items.length > 0 && (
-          <button
+          <Button
             type="button"
             onClick={clearCart}
             className="text-xs font-semibold text-danger hover:text-danger/80 flex items-center gap-1 cursor-pointer active:scale-95 transition-transform"
           >
             <Trash2Icon size={13} />
             <span>خالی کردن</span>
-          </button>
+          </Button>
         )}
       </div>
 
       {/* Main Cart Content */}
       {items.length === 0 ? (
-        <div className="bg-surface border border-border rounded-2xl p-8 text-center max-w-lg mx-auto shadow-xs space-y-3">
-          <div className="w-14 h-14 rounded-2xl bg-default/20 text-muted flex items-center justify-center mx-auto">
+        <div className="bg-muted/5 rounded-2xl p-8 text-center max-w-lg mx-auto space-y-3">
+          <div className="w-14 h-14 rounded-2xl bg-muted/10 text-muted flex items-center justify-center mx-auto">
             <ShoppingCartIcon size={28} />
           </div>
           <div>
@@ -134,7 +135,7 @@ function CartPage() {
           <div className="pt-2 flex flex-col gap-2">
             <Link
               to="/product"
-              className="w-full py-2.5 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all cursor-pointer shadow-primary/20"
+              className="w-full h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all cursor-pointer flex items-center justify-center"
             >
               مشاهده محصولات
             </Link>
@@ -150,8 +151,8 @@ function CartPage() {
           </div>
 
           {/* Invoice Summary Card */}
-          <div className="bg-surface border border-border rounded-2xl p-3.5 shadow-xs space-y-2.5">
-            <h3 className="text-sm font-bold text-foreground pb-2 border-b border-separator">
+          <div className="bg-muted/5 rounded-2xl p-3.5 space-y-2.5">
+            <h3 className="text-sm font-bold text-foreground pb-1">
               خلاصه صورت‌حساب
             </h3>
 
@@ -166,7 +167,7 @@ function CartPage() {
                 <span className="font-bold text-foreground">{toPersianDigits(totalArea)} م²</span>
               </div>
 
-              <div className="pt-1.5 border-t border-separator flex justify-between">
+              <div className="pt-1.5 flex justify-between">
                 <span>جمع اقلام:</span>
                 <span className="font-bold text-foreground inline-flex items-center gap-1">
                   <span>{formatToman(subtotal)}</span>
@@ -191,7 +192,7 @@ function CartPage() {
               </div>
             </div>
 
-            <div className="pt-2 border-t-2 border-border flex items-baseline justify-between">
+            <div className="pt-2 flex items-baseline justify-between">
               <span className="text-sm font-bold text-foreground">مبلغ نهایی:</span>
               <span className="text-lg font-bold text-primary inline-flex items-center gap-1">
                 <span>{formatToman(finalTotal)}</span>
@@ -200,21 +201,21 @@ function CartPage() {
             </div>
 
             {hasBlockingIssues && (
-              <div className="p-2.5 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs flex items-center gap-1.5">
+              <div className="p-2.5 rounded-2xl bg-danger/15 text-danger text-xs flex items-center gap-1.5">
                 <AlertTriangleIcon size={15} className="text-danger shrink-0" />
                 <span>کالاهای ناموجود را از سبد حذف کنید.</span>
               </div>
             )}
 
-            <button
+            <Button
               type="button"
-              onClick={() => setIsCheckoutModalOpen(true)}
-              disabled={hasBlockingIssues || items.length === 0}
-              className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 transition-all shadow-md shadow-primary/25 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              onPress={() => setIsCheckoutModalOpen(true)}
+              isDisabled={hasBlockingIssues || items.length === 0}
+              className="w-full h-11 rounded-2xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <span>ادامه ثبت سفارش</span>
               <ArrowRightIcon size={15} />
-            </button>
+            </Button>
           </div>
         </div>
       )}
@@ -227,7 +228,7 @@ function CartPage() {
         isBottomSheetOnMobile={true}
       >
         <div className="space-y-4">
-          <div className="p-3.5 bg-default/10 border border-border rounded-xl space-y-2 text-xs">
+          <div className="p-3.5 bg-muted/10 rounded-2xl space-y-2 text-xs">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <StoreIcon size={16} className="text-primary" />
               <span>{user?.storeName || 'پخش بازرگانی پرشین پارت'}</span>
@@ -247,11 +248,11 @@ function CartPage() {
               value={deliveryNotes}
               onChange={(e) => setDeliveryNotes(e.target.value)}
               placeholder="یادداشت تحویل یا هماهنگی..."
-              className="w-full p-3 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-surface"
+              className="w-full p-3 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs text-foreground transition-all outline-hidden"
             />
           </div>
 
-          <div className="p-3 bg-success/15 border border-success/30 rounded-xl text-xs space-y-1">
+          <div className="p-3 bg-success/15 rounded-2xl text-xs space-y-1">
             <div className="flex justify-between font-bold text-foreground">
               <span>مبلغ نهایی:</span>
               <span className="text-sm font-bold inline-flex items-center gap-1">
@@ -266,18 +267,18 @@ function CartPage() {
           </div>
 
           <div className="pt-2 grid grid-cols-2 gap-3">
-            <button
+            <Button
               type="button"
-              onClick={() => setIsCheckoutModalOpen(false)}
-              className="py-2.5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/20 transition-colors cursor-pointer"
+              onPress={() => setIsCheckoutModalOpen(false)}
+              className="h-10 px-4 rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 transition-colors cursor-pointer"
             >
               بازگشت به سبد
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              onClick={handleCheckoutSubmit}
-              disabled={isSubmitting}
-              className="py-2.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              onPress={handleCheckoutSubmit}
+              isDisabled={isSubmitting}
+              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               {isSubmitting ? (
                 <RefreshCwIcon size={16} className="animate-spin" />
@@ -287,7 +288,7 @@ function CartPage() {
                   <span>ثبت نهایی سفارش</span>
                 </>
               )}
-            </button>
+            </Button>
           </div>
         </div>
       </Modal>

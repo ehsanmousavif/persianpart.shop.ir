@@ -14,23 +14,23 @@ export function Badge({
   ...props
 }: BadgeProps) {
   const variantStyles = {
-    default: 'bg-default/15 text-foreground border-border',
-    primary: 'bg-primary/10 text-primary border-primary/25',
-    secondary: 'bg-secondary text-secondary-foreground border-border',
-    success: 'bg-success/15 text-success border-success/30',
-    warning: 'bg-warning/15 text-warning border-warning/30',
-    danger: 'bg-danger/15 text-danger border-danger/30',
-    outline: 'bg-transparent text-foreground border-border',
+    default: 'bg-muted/10 text-foreground',
+    primary: 'bg-primary/10 text-primary',
+    secondary: 'bg-muted/15 text-foreground',
+    success: 'bg-success/15 text-success',
+    warning: 'bg-warning/15 text-warning',
+    danger: 'bg-danger/15 text-danger',
+    outline: 'bg-muted/10 text-foreground',
   }
 
   const sizeStyles = {
-    sm: 'text-xs px-2 py-0.5',
-    md: 'text-xs font-medium px-2.5 py-1',
+    sm: 'text-xs px-2 py-1.5 font-semibold',
+    md: 'text-xs font-semibold px-2 py-1.5 ',
   }
 
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-xl border transition-colors ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+      className={`inline-flex items-center gap-1 rounded-lg transition-colors ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
       {...props}
     >
       {children}

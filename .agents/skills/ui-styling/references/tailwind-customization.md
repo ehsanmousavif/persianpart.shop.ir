@@ -203,7 +203,7 @@ Organize CSS into layers:
   }
 
   a {
-    @apply text-blue-600 hover:text-blue-700 underline-offset-4 hover:underline;
+    @apply text-blue-600 hover:text-blue-700 underline-offset-4;
   }
 
   body {

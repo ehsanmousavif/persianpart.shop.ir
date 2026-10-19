@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { Modal as HeroUIModal, cn } from '@heroui/react'
+import { Modal as HeroUIModal, Button, cn } from '@heroui/react'
 import { useOrders, buildFullOrderTimeline } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type Order, type OrderItem, type Product } from '../../types'
 import { OrderTimeline } from '../../features/orders/order-timeline'
@@ -239,7 +239,7 @@ function OrderDetailPage() {
         <p className="text-xs text-muted">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
         <Link
           to="/orders"
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold shadow-xs hover:bg-primary/90"
+          className="inline-flex items-center gap-1.5 h-10 px-4 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
         >
           <ArrowRightIcon size={14} />
           <span>مشاهده همه سفارش‌ها</span>
@@ -261,10 +261,10 @@ function OrderDetailPage() {
       </nav>
 
       {/* Main Order Header Card */}
-      <div className="bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
+      <div className="bg-muted/5 rounded-2xl p-5 sm:p-6 space-y-4">
         <div>
           <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-            <span className="px-3 py-1 rounded-xl bg-primary/15 border border-primary/25 text-sm font-extrabold text-primary flex items-center gap-1.5">
+            <span className="px-2 py-1 rounded-lg bg-primary/10 text-xs font-bold text-primary flex items-center gap-1.5">
               <span className="text-primary text-xs font-semibold">سفارش</span>
               <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
             </span>
@@ -276,10 +276,10 @@ function OrderDetailPage() {
             {!isCancelled && !isCompleted && (
               <span
                 className={cn(
-                  'px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1.5 border shadow-xs',
+                  'px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5',
                   isWithin10Minutes
-                    ? 'bg-warning/15 text-warning-foreground border-warning/30 animate-pulse'
-                    : 'bg-default/15 text-muted border-border'
+                    ? 'bg-warning/15 text-warning animate-pulse'
+                    : 'bg-muted/10 text-muted'
                 )}
               >
                 <ClockIcon size={13} className={cn(isWithin10Minutes ? 'text-warning' : 'text-muted')} />
@@ -297,58 +297,58 @@ function OrderDetailPage() {
         </div>
 
         {/* Action Buttons - زیر تاریخ */}
-        <div className="pt-3 border-t border-separator flex items-center gap-2 flex-wrap sm:flex-nowrap">
+        <div className="pt-3 flex items-center gap-2 flex-wrap sm:flex-nowrap">
           {isCancellableByCustomer && (
             <>
-              <button
+              <Button
                 type="button"
-                onClick={() => setShowCancelModal(true)}
-                className="flex-1 py-2.5 px-3.5 rounded-xl border border-danger/30 text-danger hover:bg-danger/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                onPress={() => setShowCancelModal(true)}
+                className="flex-1 h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
                 <XIcon size={16} />
                 <span>لغو سفارش</span>
-              </button>
+              </Button>
 
-              <button
+              <Button
                 type="button"
-                onClick={handleEditOrder}
-                className="flex-1 py-2.5 px-3.5 rounded-xl border border-border text-foreground hover:bg-default/20 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-xs whitespace-nowrap"
+                onPress={handleEditOrder}
+                className="flex-1 h-10 px-4 rounded-2xl bg-muted/10 text-foreground hover:bg-muted/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
                 <PencilIcon size={16} />
                 <span>ویرایش فاکتور</span>
-              </button>
+              </Button>
             </>
           )}
 
-          <button
+          <Button
             type="button"
-            onClick={handleReorder}
-            className="flex-1 py-2.5 whitespace-nowrap px-3.5 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all shadow-md shadow-primary/25 flex items-center justify-center gap-1.5 cursor-pointer"
+            onPress={handleReorder}
+            className="flex-1 h-10 px-4 whitespace-nowrap rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <RefreshCwIcon size={16} />
             <span>سفارش مجدد</span>
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Visual Stepper Timeline */}
-      <div className="bg-surface border border-border rounded-3xl p-5 pb-10 sm:p-6 shadow-xs space-y-4">
-        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator">
+      <div className="bg-muted/5 rounded-2xl p-5 pb-10 sm:p-6 space-y-4">
+        <h3 className="text-sm font-extrabold text-foreground pb-1">
           وضعیت سفارش
         </h3>
         <OrderTimeline steps={timeline} />
       </div>
 
       {/* Products in this order */}
-      <div className="bg-surface border border-border rounded-3xl p-5 sm:p-6 shadow-xs space-y-4">
-        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator flex items-center justify-between">
+      <div className="bg-muted/5 rounded-2xl p-5 sm:p-6 space-y-4">
+        <h3 className="text-sm font-extrabold text-foreground pb-1 flex items-center justify-between">
           <span>اقلام سفارش</span>
           <span className="text-xs text-muted font-normal">
             {toPersianDigits(order.items.length)} کالا انتخاب شده
           </span>
         </h3>
 
-        <div className="divide-y divide-separator">
+        <div className="divide-y divide-separator/50">
           {order.items.map((item: OrderItem, idx: number) => (
             <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -360,7 +360,7 @@ function OrderDetailPage() {
                   <img
                     src={item.productImage || '/assets/images/placeholder.svg'}
                     alt={item.productName}
-                    className="w-16 h-16 rounded-4xl object-cover border border-border bg-default/15"
+                    className="w-16 h-16 rounded-2xl object-cover"
                     onError={(e) => {
                       if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                         e.currentTarget.src = '/assets/images/placeholder.svg'
@@ -387,7 +387,7 @@ function OrderDetailPage() {
                 </div>
               </div>
 
-              <div className="text-start sm:text-end pt-2 sm:pt-0 border-t sm:border-0 border-separator flex flex-col items-start sm:items-end">
+              <div className="text-start sm:text-end pt-2 sm:pt-0 flex flex-col items-start sm:items-end">
                 <span className="text-xs text-muted inline-flex items-center gap-1">
                   <span>{formatToman(item.unitPrice)}</span>
                   <TomanIcon className="size-3" />
@@ -413,7 +413,7 @@ function OrderDetailPage() {
             </div>
           )}
 
-          <div className="pt-2 border-t border-separator flex justify-between items-center text-sm font-bold text-foreground">
+          <div className="pt-2 flex justify-between items-center text-sm font-bold text-foreground">
             <span>مبلغ نهایی:</span>
             <span className="text-base font-bold text-primary inline-flex items-center gap-1">
               <span>{formatToman(order.finalTotal)}</span>
@@ -424,8 +424,8 @@ function OrderDetailPage() {
       </div>
 
       {/* Delivery Information */}
-      <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs space-y-3">
-        <h3 className="text-sm font-extrabold text-foreground pb-2 border-b border-separator">
+      <div className="bg-muted/5 rounded-2xl p-5 sm:p-6 space-y-3">
+        <h3 className="text-sm font-extrabold text-foreground pb-1">
           اطلاعات تحویل
         </h3>
 
@@ -458,7 +458,7 @@ function OrderDetailPage() {
         </div>
 
         {order.notes && (
-          <div className="p-3 bg-default/10 rounded-xl text-xs text-muted mt-2">
+          <div className="p-3 bg-muted/10 rounded-2xl text-xs text-muted mt-2">
             <strong>یادداشت سفارش:</strong> {order.notes}
           </div>
         )}
@@ -471,8 +471,8 @@ function OrderDetailPage() {
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
         >
           <HeroUIModal.Container className="pointer-events-none w-full max-w-sm h-auto p-0 flex flex-col items-center">
-            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-3xl shadow-2xl flex flex-col z-10 border border-border overflow-hidden animate-modal-enter text-center p-6 space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-danger/15 text-danger flex items-center justify-center mx-auto border border-danger/30">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-2xl flex flex-col z-10 overflow-hidden animate-modal-enter text-center p-6 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-danger/15 text-danger flex items-center justify-center mx-auto">
                 <AlertTriangleIcon size={24} />
               </div>
               <div>
@@ -482,7 +482,7 @@ function OrderDetailPage() {
                 <p className="text-xs text-muted mt-1 leading-relaxed">
                   آیا از لغو سفارش <strong>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
-                <div className="mt-2.5 p-2 bg-success/15 rounded-xl border border-success/30 text-[11px] text-success text-start">
+                <div className="mt-2.5 p-2 bg-success/15 rounded-xl text-[11px] text-success text-start">
                   اقلام سفارش به موجودی انبار بازگردانده می‌شوند.
                 </div>
               </div>
@@ -495,7 +495,7 @@ function OrderDetailPage() {
                 <select
                   value={cancelReason}
                   onChange={(e) => setCancelReason(e.target.value)}
-                  className="w-full h-9 px-2.5 rounded-xl border border-border text-xs font-medium text-foreground bg-surface outline-hidden cursor-pointer"
+                  className="w-full h-10 px-3 rounded-2xl bg-muted/5 text-xs font-medium text-foreground outline-hidden cursor-pointer"
                 >
                   <option value="تغییر در متراژ یا اقلام سفارش">تغییر در متراژ یا اقلام سفارش</option>
                   <option value="تغییر در زمان‌بندی پروژه و ارسال">تغییر در زمان‌بندی پروژه و ارسال</option>
@@ -505,20 +505,20 @@ function OrderDetailPage() {
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
+                <Button
                   type="button"
-                  onClick={() => setShowCancelModal(false)}
-                  className="py-2.5 rounded-xl border border-border text-foreground text-xs font-bold hover:bg-default/20 cursor-pointer transition-all"
+                  onPress={() => setShowCancelModal(false)}
+                  className="h-10 px-4 rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
                 >
                   انصراف
-                </button>
-                <button
+                </Button>
+                <Button
                   type="button"
-                  onClick={handleCancel}
-                  className="py-2.5 rounded-xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold shadow-md shadow-danger/25 cursor-pointer transition-all"
+                  onPress={handleCancel}
+                  className="h-10 px-4 rounded-2xl bg-danger hover:bg-danger/90 text-danger-foreground text-xs font-bold cursor-pointer transition-all"
                 >
                   تأیید لغو سفارش
-                </button>
+                </Button>
               </div>
             </HeroUIModal.Dialog>
           </HeroUIModal.Container>

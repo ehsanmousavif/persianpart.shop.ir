@@ -1,5 +1,5 @@
 import { useState, useId } from 'react'
-import { Modal as HeroUIModal } from '@heroui/react'
+import { Modal as HeroUIModal, Button } from '@heroui/react'
 import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -75,16 +75,16 @@ export function OrderEntryModal({
         className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-backdrop-enter"
       >
         <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
-          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-3xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[92vh] z-10 border border-border overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start">
+          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[92vh] z-10 overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start">
             {/* Handle for mobile */}
             <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-muted/40" />
             </div>
 
             {/* Header */}
-            <HeroUIModal.Header className="px-4 py-3 border-b border-separator flex items-center justify-between shrink-0">
+            <HeroUIModal.Header className="px-4 py-3 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center font-bold">
+                <div className="size-9 rounded-2xl bg-primary/15 text-primary flex items-center justify-center font-bold">
                   <BoxIcon size={18} />
                 </div>
                 <div>
@@ -99,7 +99,7 @@ export function OrderEntryModal({
 
               <HeroUIModal.CloseTrigger
                 onClick={onClose}
-                className="w-8 h-8 rounded-xl text-muted hover:text-foreground hover:bg-default/20 flex items-center justify-center transition-colors cursor-pointer"
+                className="size-9 rounded-2xl text-muted hover:text-foreground bg-muted/10 hover:bg-muted/20 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="بستن پنجره سفارش"
               >
                 <XIcon size={18} />
@@ -109,11 +109,11 @@ export function OrderEntryModal({
             {/* Content Body */}
             <HeroUIModal.Body className="p-4 overflow-y-auto space-y-4 text-start">
               {/* Selected Product Summary Card */}
-              <div className="flex items-center gap-3 p-2.5 bg-default/10 rounded-xl border border-border">
+              <div className="flex items-center gap-3 p-2.5 bg-muted/5 rounded-2xl">
                 <img
                   src={product.images[0] || '/assets/images/placeholder.svg'}
                   alt={product.name}
-                  className="w-14 h-14 rounded-[16px] object-cover border border-border shrink-0"
+                  className="size-14 rounded-2xl object-cover shrink-0"
                   onError={(e) => {
                     if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                       e.currentTarget.src = '/assets/images/placeholder.svg'
@@ -154,7 +154,7 @@ export function OrderEntryModal({
                     value={requestedArea || ''}
                     onChange={(e) => handleAreaChange(e.target.value)}
                     placeholder="مثال: ۳۵"
-                    className="w-full h-12 px-3.5 rounded-xl border border-border focus:border-primary focus:ring-2 focus:ring-primary/20 text-foreground font-bold text-lg text-start transition-all outline-hidden bg-surface"
+                    className="w-full h-12 px-3.5 rounded-2xl bg-muted/5 focus:bg-muted/10 text-foreground font-bold text-lg text-start transition-all outline-hidden"
                   />
                   <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted pointer-events-none">
                     متر مربع
@@ -165,21 +165,21 @@ export function OrderEntryModal({
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">
                   <span className="text-xs text-muted font-medium">افزودن سریع:</span>
                   {[5, 10, 25, 50, 100].map((preset) => (
-                    <button
+                    <Button
                       key={preset}
                       type="button"
                       onClick={() => setRequestedArea((prev) => Math.round((prev + preset) * 10) / 10)}
-                      className="px-2.5 py-1 rounded-lg bg-default/15 hover:bg-default/30 border border-border text-xs font-semibold text-foreground transition-all cursor-pointer active:scale-95 shadow-xs"
+                      className="h-8 px-2.5 rounded-lg bg-muted/10 hover:bg-muted/20 text-xs font-semibold text-foreground transition-all cursor-pointer active:scale-95"
                     >
                       +{toPersianDigits(preset)} متر
-                    </button>
+                    </Button>
                   ))}
                 </div>
               </div>
 
               {/* Round-Up Warning Alert */}
               {!calc.isExactMultiple && calc.requestedArea > 0 && (
-                <div className="p-3.5 rounded-2xl bg-warning/15 border border-warning/30 text-warning-foreground text-xs space-y-1.5 shadow-xs animate-in fade-in">
+                <div className="p-3.5 rounded-2xl bg-warning/15 text-warning-foreground text-xs space-y-1.5 animate-in fade-in">
                   <div className="flex items-center gap-2 font-bold text-foreground">
                     <AlertTriangleIcon size={16} className="text-warning shrink-0" />
                     <span>هشدار رُند شدن به بالا (بسته‌بندی کارخانه‌ای)</span>
@@ -201,8 +201,8 @@ export function OrderEntryModal({
               )}
 
               {/* Carton Calculation Live Preview */}
-              <div className="bg-default/10 border border-border rounded-2xl p-3.5 space-y-2.5">
-                <div className="flex items-center justify-between pb-2 border-b border-separator text-xs">
+              <div className="bg-muted/5 rounded-2xl p-3.5 space-y-2.5">
+                <div className="flex items-center justify-between pb-2 text-xs">
                   <span className="font-bold text-foreground">پیش‌نمایش محاسبه هوشمند کارتن</span>
                   <span className="text-xs font-medium text-muted">
                     هر کارتن = {toPersianDigits(product.sqmPerCarton)}
@@ -210,28 +210,28 @@ export function OrderEntryModal({
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                  <div className="bg-muted/10 p-2.5 rounded-2xl">
                     <span className="text-xs text-muted block mb-0.5">مقدار درخواستی</span>
                     <span className="font-bold text-foreground">
                       {toPersianDigits(calc.requestedArea)}
                     </span>
                   </div>
 
-                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                  <div className="bg-muted/10 p-2.5 rounded-2xl">
                     <span className="text-xs text-muted block mb-0.5">تعداد کارتن</span>
                     <span className="font-bold text-primary">
                       {toPersianDigits(calc.cartonCount)} کارتن
                     </span>
                   </div>
 
-                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                  <div className="bg-muted/10 p-2.5 rounded-2xl">
                     <span className="text-xs text-muted block mb-0.5">مقدار واقعی تحویلی</span>
                     <span className="font-bold text-foreground">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
 
-                  <div className="bg-surface p-2.5 rounded-xl border border-border shadow-xs">
+                  <div className="bg-muted/10 p-2.5 rounded-2xl">
                     <span className="text-xs text-muted block mb-0.5">مازاد بر درخواست</span>
                     <span className="font-bold text-muted">
                       +{toPersianDigits(calc.extraArea)}
@@ -240,7 +240,7 @@ export function OrderEntryModal({
                 </div>
 
                 {/* Price Preview */}
-                <div className="pt-2 border-t border-separator flex items-baseline justify-between">
+                <div className="pt-2 flex items-baseline justify-between">
                   <div>
                     <span className="text-xs text-muted block">مبلغ کل ردیف (بر اساس متراژ تحویلی):</span>
                     <span className="text-xs text-muted inline-flex items-center gap-1">
@@ -257,12 +257,12 @@ export function OrderEntryModal({
 
               {/* Inventory Validation & Alerts */}
               {isOutOfStock ? (
-                <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs flex items-center gap-2">
+                <div className="p-3 rounded-2xl bg-danger/15 text-danger text-xs flex items-center gap-2">
                   <AlertTriangleIcon size={16} className="text-danger shrink-0" />
                   <span className="font-bold">این کالا در حال حاضر در انبار ناموجود است.</span>
                 </div>
               ) : calc.isExceedingStock ? (
-                <div className="p-3 rounded-xl bg-danger/15 border border-danger/30 text-danger text-xs space-y-1.5">
+                <div className="p-3 rounded-2xl bg-danger/15 text-danger text-xs space-y-1.5">
                   <div className="flex items-center gap-2 font-bold">
                     <AlertTriangleIcon size={16} className="text-danger shrink-0" />
                     <span>موجودی کافی نیست!</span>
@@ -270,16 +270,16 @@ export function OrderEntryModal({
                   <p className="text-xs text-danger leading-relaxed">
                     {calc.errorMessage}
                   </p>
-                  <button
+                  <Button
                     type="button"
                     onClick={() => setRequestedArea(calc.maxDeliverableSqm)}
                     className="text-xs font-bold text-danger underline cursor-pointer"
                   >
                     تنظیم سفارش بر روی حداکثر موجودی ({toPersianDigits(calc.maxDeliverableSqm)})
-                  </button>
+                  </Button>
                 </div>
               ) : (
-                <div className="p-2.5 rounded-xl bg-success/15 border border-success/30 text-success text-xs flex items-center gap-2">
+                <div className="p-2.5 rounded-2xl bg-success/15 text-success text-xs flex items-center gap-2">
                   <CheckCircle2Icon size={16} className="text-success shrink-0" />
                   <span className="font-medium">
                     سهمیه تحویل فوری موجود است ({toPersianDigits(product.stockCartons)} کارتن در انبار).
@@ -289,17 +289,17 @@ export function OrderEntryModal({
 
               {/* Action CTA */}
               <div className="pt-2">
-                <button
+                <Button
                   type="button"
-                  onClick={handleAddToCart}
-                  disabled={isOutOfStock || calc.isExceedingStock || calc.cartonCount <= 0 || isAdding}
-                  className="w-full h-12 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  onPress={handleAddToCart}
+                  isDisabled={isOutOfStock || calc.isExceedingStock || calc.cartonCount <= 0 || isAdding}
+                  className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <ShoppingCartIcon size={18} />
                   <span>
                     افزودن به سبد خرید ({toPersianDigits(calc.cartonCount)} کارتن ({toPersianDigits(calc.deliverableArea)}))
                   </span>
-                </button>
+                </Button>
               </div>
             </HeroUIModal.Body>
           </HeroUIModal.Dialog>

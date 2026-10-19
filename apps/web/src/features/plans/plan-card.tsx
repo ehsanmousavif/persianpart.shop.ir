@@ -129,7 +129,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 <BoxIcon size={15} className="text-primary" />
                 <span>کالاهای طرح</span>
               </span>
-              <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-0.5 rounded-full">
+              <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary">
                 {toPersianDigits(planProducts.length)} محصول
               </span>
             </div>
@@ -154,7 +154,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                       <img
                         src={prod.images[0] || "/assets/images/placeholder.svg"}
                         alt={prod.name}
-                        className="w-12 h-12 rounded-[14px] object-cover shrink-0"
+                        className="size-12 rounded-2xl object-cover shrink-0"
                         onError={(e) => {
                           const target = e.currentTarget;
                           if (
@@ -197,7 +197,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                       <Link
                         to="/product"
                         search={{ productname: prod.slug }}
-                        className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shrink-0 flex items-center justify-center gap-1 shadow-xs cursor-pointer active:scale-95"
+                        className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shrink-0 flex items-center justify-center gap-1 cursor-pointer active:scale-95"
                       >
                         <span>سفارش</span>
                         <ArrowLeftIcon size={12} />
@@ -224,7 +224,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             </span>
             <Link
               to="/product"
-              className="h-9 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shadow-xs shrink-0 cursor-pointer active:scale-95"
+              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
             >
               <span>مشاهده محصولات و ثبت سفارش</span>
               <ArrowLeftIcon size={14} />

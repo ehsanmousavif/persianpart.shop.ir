@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Button } from '@heroui/react'
 import type { Plan, B2BCustomer, Product } from '../../types'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { Modal } from '../../components/ui/modal'
@@ -106,7 +107,7 @@ export function PlanModal({
             <select
               value={customerId}
               onChange={(e) => setCustomerId(e.target.value)}
-              className="w-full h-10 px-3 pe-8 rounded-xl border border-border focus:border-primary text-xs font-bold text-foreground transition-all outline-hidden bg-surface appearance-none cursor-pointer"
+              className="w-full h-10 px-3 pe-8 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs font-bold text-foreground transition-all outline-hidden appearance-none cursor-pointer"
             >
               {customers.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -130,11 +131,11 @@ export function PlanModal({
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             placeholder={defaultDynamicTitle}
-            className="w-full h-10 px-3 rounded-xl border border-border focus:border-primary text-xs font-bold text-foreground transition-all outline-hidden bg-default/10"
+            className="w-full h-10 px-3 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs font-bold text-foreground transition-all outline-hidden"
           />
           <div className="text-xs text-primary mt-1 flex items-center gap-1 font-medium">
             <span>پیش‌نمایش عنوان:</span>
-            <span className="font-bold bg-primary/10 px-1.5 py-0.5 rounded-xl border border-primary/25">
+            <span className="font-bold bg-primary/10 text-primary px-2 py-0.5 rounded-lg text-xs">
               {title || defaultDynamicTitle}
             </span>
           </div>
@@ -146,13 +147,13 @@ export function PlanModal({
             نوع طرح تجاری: <span className="text-danger">*</span>
           </label>
           <div className="grid grid-cols-2 gap-2">
-            <button
+            <Button
               type="button"
               onClick={() => setPlanType('credit_terms')}
-              className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
+              className={`p-3 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'credit_terms'
-                  ? 'border-primary bg-primary/10 text-primary ring-2 ring-primary/20 shadow-xs'
-                  : 'border-border bg-surface text-muted hover:bg-default/15'
+                  ? 'bg-primary/10 text-primary ring-1 ring-primary'
+                  : 'bg-muted/5 text-muted hover:bg-muted/10'
               }`}
             >
               <span className="font-bold text-xs">
@@ -161,15 +162,15 @@ export function PlanModal({
               <span className="text-[11px] font-normal text-muted leading-tight">
                 تعیین مهلت پرداخت مدت‌دار
               </span>
-            </button>
+            </Button>
 
-            <button
+            <Button
               type="button"
               onClick={() => setPlanType('product_discount')}
-              className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
+              className={`p-3 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'product_discount'
-                  ? 'border-success bg-success/15 text-success ring-2 ring-success/20 shadow-xs'
-                  : 'border-border bg-surface text-muted hover:bg-default/15'
+                  ? 'bg-success/15 text-success ring-1 ring-success'
+                  : 'bg-muted/5 text-muted hover:bg-muted/10'
               }`}
             >
               <span className="font-bold text-xs">
@@ -178,18 +179,18 @@ export function PlanModal({
               <span className="text-[11px] font-normal text-muted leading-tight">
                 اعمال درصد تخفیف روی اقلام منتخب
               </span>
-            </button>
+            </Button>
           </div>
         </div>
 
         {/* If product_discount mode: Show Discount Percent setting */}
         {planType === 'product_discount' && (
-          <div className="p-3 bg-success/10 rounded-xl border border-success/30 space-y-2 animate-fade-in">
+          <div className="p-3 bg-success/10 rounded-2xl space-y-2 animate-fade-in">
             <div className="flex items-center justify-between">
               <label className="text-xs font-bold text-success">
                 درصد تخفیف اعمالی روی کالاها:
               </label>
-              <span className="text-xs font-black text-success bg-surface px-2 py-0.5 rounded-lg border border-success/30">
+              <span className="text-xs font-black text-success bg-success/15 px-2 py-0.5 rounded-lg">
                 {toPersianDigits(discountPercent)}٪ تخفیف
               </span>
             </div>
@@ -200,7 +201,7 @@ export function PlanModal({
                 max={50}
                 value={discountPercent}
                 onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                className="flex-1 h-2 bg-success/30 rounded-lg appearance-none cursor-pointer accent-success"
+                className="flex-1 h-2 bg-success/20 rounded-lg appearance-none cursor-pointer accent-success"
               />
               <div className="flex items-center gap-1 shrink-0">
                 <input
@@ -209,7 +210,7 @@ export function PlanModal({
                   max={100}
                   value={discountPercent}
                   onChange={(e) => setDiscountPercent(Number(e.target.value))}
-                  className="w-16 h-8 text-center text-xs font-bold rounded-lg border border-success/30 bg-surface focus:outline-primary"
+                  className="w-16 h-8 text-center text-xs font-bold rounded-lg bg-surface focus:outline-primary"
                 />
                 <span className="text-xs font-bold text-success">٪</span>
               </div>
@@ -235,7 +236,7 @@ export function PlanModal({
                 ? 'مثال: امکان خرید اعتباری با بازپرداخت ۳ ماهه و ارائه چک صیادی...'
                 : 'مثال: به پاس همکاری‌های مستمر، ۱۰٪ تخفیف مازاد برای این اقلام به مدت محدود فعال شد...'
             }
-            className="w-full p-2.5 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-default/10"
+            className="w-full p-2.5 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs text-foreground transition-all outline-hidden"
           />
           <span className="text-xs text-muted mt-0.5 block">
             متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.
@@ -249,22 +250,22 @@ export function PlanModal({
           </label>
           <div className="grid grid-cols-3 gap-2">
             {[
-              { val: 'active', label: 'در حال اجرا', color: 'border-success bg-success/15 text-success' },
-              { val: 'expired', label: 'منقضی شده', color: 'border-warning bg-warning/15 text-warning' },
-              { val: 'draft', label: 'پیش‌نویس', color: 'border-border bg-default/20 text-foreground' },
+              { val: 'active', label: 'در حال اجرا', color: 'bg-success/15 text-success ring-1 ring-success' },
+              { val: 'expired', label: 'منقضی شده', color: 'bg-warning/15 text-warning ring-1 ring-warning' },
+              { val: 'draft', label: 'پیش‌نویس', color: 'bg-muted/10 text-foreground ring-1 ring-muted' },
             ].map((st) => (
-              <button
+              <Button
                 key={st.val}
                 type="button"
                 onClick={() => setStatus(st.val as any)}
-                className={`py-2 px-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${
+                className={`py-2 px-2 rounded-2xl text-xs font-bold transition-all cursor-pointer ${
                   status === st.val
-                    ? `${st.color} shadow-xs font-bold ring-2 ring-offset-1 ring-primary`
-                    : 'border-border bg-surface text-muted hover:bg-default/15'
+                    ? `${st.color} font-bold`
+                    : 'bg-muted/5 text-muted hover:bg-muted/10'
                 }`}
               >
                 {st.label}
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -283,7 +284,7 @@ export function PlanModal({
             این رابطه مستقلاً برای هر طرح تنظیم می‌شود و ارتباطی با تگ‌های عمومی محصول ندارد.
           </span>
 
-          <div className="max-h-48 overflow-y-auto border border-border rounded-xl divide-y divide-separator p-1 bg-surface">
+          <div className="max-h-48 overflow-y-auto rounded-2xl divide-y divide-separator/50 p-1 bg-muted/5">
             {allProducts.map((product) => {
               const isChecked = selectedProductIds.includes(product.id)
               const originalPrice = product.finalCustomerPricePerSqm
@@ -295,8 +296,8 @@ export function PlanModal({
               return (
                 <label
                   key={product.id}
-                  className={`flex items-center gap-2.5 p-2 rounded-lg transition-colors cursor-pointer select-none ${
-                    isChecked ? 'bg-primary/10' : 'hover:bg-default/10'
+                  className={`flex items-center gap-2.5 p-2 rounded-xl transition-colors cursor-pointer select-none ${
+                    isChecked ? 'bg-primary/10' : 'hover:bg-muted/10'
                   }`}
                 >
                   <input
@@ -308,7 +309,7 @@ export function PlanModal({
                   <img
                     src={product.images[0] || '/assets/images/placeholder.svg'}
                     alt={product.name}
-                    className="w-8 h-8 rounded-[10px] object-cover border border-border shrink-0"
+                    className="w-8 h-8 rounded-xl object-cover shrink-0"
                     onError={(e) => {
                       if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
                         e.currentTarget.src = '/assets/images/placeholder.svg'
@@ -358,26 +359,26 @@ export function PlanModal({
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             placeholder="توضیحات و شرایط ویژه طرح..."
-            className="w-full p-2.5 rounded-xl border border-border focus:border-primary text-xs text-foreground transition-all outline-hidden bg-default/10"
+            className="w-full p-2.5 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs text-foreground transition-all outline-hidden"
           />
         </div>
 
         {/* Action Buttons */}
-        <div className="pt-2 grid grid-cols-2 gap-3 border-t border-separator">
-          <button
+        <div className="pt-2 grid grid-cols-2 gap-3">
+          <Button
             type="button"
             onClick={onClose}
-            className="h-10 rounded-xl border border-border hover:bg-default/15 text-foreground text-xs font-bold transition-colors cursor-pointer"
+            className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold transition-colors cursor-pointer"
           >
             انصراف
-          </button>
-          <button
+          </Button>
+          <Button
             type="submit"
-            className="h-10 rounded-xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 shadow-md shadow-primary/20 cursor-pointer"
+            className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 active:scale-98 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
             <CheckIcon size={16} />
             <span>{editingPlan ? 'ذخیره تغییرات' : 'ثبت طرح'}</span>
-          </button>
+          </Button>
         </div>
       </form>
     </Modal>

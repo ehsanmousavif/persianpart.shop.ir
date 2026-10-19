@@ -35,6 +35,7 @@
     "@persianpart/contract": "workspace:*",
     "cross-env": "^7.0.3",
     "dotenv": "^16.4.7",
+    "hono": "^4.13.13",
     "pg": "^8.23.1",
     "zod": "^3.24.2"
   },
