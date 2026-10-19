@@ -1,12 +1,15 @@
 import path from 'node:path'
 import { Hono } from 'hono'
 import type { Context } from 'hono'
+import { HTTPException } from 'hono/http-exception'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import { trimTrailingSlash } from 'hono/trailing-slash'
+import { jwt } from 'hono/jwt'
 import { handler } from './rpc/handler'
 import { createContext } from './rpc/context'
+import { JWT_SECRET } from './lib/jwt'
 
 const PORT = Number(process.env.PORT) || 5175
 const HOSTNAME = process.env.HOST || '0.0.0.0'
@@ -56,7 +59,24 @@ const healthHandler = (c: Context) => {
 app.get('/health', healthHandler)
 app.get('/api/health', healthHandler)
 
-// 2. Media Server Powered by Bun.file()
+// 2. Built-in Hono JWT Protected Endpoint (/api/auth/me)
+app.use(
+  '/api/auth/me',
+  jwt({
+    secret: JWT_SECRET,
+    alg: 'HS256',
+  })
+)
+
+app.get('/api/auth/me', (c) => {
+  const payload = c.get('jwtPayload')
+  return c.json({
+    status: 'authenticated',
+    user: payload,
+  })
+})
+
+// 3. Media Server Powered by Bun.file()
 app.get('/api/media/*', async (c) => {
   const segments = c.req.path.split('/').filter(Boolean)
   const rawFilename = segments[segments.length - 1]
@@ -257,6 +277,15 @@ app.get('/', (c) => {
 
 // 6. Global Error & 404 Handlers
 app.onError((err, c) => {
+  if (err instanceof HTTPException) {
+    return c.json(
+      {
+        error: err.message || 'Unauthorized',
+        status: err.status,
+      },
+      err.status
+    )
+  }
   console.error('[Hono Server Error]:', err)
   return c.json(
     {

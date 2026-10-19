@@ -127,28 +127,6 @@ export async function payloadAuth(headers: Headers | Record<string, string>): Pr
         } as unknown as User
       }
     } catch {
-      // Continue to customer lookup
-    }
-  }
-
-  // 2. Customer Bearer fallback (token as user ID or phone number)
-  if (authHeader?.startsWith('Bearer ')) {
-    const token = authHeader.substring(7).trim()
-    try {
-      const res = await sdk.find({
-        collection: 'users',
-        where: {
-          or: [
-            { id: { equals: isNaN(Number(token)) ? token : Number(token) } },
-            { phone: { equals: token } },
-          ],
-        },
-        limit: 1,
-      })
-      if (res.docs.length > 0) {
-        return res.docs[0]
-      }
-    } catch {
       // Ignored
     }
   }

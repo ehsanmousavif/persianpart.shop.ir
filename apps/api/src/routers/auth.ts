@@ -1,6 +1,7 @@
 import { sdk } from '../payload'
 import { base } from '../rpc/base'
 import { ORPCError } from '@orpc/server'
+import { generateToken } from '../lib/jwt'
 
 const normalizePhone = (p?: string) => {
   if (!p) return ''
@@ -76,8 +77,16 @@ const verifyOtp = base.auth.verifyOtp.handler(async ({ input }) => {
     })
   }
 
+  // Sign cryptographic JWT token via Hono JWT engine
+  const token = await generateToken({
+    id: userDoc.id,
+    phone: userDoc.phone,
+    fullName: userDoc.fullName,
+    role: 'customer',
+  })
+
   return {
-    token: String(userDoc.id),
+    token,
     user: userDoc,
     customer: userDoc,
   }
@@ -153,8 +162,16 @@ const customerVerifyOtp = base.auth.customer.verifyOtp.handler(async ({ input })
     })
   }
 
+  // Sign cryptographic JWT token via Hono JWT engine
+  const token = await generateToken({
+    id: userDoc.id,
+    phone: userDoc.phone,
+    fullName: userDoc.fullName,
+    role: 'customer',
+  })
+
   return {
-    token: String(userDoc.id),
+    token,
     user: userDoc,
     customer: {
       id: String(userDoc.id),
@@ -197,14 +214,24 @@ const customerLogout = base.auth.customer.logout.handler(async () => {
 })
 
 const staffLogin = base.auth.staff.login.handler(async () => {
+  const token = await generateToken({
+    id: 'admin-1',
+    fullName: 'مدیر سیستم',
+    role: 'admin',
+    email: 'admin@persianpart.shop',
+  })
+
   return {
-    token: 'staff-admin-token',
+    token,
     staff: { id: 'admin-1', name: 'مدیر سیستم', role: 'admin' },
   }
 })
 
-const staffMe = base.auth.staff.me.handler(async () => {
-  return { id: 'admin-1', name: 'مدیر سیستم', role: 'admin' }
+const staffMe = base.auth.staff.me.handler(async ({ context }) => {
+  if (!context.user || context.user.role !== 'admin') {
+    return null
+  }
+  return { id: String(context.user.id), name: context.user.fullName || 'مدیر سیستم', role: 'admin' }
 })
 
 const staffLogout = base.auth.staff.logout.handler(async () => {
