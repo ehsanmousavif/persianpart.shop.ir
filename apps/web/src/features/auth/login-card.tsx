@@ -108,20 +108,20 @@ export function LoginCard() {
   }
 
   return (
-    <div className="w-full bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-[0_10px_35px_-10px_rgba(0,0,0,0.06)] dark:shadow-[0_10px_35px_-10px_rgba(0,0,0,0.25)] transition-all">
+    <div className="w-full bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-lg transition-all">
       {/* Brand Header */}
       <div className="flex flex-col items-center text-center mb-6">
         <div className="size-14 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4 p-2.5 shadow-xs">
           <img
             src="/assets/images/persian-part-logo.png"
             alt="پرشین‌پارت"
-            className="size-9 object-contain"
+            className="size-10 object-contain"
           />
         </div>
         <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight">
           ورود به پرشین‌پارت
         </h1>
-        <p className="text-xs text-muted leading-relaxed mt-1.5 max-w-[320px]">
+        <p className="text-xs text-muted leading-relaxed mt-1.5 max-w-xs">
           سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک پرسلان
         </p>
       </div>
@@ -185,13 +185,13 @@ export function LoginCard() {
                   dir="ltr"
                   autoFocus
                   disabled={isLoading}
-                  className="flex-1 h-12 bg-transparent px-2 text-foreground font-bold tracking-widest text-base sm:text-lg text-start outline-hidden"
+                  className="flex-1 h-12 bg-transparent px-2 placeholder:text-sm text-foreground font-bold tracking-widest text-base sm:text-lg text-start outline-hidden"
                 />
                 <span className="pe-3.5 text-xs font-bold text-muted/70 select-none">
                   ۹۸+
                 </span>
               </div>
-              <p className="text-[11px] text-muted font-medium mt-2 text-start leading-relaxed">
+              <p className="text-xs text-muted font-medium mt-2 text-start leading-relaxed">
                 کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال خواهد شد.
               </p>
             </div>
@@ -199,7 +199,7 @@ export function LoginCard() {
             <Button
               type="submit"
               isDisabled={isLoading || phone.length < 10}
-              className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-40"
+              className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-40"
             >
               {isLoading ? (
                 <RefreshCwIcon size={18} className="animate-spin" />
@@ -223,7 +223,7 @@ export function LoginCard() {
             {/* Phone Info Strip */}
             <div className="p-3 bg-muted/10 border border-border/40 rounded-2xl flex items-center justify-between">
               <div className="text-start">
-                <span className="text-[11px] text-muted block">کد تأیید ارسال شد به:</span>
+                <span className="text-xs text-muted block">کد تأیید ارسال شد به:</span>
                 <span className="text-sm font-extrabold text-foreground tracking-wider" dir="ltr">
                   {toPersianDigits(phone)}
                 </span>
@@ -236,7 +236,7 @@ export function LoginCard() {
                 }}
                 className="text-xs font-bold text-primary hover:opacity-80 flex items-center gap-1 cursor-pointer bg-primary/10 hover:bg-primary/15 h-8 px-3 rounded-xl transition-colors"
               >
-                <PencilIcon size={13} />
+                <PencilIcon size={14} />
                 <span>ویرایش شماره</span>
               </Button>
             </div>
@@ -258,23 +258,23 @@ export function LoginCard() {
                   <InputOTP.Group className="gap-2 sm:gap-2.5 flex justify-center">
                     <InputOTP.Slot
                       index={0}
-                      className="size-12 sm:size-13 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
+                      className="size-12 sm:size-14 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
                     />
                     <InputOTP.Slot
                       index={1}
-                      className="size-12 sm:size-13 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
+                      className="size-12 sm:size-14 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
                     />
                     <InputOTP.Slot
                       index={2}
-                      className="size-12 sm:size-13 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
+                      className="size-12 sm:size-14 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
                     />
                     <InputOTP.Slot
                       index={3}
-                      className="size-12 sm:size-13 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
+                      className="size-12 sm:size-14 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
                     />
                     <InputOTP.Slot
                       index={4}
-                      className="size-12 sm:size-13 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
+                      className="size-12 sm:size-14 text-xl font-bold rounded-2xl bg-muted/15 border border-border/50 text-foreground"
                     />
                   </InputOTP.Group>
                 </InputOTP>
@@ -305,7 +305,7 @@ export function LoginCard() {
               type="button"
               onPress={() => handleVerifyOtp()}
               isDisabled={isLoading || otpCode.length !== 5}
-              className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-[0.98] text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-40"
+              className="w-full h-12 rounded-2xl bg-primary hover:bg-primary/90 active:scale-95 text-primary-foreground font-bold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs disabled:opacity-40"
             >
               {isLoading ? (
                 <RefreshCwIcon size={18} className="animate-spin" />
@@ -322,11 +322,11 @@ export function LoginCard() {
 
       {/* Footer B2B Notice */}
       <div className="mt-7 pt-4 border-t border-border/40 text-center">
-        <div className="flex items-center justify-center gap-1.5 text-muted text-[11px] mb-1">
+        <div className="flex items-center justify-center gap-1.5 text-muted text-xs mb-1">
           <ShieldCheckIcon size={14} className="text-primary/70 shrink-0" />
           <span>افتتاح حساب مشتریان جدید منحصراً توسط مدیریت انجام می‌شود.</span>
         </div>
-        <p className="text-[11px] text-muted/70">
+        <p className="text-xs text-muted/70">
           پشتیبانی امور نمایندگان: <span className="font-bold text-foreground/80" dir="ltr">۰۲۱-۸۸۸۸۸۸۸۸</span>
         </p>
       </div>
