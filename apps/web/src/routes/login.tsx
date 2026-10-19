@@ -1,11 +1,5 @@
-import { lazy, Suspense } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
 import { LoginCard } from '../features/auth/login-card'
-import { BorderGlow } from '../components/ui/border-glow'
-
-const GradientWaves = lazy(() =>
-  import('../components/ui/gradient-waves').then((m) => ({ default: m.GradientWaves }))
-)
 
 export const Route = createFileRoute('/login')({
   component: LoginPage,
@@ -13,43 +7,22 @@ export const Route = createFileRoute('/login')({
 
 function LoginPage() {
   return (
-    <div className="relative max-w-2xl mx-auto h-full flex-1 flex items-center justify-center p-4 overflow-hidden bg-background">
-      {/* ReactBits Gradient Waves Background with User Configured Parameters */}
-      <div className="absolute inset-0 z-0 overflow-hidden" aria-hidden="true">
-        <Suspense fallback={null}>
-          <GradientWaves
-            height={15}
-            zoom={0.7}
-            tilt={1}
-            horizonColor="#8e6ee5"
-            waveColor="#ffffff"
-            crestColor="#201a97"
-            waveScale={0.65}
-            amplitude={7}
-            speed={0.12}
-            turbulence={20}
-            swell={8}
-            mouseInteraction={true}
-            className="w-full h-full"
-          />
-        </Suspense>
-      </div>
+    <div className="relative min-h-[calc(100dvh-3.5rem)] w-full flex items-center justify-center p-4 sm:p-6 overflow-hidden bg-background">
+      {/* Subtle architectural ambient gradient */}
+      <div
+        className="absolute top-0 inset-x-0 h-96 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(37,39,69,0.08),transparent)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(120,119,198,0.12),transparent)] pointer-events-none"
+        aria-hidden="true"
+      />
 
-      {/* Login Card with ReactBits BorderGlow */}
-      <div className="relative z-10  max-w-xl flex justify-center shadow-0! pointer-events-auto">
-        <BorderGlow
-          borderRadius={16}
-          backgroundColor="rgba(255, 255, 255, 0.1)"
-          glowColor="243 85 60"
-          colors={['#5955c6', '#1C1696', '#1C1696', '#fff']}
-          edgeSensitivity={30}
-          glowRadius={36}
-          glowIntensity={1.0}
-          animated={true}
-          className="w-full backdrop-blur-md"
-        >
-          <LoginCard />
-        </BorderGlow>
+      {/* Subtle fine grid pattern */}
+      <div
+        className="absolute inset-0 bg-[radial-gradient(#94a3b8_1px,transparent_1px)] [background-size:24px_24px] opacity-10 dark:opacity-8 [mask-image:radial-gradient(ellipse_60%_50%_at_50%_45%,#000_70%,transparent_100%)] pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Centered Login Card */}
+      <div className="relative z-10 w-full max-w-[440px]">
+        <LoginCard />
       </div>
     </div>
   )
