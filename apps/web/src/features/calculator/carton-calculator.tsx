@@ -1,5 +1,5 @@
 import { useState, useId } from 'react'
-import { Button } from '@heroui/react'
+import { Button, InputGroup } from '@heroui/react'
 import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -82,8 +82,8 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
         <label htmlFor={inputId} className="block text-xs font-bold text-foreground mb-1.5 text-start">
           متراژ مورد نیاز (ارسال صرفاً بر اساس متر مربع):
         </label>
-        <div className="relative">
-          <input
+        <InputGroup fullWidth className="h-11 rounded-2xl bg-muted/10 border border-border/40 transition-all">
+          <InputGroup.Input
             id={inputId}
             type="number"
             step="0.1"
@@ -91,12 +91,12 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
             value={requestedArea || ''}
             onChange={(e) => handleAreaChange(e.target.value)}
             placeholder="مثال: ۳۵"
-            className="w-full h-11 px-3.5 rounded-2xl bg-muted/10 text-foreground font-bold text-base text-start transition-all outline-hidden"
+            className="h-11 flex-1 px-3.5 text-foreground font-bold text-base text-start outline-hidden bg-transparent border-0 shadow-none ring-0"
           />
-          <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted pointer-events-none">
+          <InputGroup.Suffix className="pe-3.5 text-xs font-bold text-muted pointer-events-none">
             متر مربع
-          </span>
-        </div>
+          </InputGroup.Suffix>
+        </InputGroup>
 
         {/* Quick Presets for Mobile */}
         <div className="flex flex-wrap items-center gap-1.5 mt-2">

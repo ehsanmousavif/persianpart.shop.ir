@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { motion, AnimatePresence } from 'framer-motion'
-import { InputOTP, Button } from '@heroui/react'
+import { InputOTP, Button, InputGroup } from '@heroui/react'
 
 import { useAuth } from './auth-store'
 import { toast } from '../../components/feedback/toast'
@@ -140,10 +140,10 @@ export function LoginCard() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: -8, height: 0 }}
+      initial={{ opacity: 0.5, y: -8, height: 0 }}
       animate={{ opacity: 1, y: 0, height: 'auto' }}
       exit={{ opacity: 0, y: -8, height: 0 }}
-      transition={{ duration: 0.5, ease: 'backInOut' }}
+      transition={{ duration: 0.5, ease: 'easeIn' }}
       className="mb-5 w-full overflow-hidden"
     >
       <div className="w-full rounded-3xl bg-primary/3 p-6 sm:p-8">
@@ -208,12 +208,12 @@ export function LoginCard() {
                   شماره تلفن همراه
                 </label>
 
-                <div className="relative flex items-center rounded-2xl border border-border/50 bg-muted/10 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
-                  <span className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
+                <InputGroup fullWidth className="h-12 rounded-2xl border border-border/50 bg-muted/10 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+                  <InputGroup.Prefix className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
                     <PhoneIcon size={18} />
-                  </span>
+                  </InputGroup.Prefix>
 
-                  <input
+                  <InputGroup.Input
                     id="phone-input"
                     type="tel"
                     inputMode="numeric"
@@ -236,13 +236,9 @@ export function LoginCard() {
                     dir="ltr"
                     autoFocus
                     disabled={isLoading}
-                    className="h-12 flex-1 bg-transparent px-2 text-start text-base font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm sm:text-lg"
+                    className="h-12 flex-1 bg-transparent px-4 text-start text-base font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm sm:text-lg border-0 ring-0 shadow-none"
                   />
-
-                  <span className="select-none pe-3.5 text-xs font-bold text-muted/70">
-                    ۹۸+
-                  </span>
-                </div>
+                </InputGroup>
 
                 <p className="mt-2 text-start text-xs font-medium leading-relaxed text-muted">
                   کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال خواهد شد.
@@ -302,7 +298,6 @@ export function LoginCard() {
                 </Button>
               </div>
 
-              {/* OTP Inputs */}
               <div>
                 <label className="mb-2.5 block text-start text-xs font-bold text-foreground/80">
                   کد تأیید ۵ رقمی پیامک‌شده
@@ -320,12 +315,12 @@ export function LoginCard() {
                     isDisabled={isLoading}
                     autoFocus
                   >
-                    <InputOTP.Group className="flex justify-center gap-2 sm:gap-2.5">
+                    <InputOTP.Group className="flex justify-center gap-2 sm:gap-2.5 flex-1">
                       {Array.from({ length: 5 }, (_, index) => (
                         <InputOTP.Slot
                           key={index}
                           index={index}
-                          className="size-12 rounded-2xl border border-border/50 bg-muted/15 text-xl font-bold text-foreground sm:size-14"
+                          className="rounded-2xl border border-border/50 bg-muted/15 text-xl font-bold text-foreground sm:size-14"
                         />
                       ))}
                     </InputOTP.Group>

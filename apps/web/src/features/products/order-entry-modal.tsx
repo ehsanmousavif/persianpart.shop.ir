@@ -1,5 +1,5 @@
 import { useState, useId } from 'react'
-import { Modal as HeroUIModal, Button } from '@heroui/react'
+import { Modal as HeroUIModal, Button, InputGroup } from '@heroui/react'
 import type { Product } from '../../types'
 import { calculateCartonRequirement } from '../../lib/utils/math'
 import { formatToman, toPersianDigits } from '../../lib/utils/currency'
@@ -145,8 +145,8 @@ export function OrderEntryModal({
                 <label htmlFor={inputId} className="block text-xs font-bold text-foreground mb-1.5">
                   متراژ درخواستی (ارسال صرفاً بر اساس متر مربع):
                 </label>
-                <div className="relative">
-                  <input
+                <InputGroup fullWidth className="h-12 rounded-2xl bg-muted/5 focus-within:bg-muted/10 transition-all border border-border/40">
+                  <InputGroup.Input
                     id={inputId}
                     type="number"
                     step="0.1"
@@ -154,12 +154,12 @@ export function OrderEntryModal({
                     value={requestedArea || ''}
                     onChange={(e) => handleAreaChange(e.target.value)}
                     placeholder="مثال: ۳۵"
-                    className="w-full h-12 px-3.5 rounded-2xl bg-muted/5 focus:bg-muted/10 text-foreground font-bold text-lg text-start transition-all outline-hidden"
+                    className="h-12 flex-1 px-3.5 text-foreground font-bold text-lg text-start outline-hidden bg-transparent border-0 shadow-none ring-0"
                   />
-                  <span className="absolute end-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-muted pointer-events-none">
+                  <InputGroup.Suffix className="pe-3.5 text-xs font-bold text-muted pointer-events-none">
                     متر مربع
-                  </span>
-                </div>
+                  </InputGroup.Suffix>
+                </InputGroup>
 
                 {/* Quick Add Presets in Meters only */}
                 <div className="flex flex-wrap items-center gap-1.5 mt-2">

@@ -299,9 +299,9 @@ export function ProfileView() {
           </Fieldset>
         </form>
       ) : (
-        /* View Mode Card */
-        <div className="bg-muted/5 rounded-2xl overflow-hidden divide-y divide-separator/50">
-          <div className="p-3.5 sm:p-4 flex items-start gap-3">
+        /* View Mode: Separated Elements with Gap and Individual Radius */
+        <div className="space-y-2.5">
+          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
             <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <span className="text-xs font-semibold text-muted block">نام نماینده / مدیر خرید</span>
@@ -309,7 +309,7 @@ export function ProfileView() {
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 flex items-start gap-3">
+          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
             <StoreIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <span className="text-xs font-semibold text-muted block">عنوان فروشگاه / شرکت حقوقی</span>
@@ -317,7 +317,7 @@ export function ProfileView() {
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 flex items-start justify-start gap-3">
+          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start justify-start gap-3">
             <PhoneIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <div className="flex items-start justify-start">
@@ -329,7 +329,7 @@ export function ProfileView() {
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 flex items-start gap-3">
+          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
             <ShieldCheckIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <span className="text-xs font-semibold text-muted block">شناسه ملی / کد اقتصادی</span>
@@ -339,7 +339,7 @@ export function ProfileView() {
             </div>
           </div>
 
-          <div className="p-3.5 sm:p-4 flex items-start gap-3">
+          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
             <MapPinIcon size={17} className="text-muted mt-0.5 shrink-0" />
             <div className="flex-1 text-start">
               <span className="text-xs font-semibold text-muted block">نشانی انبار یا محل تحویل</span>
@@ -352,14 +352,14 @@ export function ProfileView() {
             </div>
           </div>
 
-          {/* Quick Edit CTA Footer inside View Card */}
-          <div className="p-3 flex items-center justify-between">
+          {/* Quick Edit CTA */}
+          <div className="pt-1">
             <Button
               type="button"
               onPress={handleStartEdit}
-              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs flex items-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+              className="h-12 w-full px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
             >
-              <PencilIcon size={13} />
+              <PencilIcon size={16} />
               <span>ویرایش اطلاعات</span>
             </Button>
           </div>
@@ -385,18 +385,18 @@ export function ProfileView() {
                   آیا از خروج از حساب کاربری همکاران اطمینان دارید؟
                 </p>
               </div>
-              <div className="w-full flex items-center justify-center gap-3 pt-2">
+              <div className="w-full flex items-center justify-center gap-1.5 pt-2">
                 <Button
                   type="button"
                   onPress={() => setShowLogoutConfirm(false)}
-                  className="h-10 px-4 rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
+                  className="h-12  px-4 w-full rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
                 >
                   انصراف
                 </Button>
                 <Button
                   type="button"
                   onPress={handleLogout}
-                  className="h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 font-bold text-xs cursor-pointer transition-all"
+                  className="h-12 px-4 w-full rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 font-bold text-xs cursor-pointer transition-all"
                 >
                   تأیید خروج
                 </Button>

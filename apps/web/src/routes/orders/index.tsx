@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
 import { useWindowVirtualizer } from '@tanstack/react-virtual'
-import { ScrollShadow, Button } from '@heroui/react'
+import { Button } from '@heroui/react'
 import { useOrders } from '../../features/orders/order-store'
 import { ORDER_STATUS_MAP, type OrderStatus, type Order, type Product } from '../../types'
 import { Badge } from '../../components/ui/badge'
@@ -14,6 +14,9 @@ import {
   RefreshCwIcon,
   ArrowLeftIcon,
   TomanIcon,
+  ClockIcon,
+  CheckCircle2Icon,
+  AlertCircleIcon,
 } from '../../components/ui/icons'
 import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
 import { useProducts } from '../../features/products/product-store'
@@ -70,15 +73,16 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
   }
 
   const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0)
+  const totalArea = Math.round(order.items.reduce((s, i) => s + (i.deliverableArea || i.requestedArea || 0), 0) * 100) / 100
 
   return (
     <div
-      className="p-3.5 space-y-3 rounded-2xl bg-muted/5"
+      className="p-4 space-y-3 rounded-2xl bg-muted/5"
     >
       {/* Order Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1.5 rounded-lg bg-muted/10 text-xs font-bold text-foreground flex items-center gap-1">
+          <span className="px-2 py-1.5 rounded-lg bg-muted/5 text-xs font-bold text-foreground flex items-center gap-1">
             <span className="text-muted text-[11px] font-normal">سفارش</span>
             <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
           </span>
@@ -92,15 +96,14 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
         </span>
       </div>
 
-      {/* Items Thumbnails & Specs */}
       <div className="space-y-2.5">
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5">
+        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
           {order.items.map((item, idx) => (
             <img
               key={idx}
               src={item.productImage || '/assets/images/placeholder.svg'}
               alt={item.productName}
-              className="w-12 h-12 rounded-2xl object-cover shrink-0"
+              className="size-12 border border-primary/20 rounded-2xl object-cover shrink-0"
               title={item.productName}
               onError={(e) => {
                 const target = e.currentTarget
@@ -110,13 +113,15 @@ const OrderCard = React.memo(function OrderCard({ order, onReorder }: OrderCardP
               }}
             />
           ))}
-          <div className="ps-1 text-xs text-muted">
+          <div className="ps-1 flex flex-col justify-center text-xs text-muted shrink-0 whitespace-nowrap">
             <span className="font-bold text-foreground block text-xs">
-              {toPersianDigits(order.items.length)} محصول
+              {toPersianDigits(order.items.length)} محصول ({toPersianDigits(totalCartons)} کارتن)
             </span>
-            <span className="text-xs text-muted">
-              {toPersianDigits(totalCartons)} کارتن
-            </span>
+            {totalArea > 0 && (
+              <span className="text-xs text-muted mt-0.5">
+                متراژ کلی: <strong className="font-bold text-foreground">{toPersianDigits(totalArea)}</strong> متر
+              </span>
+            )}
           </div>
         </div>
 
@@ -315,10 +320,10 @@ function OrdersListPage() {
   }, [virtualItems, displayedOrders.length, hasMore, isLoadingMore, filteredOrders.length])
 
   const TABS = [
-    { key: 'all', label: 'همه سفارش‌ها' },
-    { key: 'pending', label: 'در حال بررسی' },
-    { key: 'completed', label: 'تکمیل شده' },
-    { key: 'cancel', label: 'لغو شده' },
+    { key: 'all', label: 'همه سفارش‌ها', icon: PackageIcon },
+    { key: 'pending', label: 'در حال بررسی', icon: ClockIcon },
+    { key: 'completed', label: 'تکمیل شده', icon: CheckCircle2Icon },
+    { key: 'cancel', label: 'لغو شده', icon: AlertCircleIcon },
   ] as const
 
   return (
@@ -334,28 +339,28 @@ function OrdersListPage() {
         </p>
       </div>
 
-      <ScrollShadow orientation="horizontal" className="w-full overflow-x-auto pb-1 scrollbar-none">
-        <div className="flex items-center gap-1.5 min-w-max">
-          {TABS.map((tab) => {
-            const isSelected = selectedStatusTab === tab.key
+      <div className="flex items-center gap-1.5 w-full">
+        {TABS.map((tab) => {
+          const isSelected = selectedStatusTab === tab.key
+          const IconComponent = tab.icon
 
-            return (
-              <Button
-                key={tab.key}
-                type="button"
-                onPress={() => setSelectedStatusTab(tab.key as any)}
-                className={`h-10 w-fit px-4 py-2 text-xs font-bold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 rounded-2xl ${
-                  isSelected
-                        ? "bg-[#252745] text-background"
+          return (
+            <Button
+              key={tab.key}
+              type="button"
+              onPress={() => setSelectedStatusTab(tab.key as any)}
+              className={`h-18 flex-1 aspect-square p-1.5 flex flex-col items-center justify-center gap-1 text-[10.5px] sm:text-xs font-semibold whitespace-nowrap transition-all cursor-pointer shrink-0 active:scale-95 rounded-2xl ${
+                isSelected
+                  ? "bg-[#252745] text-background"
                   : "bg-muted/5 text-muted hover:bg-muted/10 hover:text-foreground"
-                }`}
-              >
-                <span>{tab.label}</span>
-              </Button>
-            )
-          })}
-        </div>
-      </ScrollShadow>
+              }`}
+            >
+              <IconComponent size={24} className={isSelected ? "text-background" : "text-muted"} />
+              <span className="truncate">{tab.label}</span>
+            </Button>
+          )
+        })}
+      </div>
 
       {/* Orders List */}
       {isLoading ? (

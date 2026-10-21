@@ -214,11 +214,11 @@ function ProductListPage() {
       <div className="flex items-center gap-2">
         <div className="relative flex-1 text-base">
           <SearchField name="search">
-            <SearchField.Group className="h-10 border-0 shadow-none bg-muted/5 rounded-2xl px-3 flex items-center">
+            <SearchField.Group className="h-12 border-0 shadow-none bg-muted/5 rounded-2xl px-3 flex items-center">
               <SearchField.SearchIcon />
               <SearchField.Input
                 onChange={(e) => setFilter("searchQuery", e.target.value)}
-                className="w-full text-xs font-medium"
+                className="w-full text-sm font-base placeholder:text-sm"
                 placeholder="جستجو محصولات"
               />
               <SearchField.ClearButton />
@@ -240,9 +240,9 @@ function ProductListPage() {
           onClick={() => setIsFilterOpen(true)}
           aria-label="فیلترهای پیشرفته"
           className={cn(
-            "h-10 px-4 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 cursor-pointer active:scale-95 select-none transition-colors duration-250",
+            "w-auto h-12 px-4 rounded-2xl font-bold text-xs flex items-center justify-center shrink-0 cursor-pointer active:scale-95 select-none transition-colors duration-250",
             activeFilterCount > 0
-              ? "bg-[#252745] text-background"
+              ? "bg-[#252745] text-"
               : "bg-muted/5 text-muted hover:bg-default/20 hover:text-foreground",
           )}
         >
@@ -286,7 +286,7 @@ function ProductListPage() {
                 exit="exit"
                 className="overflow-hidden flex items-center justify-center shrink-0 whitespace-nowrap"
               >
-                <span className="min-w-4.5 h-4.5 px-1 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shrink-0 select-none">
+                <span className="min-w-4.5 h-4.5  rounded-full bg-white text-primary text-xs font-bold flex items-center justify-center shrink-0 select-none">
                   <motion.span
                     key={activeFilterCount}
                     initial={{ scale: 0.6, opacity: 0 }}
@@ -354,17 +354,19 @@ function ProductListPage() {
       />
 
       {/* Status & Active Count */}
-      <div className="flex items-center justify-between gap-2 px-1 py-1 flex-wrap sm:flex-nowrap">
+      <div className="flex items-center justify-between gap-2 mt-2 px-1 py-1 min-h-7 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-bold text-foreground">
+          <span className="text-sm font-bold text-foreground leading-5">
             لیست محصولات
           </span>
 
           {activeFilterCount > 0 && (
             <Button
               type="button"
+              size="sm"
+              variant="ghost"
               onClick={resetFilters}
-              className="text-xs font-semibold text-background  cursor-pointer"
+              className="text-xs font-semibold m-0! p-0! px-1.5! h-5! min-h-0! bg-transparent! text-primary cursor-pointer hover:bg-transparent! hover:opacity-80 transition-opacity"
             >
               پاک کردن فیلترها ({toPersianDigits(activeFilterCount)})
             </Button>

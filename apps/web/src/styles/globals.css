@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "@heroui/styles";
-@import "@fontsource-variable/vazirmatn";
 
 
 
@@ -63,10 +62,10 @@ body,
 
 @theme {
   --font-sans:
-    "Vazirmatn Variable", "Vazirmatn", -apple-system, BlinkMacSystemFont,
+    "Vazirmatn", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   --font-body:
-    "Vazirmatn Variable", "Vazirmatn", -apple-system, BlinkMacSystemFont,
+    "Vazirmatn", -apple-system, BlinkMacSystemFont,
     "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 
   /* HeroUI Semantic Color Tokens */

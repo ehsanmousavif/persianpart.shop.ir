@@ -351,26 +351,15 @@ function ProductNewConfigurationPage() {
                     </I18nProvider>
                   </div>
 
-                  {/* Presets */}
-                  <div className="flex justify-between items-center text-xs text-foreground font-bold px-0.5">
-                    <Button
-                      type="button"
-                      onClick={() =>
-                        handleAreaChange(product.id, 0, maxInventory)
-                      }
-                      className="px-2 py-1.5 mt-2 aspect-square hover:text-foreground transition-colors cursor-pointer"
-                    >
-                      ۰
-                    </Button>
-                    <Button
-                      type="button"
+                  <div className="flex justify-between rounded-lg mt-4 items-center text-xs text-foreground font-bold px-0.5">
+                    <div
                       onClick={() =>
                         handleAreaChange(product.id, maxInventory, maxInventory)
                       }
-                      className="px-2 py-1.5 hover:text-foreground  cursor-pointer"
+                      className="px-2 py-3 rounded-lg bg-primary text-primary-foreground cursor-pointer"
                     >
                       سقف موجودی: {toPersianDigits(maxInventory)}
-                    </Button>
+                    </div>
                   </div>
                 </div>
               </div>

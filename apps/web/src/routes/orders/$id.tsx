@@ -345,6 +345,10 @@ function OrderDetailPage() {
           <span>اقلام سفارش</span>
           <span className="text-xs text-muted font-normal">
             {toPersianDigits(order.items.length)} کالا انتخاب شده
+            {(() => {
+              const totalArea = Math.round(order.items.reduce((s, i) => s + (i.deliverableArea || i.requestedArea || 0), 0) * 100) / 100;
+              return totalArea > 0 ? ` • متراژ کلی: ${toPersianDigits(totalArea)} متر` : '';
+            })()}
           </span>
         </h3>
 
@@ -382,7 +386,7 @@ function OrderDetailPage() {
                     <span>{toPersianDigits(item.dimension)}</span>
                   </div>
                   <div className="text-xs text-muted mt-1">
-                    متراژ تحویلی: <strong>{toPersianDigits(item.deliverableArea)}</strong> ({toPersianDigits(item.cartonCount)} کارتن)
+                    متراژ کلی: <strong>{toPersianDigits(item.deliverableArea || item.requestedArea)}</strong> متر ({toPersianDigits(item.cartonCount)} کارتن)
                   </div>
                 </div>
               </div>

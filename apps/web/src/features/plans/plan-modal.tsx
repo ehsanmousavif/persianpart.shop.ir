@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Button } from '@heroui/react'
+import { Button, Input } from '@heroui/react'
 import type { Plan, B2BCustomer, Product } from '../../types'
 import { toPersianDigits, formatToman } from '../../lib/utils/currency'
 import { Modal } from '../../components/ui/modal'
@@ -27,7 +27,7 @@ export function PlanModal({
   const [customerId, setCustomerId] = useState(customers[0]?.id || '')
   const [planType, setPlanType] = useState<'credit_terms' | 'product_discount'>('credit_terms')
   const [discountPercent, setDiscountPercent] = useState<number>(10)
-  const [status, setStatus] = useState<'active' | 'expired' | 'draft'>('active')
+  const [status, setStatus] = useState<'active' | 'expired' | 'draft' | 'completed' | 'successful'>('active')
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
   const [notes, setNotes] = useState('')
 
@@ -126,7 +126,8 @@ export function PlanModal({
           <label className="block text-xs font-bold text-foreground mb-1">
             عنوان طرح (اختیاری):
           </label>
-          <input
+          <Input
+            fullWidth
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -204,7 +205,7 @@ export function PlanModal({
                 className="flex-1 h-2 bg-success/20 rounded-lg appearance-none cursor-pointer accent-success"
               />
               <div className="flex items-center gap-1 shrink-0">
-                <input
+                <Input
                   type="number"
                   min={1}
                   max={100}

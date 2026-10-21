@@ -22,7 +22,7 @@ export interface Plan {
   discountPercent?: number
   discountAmount?: number
   isActive: boolean
-  status?: 'active' | 'expired' | 'draft'
+  status?: 'active' | 'expired' | 'draft' | 'completed' | 'successful'
   content?: string
   productIds: string[]
   notes?: string

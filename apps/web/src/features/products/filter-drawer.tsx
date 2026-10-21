@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Drawer, Dropdown, ButtonGroup, Button, Label } from "@heroui/react";
+import { Drawer, Dropdown, ButtonGroup, Button, Label, Switch } from "@heroui/react";
 import { StarIcon } from "@solar-icons/react/Bold";
 import { useProducts } from "./product-store";
 import {
@@ -86,7 +86,7 @@ export function FilterDrawer({
 
             <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
               <Drawer.Heading className="text-sm font-extrabold text-foreground flex items-center gap-2">
-                <span> و مرتب‌سازی</span>
+                <span> مرتب‌سازی</span>
               </Drawer.Heading>
 
               <Button
@@ -102,38 +102,33 @@ export function FilterDrawer({
             {/* Body */}
             <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-thin">
               {/* Only In Stock */}
-              <div className="py-2.5 px-4 rounded-2xl bg-muted/5 flex items-center justify-between">
+              <div
+                className="py-2.5 px-4 rounded-2xl bg-muted/5 flex items-center justify-between cursor-pointer select-none"
+                onClick={() => setFilter("onlyInStock", !filters.onlyInStock)}
+              >
                 <div>
                   <span className="text-xs font-black text-foreground block">
                     فقط کالاهای موجود
                   </span>
-                  <span className="text-[11px] text-muted font-medium block mt-0.5">
+                  <span className="text-xs text-muted font-medium block mt-0.5">
                     عدم نمایش کالاهای ناموجود در انبار
                   </span>
                 </div>
 
-                <Button
-                  type="button"
-                  aria-label="فقط کالاهای موجود"
-                  onPress={() =>
-                    setFilter("onlyInStock", !filters.onlyInStock)
+                <Switch
+                  isSelected={filters.onlyInStock}
+                  onChange={(isSelected) =>
+                    setFilter("onlyInStock", isSelected)
                   }
-                  className={cn(
-                    "w-14 h-7.5 rounded-full transition-colors duration-200 relative cursor-pointer p-0.5 shrink-0",
-                    filters.onlyInStock
-                      ? "bg-primary ring-2 ring-primary/40"
-                      : "bg-default/70 hover:bg-default/90",
-                  )}
+                  aria-label="فقط کالاهای موجود"
+                  className="rounded-full"  
                 >
-                  <span
-                    className={cn(
-                      "w-6.5 h-6.5 rounded-full bg-white transition-transform duration-200 block",
-                      filters.onlyInStock
-                        ? "-translate-x-6.5"
-                        : "translate-x-0",
-                    )}
-                  />
-                </Button>
+                  <Switch.Content className="rounded-full">
+                    <Switch.Control className="rounded-full">
+                      <Switch.Thumb className="rounded-full" />
+                    </Switch.Control>
+                  </Switch.Content>
+                </Switch>
               </div>
 
               {/* Sorting */}
@@ -292,8 +287,8 @@ export function FilterDrawer({
                   </label>
                 </div>
 
-                <ButtonGroup className="w-full rounded-2xl overflow-hidden bg-muted/5 p-1 gap-1 flex">
-                  {AVAILABLE_GRADES.map((grade) => {
+                <ButtonGroup className="w-full rounded-2xl overflow-hidden bg-muted/5 p-0 gap-0 flex border border-border/30">
+                  {AVAILABLE_GRADES.map((grade, index) => {
                     const isSelected = filters.selectedGrades.includes(grade);
 
                     return (
@@ -304,7 +299,9 @@ export function FilterDrawer({
                           toggleArrayFilter("selectedGrades", grade)
                         }
                         className={cn(
-                          "flex-1 h-10 px-1 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer",
+                          "flex-1 h-10 px-1 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer rounded-none border-none",
+                          index === 0 && "rounded-s-2xl",
+                          index === AVAILABLE_GRADES.length - 1 && "rounded-e-2xl",
                           isSelected
                             ? "bg-primary text-primary-foreground font-black"
                             : "bg-transparent hover:bg-default/15 text-foreground",
@@ -331,7 +328,7 @@ export function FilterDrawer({
               <Button
                 type="button"
                 onClick={resetFilters}
-                className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="h-10 w-full px-4 rounded-2xl bg-muted/10 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <RefreshCwIcon size={14} />
                 <span>پاک کردن</span>
@@ -340,7 +337,7 @@ export function FilterDrawer({
               <Button
                 type="button"
                 onClick={onClose}
-                className="h-10 px-4 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="h-10 px-4 w-full rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <span>
                   مشاهده نتایج ({toPersianDigits(hook.products.length)})

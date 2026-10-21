@@ -1,4 +1,5 @@
 import path from 'node:path'
+import { existsSync, mkdirSync } from 'node:fs'
 import { Hono } from 'hono'
 import type { Context } from 'hono'
 import { HTTPException } from 'hono/http-exception'
@@ -15,15 +16,18 @@ const PORT = Number(process.env.PORT) || 5175
 const HOSTNAME = process.env.HOST || '0.0.0.0'
 const CMS_ORIGIN = process.env.CMS_URL || 'http://localhost:5174'
 
-// Candidate directories for media assets
-const candidateMediaDirs = [
-  path.resolve(import.meta.dir, '../../cms/media'),
-  path.resolve(import.meta.dir, '../../web/public/assets/images'),
-  path.resolve(import.meta.dir, '../media'),
-  path.resolve(process.cwd(), 'apps/cms/media'),
-  path.resolve(process.cwd(), 'apps/web/public/assets/images'),
-  path.resolve(process.cwd(), 'media'),
-]
+// Canonical Media Storage Directory (Single Source of Truth for Nginx & API)
+export const MEDIA_DIR = process.env.MEDIA_DIR
+  ? path.resolve(process.env.MEDIA_DIR)
+  : path.resolve(import.meta.dir, '../../cms/media')
+
+if (!existsSync(MEDIA_DIR)) {
+  try {
+    mkdirSync(MEDIA_DIR, { recursive: true })
+  } catch (err) {
+    console.warn(`[Media Server] Could not create MEDIA_DIR: ${MEDIA_DIR}`, err)
+  }
+}
 
 // Initialize Hono Application
 export const app = new Hono()
@@ -76,7 +80,44 @@ app.get('/api/auth/me', (c) => {
   })
 })
 
-// 3. Media Server Powered by Bun.file()
+// 3. Media Upload Endpoint (Direct multipart/form-data upload to MEDIA_DIR)
+app.post('/api/media/upload', async (c) => {
+  try {
+    const formData = await c.req.parseBody()
+    const file = formData['file']
+    if (!file || !(file instanceof File)) {
+      return c.json({ error: 'فایل معتبری برای آپلود ارسال نشده است (پارامتر file).' }, 400)
+    }
+
+    // Sanitize extension and filename
+    const ext = path.extname(file.name).toLowerCase()
+    const safeExts = ['.jpg', '.jpeg', '.png', '.webp', '.svg', '.gif', '.avif']
+    if (!safeExts.includes(ext)) {
+      return c.json({ error: `فرمت فایل مجاز نیست. فرمت‌های مجاز: ${safeExts.join(', ')}` }, 400)
+    }
+
+    const baseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_\-\u0600-\u06FF]/g, '_')
+    const uniqueFilename = `${baseName}-${Date.now()}${ext}`
+    const targetFilePath = path.join(MEDIA_DIR, uniqueFilename)
+
+    // Save directly to the canonical media directory
+    const arrayBuffer = await file.arrayBuffer()
+    await Bun.write(targetFilePath, arrayBuffer)
+
+    return c.json({
+      success: true,
+      filename: uniqueFilename,
+      url: `/api/media/file/${uniqueFilename}`,
+      size: file.size,
+      mimeType: file.type,
+    }, 201)
+  } catch (err) {
+    console.error('[Media Upload Error]:', err)
+    return c.json({ error: 'خطا در ذخیره‌سازی فایل روی سرور' }, 500)
+  }
+})
+
+// 4. Media Server (Fallback when Nginx is bypassed in local dev)
 app.get('/api/media/*', async (c) => {
   const segments = c.req.path.split('/').filter(Boolean)
   const rawFilename = segments[segments.length - 1]
@@ -86,19 +127,32 @@ app.get('/api/media/*', async (c) => {
 
   // Prevent path traversal attacks
   const filename = path.basename(decodeURIComponent(rawFilename))
+  const filePath = path.join(MEDIA_DIR, filename)
+  const file = Bun.file(filePath)
 
-  for (const dir of candidateMediaDirs) {
-    const candidatePath = path.join(dir, filename)
-    const file = Bun.file(candidatePath)
-    if (await file.exists()) {
-      return new Response(file, {
-        status: 200,
-        headers: {
-          'Cache-Control': 'public, max-age=31536000, immutable',
-          'Access-Control-Allow-Origin': '*',
-        },
-      })
-    }
+  if (await file.exists()) {
+    return new Response(file, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': file.type || 'application/octet-stream',
+      },
+    })
+  }
+
+  // Fallback for static image assets in web/public
+  const webPublicFallback = path.resolve(import.meta.dir, '../../web/public/assets/images', filename)
+  const fallbackFile = Bun.file(webPublicFallback)
+  if (await fallbackFile.exists()) {
+    return new Response(fallbackFile, {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': fallbackFile.type || 'application/octet-stream',
+      },
+    })
   }
 
   return c.text('File Not Found', 404)
@@ -145,135 +199,7 @@ const openApiHandler = async (c: Context) => {
 app.all('/api/openapi', openApiHandler)
 app.all('/api/openapi/*', openApiHandler)
 
-// 5. Root Status & Dashboard Landing Page
-app.get('/', (c) => {
-  const html = `<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>سرویس API پرشین پارت (Hono + Bun)</title>
-  <style>
-    body {
-      font-family: system-ui, -apple-system, sans-serif;
-      max-width: 680px;
-      margin: 40px auto;
-      padding: 0 20px;
-      line-height: 1.7;
-      color: #0f172a;
-      background: #f8fafc;
-    }
-    .card {
-      background: white;
-      border: 1px solid #e2e8f0;
-      border-radius: 20px;
-      padding: 28px;
-      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.05);
-    }
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #f1f5f9;
-      padding-bottom: 16px;
-      margin-bottom: 20px;
-    }
-    h1 {
-      font-size: 22px;
-      margin: 0;
-      color: #0f172a;
-    }
-    .badges {
-      display: flex;
-      gap: 8px;
-    }
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 4px 12px;
-      border-radius: 9999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-    .badge-hono {
-      background: #fff7ed;
-      color: #ea580c;
-      border: 1px solid #fed7aa;
-    }
-    .badge-bun {
-      background: #ecfdf5;
-      color: #047857;
-      border: 1px solid #a7f3d0;
-    }
-    p {
-      color: #475569;
-      font-size: 14px;
-      margin-bottom: 24px;
-    }
-    h2 {
-      font-size: 16px;
-      margin-bottom: 12px;
-      color: #1e293b;
-    }
-    ul {
-      padding-right: 20px;
-      margin: 0;
-      color: #334155;
-      font-size: 13.5px;
-    }
-    li {
-      margin-bottom: 10px;
-    }
-    code {
-      background: #f1f5f9;
-      color: #0284c7;
-      padding: 3px 8px;
-      border-radius: 6px;
-      font-size: 12.5px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      direction: ltr;
-      display: inline-block;
-    }
-    .footer {
-      margin-top: 24px;
-      padding-top: 16px;
-      border-top: 1px solid #f1f5f9;
-      font-size: 12px;
-      color: #94a3b8;
-      display: flex;
-      justify-content: space-between;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <div class="header">
-      <h1>سرویس API پرشین پارت</h1>
-      <div class="badges">
-        <span class="badge badge-hono">🔥 Hono v4</span>
-        <span class="badge badge-bun">⚡ Bun v${Bun.version}</span>
-      </div>
-    </div>
-    <p>
-      این سرویس با معماری فوق‌سریع بر پایه فریم‌ورک استاندارد وب <strong>Hono</strong>، ران‌تایم مدرن <strong>Bun</strong> و لایه ارتباطی تایپ‌سیف <strong>oRPC v2</strong> پیکربندی شده است.
-    </p>
-    <h2>اندپوینت‌های فعال:</h2>
-    <ul>
-      <li><strong>oRPC API:</strong> <code>/api/rpc</code> (فراخوانی متدهای تایپ‌سیف کاتالوگ، سفارشات، سبد و احراز هویت)</li>
-      <li><strong>Media Server:</strong> <code>/api/media/:filename</code> (سرو استریمینگ بومی رسانه‌ها با Bun.file)</li>
-      <li><strong>OpenAPI REST:</strong> <code>/api/openapi</code> (هدایت درخواست‌ها به پایگاه داده و CMS)</li>
-      <li><strong>Health Check:</strong> <code>/health</code> و <code>/api/health</code> (بررسی وضعیت زنده سرور)</li>
-    </ul>
-    <div class="footer">
-      <span>PersianPart 2.0 API Server</span>
-      <span>Port: ${PORT}</span>
-    </div>
-  </div>
-</body>
-</html>`
-  return c.html(html)
-})
+
 
 // 6. Global Error & 404 Handlers
 app.onError((err, c) => {
