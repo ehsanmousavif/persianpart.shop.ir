@@ -8,9 +8,8 @@ const list = base.plan.list.handler(async ({ input, context }) => {
     where.status = { equals: input.status }
   }
 
-  const targetUserId = input?.userId || context.user?.id
-  if (targetUserId) {
-    where.users = { contains: targetUserId }
+  if (input?.userId) {
+    where.users = { contains: input.userId }
   }
 
   const result = await sdk.find({
@@ -95,6 +94,7 @@ const create = base.plan.create.handler(async ({ input }) => {
       discountAmount: input.discountAmount,
       status: input.status,
       products: input.products ? input.products.map((p: any) => Number(p)) : null,
+      hasTimer: Boolean(input.hasTimer),
       expiresAt: input.expiresAt,
     },
     depth: 2,

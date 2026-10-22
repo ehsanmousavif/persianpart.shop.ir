@@ -25,11 +25,13 @@ export function PlanModal({
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [customerId, setCustomerId] = useState(customers[0]?.id || '')
-  const [planType, setPlanType] = useState<'credit_terms' | 'product_discount'>('credit_terms')
+  const [planType, setPlanType] = useState<'credit_terms' | 'product_discount' | 'informational'>('credit_terms')
   const [discountPercent, setDiscountPercent] = useState<number>(10)
   const [status, setStatus] = useState<'active' | 'expired' | 'draft' | 'completed' | 'successful'>('active')
   const [selectedProductIds, setSelectedProductIds] = useState<string[]>([])
   const [notes, setNotes] = useState('')
+  const [hasTimer, setHasTimer] = useState(false)
+  const [expiresAt, setExpiresAt] = useState('')
 
   useEffect(() => {
     if (editingPlan) {
@@ -41,6 +43,8 @@ export function PlanModal({
       setStatus(editingPlan.status || (editingPlan.isActive ? 'active' : 'expired'))
       setSelectedProductIds(editingPlan.productIds)
       setNotes(editingPlan.notes || '')
+      setHasTimer(Boolean(editingPlan.hasTimer))
+      setExpiresAt(editingPlan.expiresAt || '')
     } else {
       setTitle('')
       setContent('')
@@ -50,6 +54,8 @@ export function PlanModal({
       setStatus('active')
       setSelectedProductIds(['prod-9', 'prod-1'])
       setNotes('')
+      setHasTimer(false)
+      setExpiresAt('')
     }
   }, [editingPlan, customers, isOpen])
 
@@ -86,6 +92,8 @@ export function PlanModal({
       content: content.trim(),
       productIds: selectedProductIds,
       notes: notes.trim(),
+      hasTimer,
+      expiresAt: hasTimer && expiresAt ? expiresAt : undefined,
     })
     onClose()
   }
@@ -142,16 +150,16 @@ export function PlanModal({
           </div>
         </div>
 
-        {/* Plan Type Selector (Credit Terms vs Product Discount) */}
+        {/* Plan Type Selector (Credit Terms vs Product Discount vs Informational) */}
         <div>
           <label className="block text-xs font-bold text-foreground mb-1.5">
             نوع طرح تجاری: <span className="text-danger">*</span>
           </label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Button
               type="button"
               onClick={() => setPlanType('credit_terms')}
-              className={`p-3 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
+              className={`p-2.5 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'credit_terms'
                   ? 'bg-primary/10 text-primary ring-1 ring-primary'
                   : 'bg-muted/5 text-muted hover:bg-muted/10'
@@ -160,25 +168,42 @@ export function PlanModal({
               <span className="font-bold text-xs">
                 خرید اعتباری
               </span>
-              <span className="text-[11px] font-normal text-muted leading-tight">
-                تعیین مهلت پرداخت مدت‌دار
+              <span className="text-[10px] font-normal text-muted leading-tight">
+                مهلت مدت‌دار
               </span>
             </Button>
 
             <Button
               type="button"
               onClick={() => setPlanType('product_discount')}
-              className={`p-3 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
+              className={`p-2.5 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
                 planType === 'product_discount'
                   ? 'bg-success/15 text-success ring-1 ring-success'
                   : 'bg-muted/5 text-muted hover:bg-muted/10'
               }`}
             >
               <span className="font-bold text-xs">
-                تخفیف کالاها
+                تخفیف کالا
               </span>
-              <span className="text-[11px] font-normal text-muted leading-tight">
-                اعمال درصد تخفیف روی اقلام منتخب
+              <span className="text-[10px] font-normal text-muted leading-tight">
+                درصد مازاد
+              </span>
+            </Button>
+
+            <Button
+              type="button"
+              onClick={() => setPlanType('informational')}
+              className={`p-2.5 rounded-2xl text-xs font-bold transition-all text-start flex flex-col gap-1 cursor-pointer ${
+                planType === 'informational'
+                  ? 'bg-amber-500/15 text-amber-600 ring-1 ring-amber-500'
+                  : 'bg-muted/5 text-muted hover:bg-muted/10'
+              }`}
+            >
+              <span className="font-bold text-xs">
+                اطلاع‌رسانی
+              </span>
+              <span className="text-[10px] font-normal text-muted leading-tight">
+                اعلامیه و زنگ
               </span>
             </Button>
           </div>
@@ -269,6 +294,41 @@ export function PlanModal({
               </Button>
             ))}
           </div>
+        </div>
+
+        {/* Timer Configuration (Optional Boolean + Expiry Date) */}
+        <div className="p-3 bg-muted/5 border border-border/40 rounded-2xl space-y-2.5">
+          <label className="flex items-center gap-2 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={hasTimer}
+              onChange={(e) => setHasTimer(e.target.checked)}
+              className="size-4 rounded accent-primary cursor-pointer"
+            />
+            <span className="text-xs font-bold text-foreground">
+              فعال‌سازی تایمر شمارش معکوس
+            </span>
+          </label>
+          <p className="text-[11px] text-muted leading-tight">
+            در صورت فعال بودن، زمان معکوس باقی‌مانده بالای آیکون طرح نمایش داده می‌شود.
+          </p>
+
+          {hasTimer && (
+            <div className="pt-1.5 space-y-1">
+              <label className="block text-xs font-bold text-foreground">
+                تاریخ و زمان انقضای طرح: <span className="text-danger">*</span>
+              </label>
+              <Input
+                fullWidth
+                type="datetime-local"
+                value={expiresAt ? expiresAt.substring(0, 16) : ''}
+                onChange={(e) =>
+                  setExpiresAt(e.target.value ? new Date(e.target.value).toISOString() : '')
+                }
+                className="w-full h-10 px-3 rounded-2xl bg-muted/10 text-xs font-bold text-foreground transition-all outline-hidden"
+              />
+            </div>
+          )}
         </div>
 
         {/* Products in Plan Selection (Independent Relation from Tags) */}

@@ -6,7 +6,7 @@ import { EntityIdSchema } from './common'
 export const PlanStatusSchema = z.enum(['active', 'expired', 'draft'])
 export type PlanStatus = z.infer<typeof PlanStatusSchema>
 
-export const PlanTypeSchema = z.enum(['credit_terms', 'product_discount'])
+export const PlanTypeSchema = z.enum(['credit_terms', 'product_discount', 'informational'])
 export type PlanType = z.infer<typeof PlanTypeSchema>
 
 export const PlanSchema = z.object({
@@ -21,6 +21,7 @@ export const PlanSchema = z.object({
   discountAmount: z.number().optional(),
   status: PlanStatusSchema.default('active'),
   products: z.array(z.union([z.number(), z.string(), z.record(z.unknown())])).optional(),
+  hasTimer: z.boolean().default(false).optional(),
   expiresAt: z.string().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
@@ -55,6 +56,7 @@ export const CreatePlanInputSchema = z.object({
   discountAmount: z.number().optional(),
   status: PlanStatusSchema.default('active'),
   products: z.array(z.union([z.number(), z.string()])).optional(),
+  hasTimer: z.boolean().default(false).optional(),
   expiresAt: z.string().optional(),
 })
 
@@ -70,6 +72,7 @@ export const UpdatePlanInputSchema = z.object({
   discountAmount: z.number().optional(),
   status: PlanStatusSchema.optional(),
   products: z.array(z.union([z.number(), z.string()])).optional(),
+  hasTimer: z.boolean().optional(),
   expiresAt: z.string().optional(),
 })
 

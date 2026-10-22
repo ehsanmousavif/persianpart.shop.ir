@@ -148,6 +148,10 @@ export const Plans: CollectionConfig = {
           label: 'تخفیف روی کالاها',
           value: 'product_discount',
         },
+        {
+          label: 'اطلاع‌رسانی و اعلامیه ویژه',
+          value: 'informational',
+        },
       ],
     },
     {
@@ -204,10 +208,21 @@ export const Plans: CollectionConfig = {
       label: 'محصولات شامل طرح',
     },
     {
+      name: 'hasTimer',
+      type: 'checkbox',
+      label: 'فعال‌سازی تایمر شمارش معکوس',
+      defaultValue: false,
+      admin: {
+        description: 'در صورت فعال بودن، شمارش معکوس زمان باقی‌مانده بالای آیکون طرح نمایش داده می‌شود.',
+      },
+    },
+    {
       name: 'expiresAt',
       type: 'date',
-      label: 'مهلت انقضا',
+      label: 'مهلت انقضا و زمان پایان تایمر',
       admin: {
+        condition: (data) => Boolean(data?.hasTimer),
+        description: 'تاریخ و ساعت پایان طرح که تایمر معکوس بر اساس آن شمارش می‌کند.',
         date: {
           pickerAppearance: 'dayAndTime',
         },

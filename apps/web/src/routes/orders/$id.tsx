@@ -1,14 +1,22 @@
-import { useState, useEffect, useMemo } from 'react'
-import { createFileRoute, Link, useNavigate } from '@tanstack/react-router'
-import { Modal as HeroUIModal, Button, cn } from '@heroui/react'
-import { useOrders, buildFullOrderTimeline } from '../../features/orders/order-store'
-import { ORDER_STATUS_MAP, type Order, type OrderItem, type Product } from '../../types'
-import { OrderTimeline } from '../../features/orders/order-timeline'
-import { Badge } from '../../components/ui/badge'
-import { formatToman, toPersianDigits } from '../../lib/utils/currency'
-import { formatPersianDate } from '../../lib/utils/date'
-import { toast } from '../../components/feedback/toast'
-import { OrderDetailSkeleton } from '../../components/ui/skeleton'
+import { useState, useEffect, useMemo } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { Modal as HeroUIModal, Button, cn } from "@heroui/react";
+import {
+  useOrders,
+  buildFullOrderTimeline,
+} from "../../features/orders/order-store";
+import {
+  ORDER_STATUS_MAP,
+  type Order,
+  type OrderItem,
+  type Product,
+} from "../../types";
+import { OrderTimeline } from "../../features/orders/order-timeline";
+import { Badge } from "../../components/ui/badge";
+import { formatToman, toPersianDigits } from "../../lib/utils/currency";
+import { formatPersianDate } from "../../lib/utils/date";
+import { toast } from "../../components/feedback/toast";
+import { OrderDetailSkeleton } from "../../components/ui/skeleton";
 import {
   ArrowRightIcon,
   RefreshCwIcon,
@@ -20,151 +28,167 @@ import {
   ClockIcon,
   TomanIcon,
   PencilIcon,
-} from '../../components/ui/icons'
-import { PreInvoiceModal } from '../../features/checkout/pre-invoice-modal'
-import { useProducts } from '../../features/products/product-store'
-import { selectionStore } from '../../features/products/selection-store'
+} from "../../components/ui/icons";
+import { PreInvoiceModal } from "../../features/checkout/pre-invoice-modal";
+import { useProducts } from "../../features/products/product-store";
+import { selectionStore } from "../../features/products/selection-store";
 
-export const Route = createFileRoute('/orders/$id')({
+export const Route = createFileRoute("/orders/$id")({
   loader: async ({ params }) => {
-    return { orderId: params.id }
+    return { orderId: params.id };
   },
   component: OrderDetailPage,
-})
+});
 
 function cleanOrderNumber(orderNumber: string): string {
-  if (!orderNumber) return ''
-  const stripped = orderNumber.replace(/^PP-/, '')
+  if (!orderNumber) return "";
+  const stripped = orderNumber.replace(/^PP-/, "");
   if (/^\d{10,}$/.test(stripped)) {
-    return stripped.slice(-6)
+    return stripped.slice(-6);
   }
-  return stripped
+  return stripped;
 }
 
 function OrderDetailPage() {
-  const { orderId } = Route.useLoaderData()
-  const navigate = useNavigate()
-  const {
-    getOrderById,
-    fetchOrderById,
-    cancelOrder,
-    orders,
-  } = useOrders()
-  const { allProducts } = useProducts()
-  const [showCancelModal, setShowCancelModal] = useState(false)
-  const [cancelReason, setCancelReason] = useState('تغییر در متراژ یا اقلام سفارش')
-  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false)
-  const [order, setOrder] = useState<Order | null>(() => getOrderById(orderId) || null)
-  const [isLoading, setIsLoading] = useState(!order)
+  const { orderId } = Route.useLoaderData();
+  const navigate = useNavigate();
+  const { getOrderById, fetchOrderById, cancelOrder, orders } = useOrders();
+  const { allProducts } = useProducts();
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [cancelReason, setCancelReason] = useState(
+    "تغییر در متراژ یا اقلام سفارش",
+  );
+  const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+  const [order, setOrder] = useState<Order | null>(
+    () => getOrderById(orderId) || null,
+  );
+  const [isLoading, setIsLoading] = useState(!order);
 
   // 10-Minute Countdown Timer calculation (calculated purely from order createdAt)
   const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
-    if (!order) return 0
-    const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
-    const deadline = createdAtMs + 10 * 60 * 1000
-    return Math.max(0, Math.floor((deadline - Date.now()) / 1000))
-  })
+    if (!order) return 0;
+    const createdAtMs = order.createdAt
+      ? new Date(order.createdAt).getTime()
+      : Date.now();
+    const deadline = createdAtMs + 10 * 60 * 1000;
+    return Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+  });
 
   useEffect(() => {
-    let isMounted = true
-    const cached = getOrderById(orderId)
+    let isMounted = true;
+    const cached = getOrderById(orderId);
     if (cached) {
-      setOrder(cached)
-      setIsLoading(false)
-      return
+      setOrder(cached);
+      setIsLoading(false);
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
     fetchOrderById(orderId).then((res) => {
       if (isMounted) {
-        setOrder(res)
-        setIsLoading(false)
+        setOrder(res);
+        setIsLoading(false);
       }
-    })
+    });
 
     return () => {
-      isMounted = false
-    }
-  }, [orderId, orders])
+      isMounted = false;
+    };
+  }, [orderId, orders]);
 
   useEffect(() => {
-    if (!order) return
-    const createdAtMs = order.createdAt ? new Date(order.createdAt).getTime() : Date.now()
-    const deadline = createdAtMs + 10 * 60 * 1000
+    if (!order) return;
+    const createdAtMs = order.createdAt
+      ? new Date(order.createdAt).getTime()
+      : Date.now();
+    const deadline = createdAtMs + 10 * 60 * 1000;
 
     const updateTimer = () => {
-      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000))
-      setTimeLeftSeconds(remaining)
-    }
+      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+      setTimeLeftSeconds(remaining);
+    };
 
-    updateTimer()
-    const timer = setInterval(updateTimer, 1000)
-    return () => clearInterval(timer)
-  }, [order?.createdAt])
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+    return () => clearInterval(timer);
+  }, [order?.createdAt]);
 
   const formatCountdown = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${toPersianDigits(mins.toString().padStart(2, '0'))}:${toPersianDigits(secs.toString().padStart(2, '0'))}`
-  }
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${toPersianDigits(mins.toString().padStart(2, "0"))}:${toPersianDigits(secs.toString().padStart(2, "0"))}`;
+  };
 
   const isCancelled =
-    order?.status === 'cancel' ||
-    order?.status === 'cancelled' ||
-    order?.status === 'cancelled_by_customer' ||
-    order?.status === 'cancelled_by_admin'
+    order?.status === "cancel" ||
+    order?.status === "cancelled" ||
+    order?.status === "cancelled_by_customer" ||
+    order?.status === "cancelled_by_admin";
 
-  const isCompleted = order?.status === 'completed' || order?.status === 'approved' || order?.status === 'approve'
-  const isWithin10Minutes = timeLeftSeconds > 0
-  const is10MinutesPassed = timeLeftSeconds <= 0
-  const isCancellableByCustomer = !isCancelled && !isCompleted && isWithin10Minutes
+  const isCompleted =
+    order?.status === "completed" ||
+    order?.status === "approved" ||
+    order?.status === "approve";
+  const isWithin10Minutes = timeLeftSeconds > 0;
+  const is10MinutesPassed = timeLeftSeconds <= 0;
+  const isCancellableByCustomer =
+    !isCancelled && !isCompleted && isWithin10Minutes;
 
   const timeline = useMemo(() => {
-    if (!order) return []
+    if (!order) return [];
     return buildFullOrderTimeline(
       order,
       formatPersianDate(order.createdAt || order.date),
-      is10MinutesPassed
-    )
-  }, [order, is10MinutesPassed])
+      is10MinutesPassed,
+    );
+  }, [order, is10MinutesPassed]);
 
   const displayStatusLabel = useMemo(() => {
-    if (!order) return ''
-    if (order.status === 'pending') {
-      return is10MinutesPassed ? 'در حال بررسی واحد بازرگانی' : 'سفارش ثبت شده'
+    if (!order) return "";
+    if (order.status === "pending") {
+      return is10MinutesPassed ? "در حال بررسی واحد بازرگانی" : "سفارش ثبت شده";
     }
-    if (order.status === 'approve' || order.status === 'approved' || order.status === 'completed') {
-      return 'تکمیل شده'
+    if (
+      order.status === "approve" ||
+      order.status === "approved" ||
+      order.status === "completed"
+    ) {
+      return "تکمیل شده";
     }
     if (isCancelled) {
-      return order.cancelledBy === 'customer' || order.status === 'cancelled_by_customer'
-        ? 'لغو توسط کاربر'
-        : 'لغو توسط ادمین'
+      return order.cancelledBy === "customer" ||
+        order.status === "cancelled_by_customer"
+        ? "لغو توسط کاربر"
+        : "لغو توسط ادمین";
     }
-    return ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.label || order.statusLabel
-  }, [order, is10MinutesPassed, isCancelled])
+    return (
+      ORDER_STATUS_MAP[order.status as keyof typeof ORDER_STATUS_MAP]?.label ||
+      order.statusLabel
+    );
+  }, [order, is10MinutesPassed, isCancelled]);
 
   const statusConfig = order
     ? {
         label: displayStatusLabel,
         color: isCancelled
-          ? ('danger' as const)
+          ? ("danger" as const)
           : isCompleted
-          ? ('success' as const)
-          : is10MinutesPassed
-          ? ('warning' as const)
-          : ('primary' as const),
+            ? ("success" as const)
+            : is10MinutesPassed
+              ? ("warning" as const)
+              : ("primary" as const),
       }
-    : { label: '', color: 'warning' as const }
+    : { label: "", color: "warning" as const };
 
   // Reorder data for PreInvoiceModal
   const { reorderProducts, reorderQuantities } = useMemo(() => {
-    if (!order?.items) return { reorderProducts: [], reorderQuantities: {} }
+    if (!order?.items) return { reorderProducts: [], reorderQuantities: {} };
     const products: Product[] = order.items.map((item) => {
       const found = allProducts.find(
-        (p) => String(p.id) === String(item.productId) || p.sku === item.productSku
-      )
-      if (found) return found
+        (p) =>
+          String(p.id) === String(item.productId) || p.sku === item.productSku,
+      );
+      if (found) return found;
       return {
         id: item.productId,
         slug: item.productSlug || item.productId,
@@ -172,47 +196,56 @@ function OrderDetailPage() {
         sku: item.productSku,
         dimension: item.dimension,
         dimensions: { width: 0, height: 0 },
-        brand: 'پرشین پارت',
-        color: '',
-        grade: 'درجه ۱' as const,
-        category: 'پرسلان کف' as const,
+        brand: "پرشین پارت",
+        color: "",
+        grade: "درجه ۱" as const,
+        category: "پرسلان کف" as const,
         finalCustomerPricePerSqm: item.unitPrice,
         pricePerM2: item.unitPrice,
-        sqmPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
-        areaPerCarton: item.deliverableArea && item.cartonCount ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100 : 1.44,
+        sqmPerCarton:
+          item.deliverableArea && item.cartonCount
+            ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100
+            : 1.44,
+        areaPerCarton:
+          item.deliverableArea && item.cartonCount
+            ? Math.round((item.deliverableArea / item.cartonCount) * 100) / 100
+            : 1.44,
         piecesPerCarton: 4,
         tilesPerCarton: 4,
         cartonWeightKg: 25,
         inventorySqm: 9999,
         stockCartons: 999,
         inStock: true,
-        stockStatus: 'in_stock' as const,
+        stockStatus: "in_stock" as const,
         applications: [],
         tags: [],
-        images: [item.productImage || '/placeholder.png'],
-        gallery: [item.productImage || '/placeholder.png'],
-      }
-    })
-    const quantities: Record<string, number> = {}
+        images: [item.productImage || "/placeholder.png"],
+        gallery: [item.productImage || "/placeholder.png"],
+      };
+    });
+    const quantities: Record<string, number> = {};
     order.items.forEach((item) => {
-      quantities[item.productId] = item.requestedArea || item.deliverableArea
-    })
-    return { reorderProducts: products, reorderQuantities: quantities }
-  }, [order?.items, allProducts])
+      quantities[item.productId] = item.requestedArea || item.deliverableArea;
+    });
+    return { reorderProducts: products, reorderQuantities: quantities };
+  }, [order?.items, allProducts]);
 
   const handleCancel = async () => {
-    if (!order) return
-    await cancelOrder(order.id, cancelReason)
-    setShowCancelModal(false)
-    toast.info('سفارش لغو شد', `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت لغو شد و موجودی به انبار بازگردانی گردید.`)
-    const fresh = await fetchOrderById(order.id)
-    if (fresh) setOrder(fresh)
-  }
+    if (!order) return;
+    await cancelOrder(order.id, cancelReason);
+    setShowCancelModal(false);
+    toast.info(
+      "سفارش لغو شد",
+      `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت لغو شد و موجودی به انبار بازگردانی گردید.`,
+    );
+    const fresh = await fetchOrderById(order.id);
+    if (fresh) setOrder(fresh);
+  };
 
   const handleReorder = () => {
-    if (!order) return
-    setIsReorderModalOpen(true)
-  }
+    if (!order) return;
+    setIsReorderModalOpen(true);
+  };
 
   const handleEditOrder = () => {
     if (!order) return;
@@ -220,23 +253,27 @@ function OrderDetailPage() {
       order.items.map((item) => ({
         id: item.productId,
         quantity: item.requestedArea || item.deliverableArea,
-      }))
+      })),
     );
-    ;(navigate as any)({
-      to: '/product/new',
+    (navigate as any)({
+      to: "/product/new",
       search: { editOrderId: order.id },
     });
-  }
+  };
 
   if (isLoading) {
-    return <OrderDetailSkeleton />
+    return <OrderDetailSkeleton />;
   }
 
   if (!order) {
     return (
       <div className="w-full max-w-xl mx-auto px-4 py-16 text-center space-y-3">
-        <h2 className="text-sm font-bold text-foreground">سفارش مورد نظر یافت نشد</h2>
-        <p className="text-xs text-muted">ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.</p>
+        <h2 className="text-sm font-bold text-foreground">
+          سفارش مورد نظر یافت نشد
+        </h2>
+        <p className="text-xs text-muted">
+          ممکن است این سفارش حذف شده باشد یا به حساب دیگری تعلق داشته باشد.
+        </p>
         <Link
           to="/orders"
           className="inline-flex items-center gap-1.5 h-10 px-4 rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90"
@@ -245,19 +282,24 @@ function OrderDetailPage() {
           <span>مشاهده همه سفارش‌ها</span>
         </Link>
       </div>
-    )
+    );
   }
 
   return (
     <div className="w-full px-3 py-3 space-y-3">
       {/* Top Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-muted">
-        <Link to="/orders" className="hover:text-primary transition-colors flex items-center gap-1">
+        <Link
+          to="/orders"
+          className="hover:text-primary transition-colors flex items-center gap-1"
+        >
           <ArrowRightIcon size={14} />
           <span>سفارش‌های من</span>
         </Link>
         <span>/</span>
-        <span className="text-foreground font-bold">سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+        <span className="text-foreground font-bold">
+          سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
+        </span>
       </nav>
 
       {/* Main Order Header Card */}
@@ -266,7 +308,9 @@ function OrderDetailPage() {
           <div className="flex items-center gap-2.5 mb-2 flex-wrap">
             <span className="px-2 py-1 rounded-lg bg-primary/10 text-xs font-bold text-primary flex items-center gap-1.5">
               <span className="text-primary text-xs font-semibold">سفارش</span>
-              <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+              <span>
+                #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
+              </span>
             </span>
             <Badge variant={statusConfig.color} size="md">
               {displayStatusLabel}
@@ -276,23 +320,31 @@ function OrderDetailPage() {
             {!isCancelled && !isCompleted && (
               <span
                 className={cn(
-                  'px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5',
+                  "px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5",
                   isWithin10Minutes
-                    ? 'bg-warning/15 text-warning animate-pulse'
-                    : 'bg-muted/10 text-muted'
+                    ? "bg-warning/15 text-warning animate-pulse"
+                    : "bg-muted/5 text-muted",
                 )}
               >
-                <ClockIcon size={13} className={cn(isWithin10Minutes ? 'text-warning' : 'text-muted')} />
+                <ClockIcon
+                  size={13}
+                  className={cn(
+                    isWithin10Minutes ? "text-warning" : "text-muted",
+                  )}
+                />
                 <span>
                   {isWithin10Minutes
                     ? `مهلت ۱۰ دقیقه‌ای لغو: ${formatCountdown(timeLeftSeconds)}`
-                    : 'مهلت ۱۰ دقیقه‌ای لغو پایان یافت'}
+                    : "مهلت ۱۰ دقیقه‌ای لغو پایان یافت"}
                 </span>
               </span>
             )}
           </div>
           <p className="text-xs text-muted">
-            تاریخ ثبت سفارش: <strong className="text-foreground">{formatPersianDate(order.createdAt || order.date)}</strong>
+            تاریخ ثبت سفارش:{" "}
+            <strong className="text-foreground">
+              {formatPersianDate(order.createdAt || order.date)}
+            </strong>
           </p>
         </div>
 
@@ -312,7 +364,7 @@ function OrderDetailPage() {
               <Button
                 type="button"
                 onPress={handleEditOrder}
-                className="flex-1 h-10 px-4 rounded-2xl bg-muted/10 text-foreground hover:bg-muted/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                className="flex-1 h-10 px-4 rounded-2xl bg-muted/5 text-foreground hover:bg-muted/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
               >
                 <PencilIcon size={16} />
                 <span>ویرایش فاکتور</span>
@@ -346,15 +398,26 @@ function OrderDetailPage() {
           <span className="text-xs text-muted font-normal">
             {toPersianDigits(order.items.length)} کالا انتخاب شده
             {(() => {
-              const totalArea = Math.round(order.items.reduce((s, i) => s + (i.deliverableArea || i.requestedArea || 0), 0) * 100) / 100;
-              return totalArea > 0 ? ` • متراژ کلی: ${toPersianDigits(totalArea)} متر` : '';
+              const totalArea =
+                Math.round(
+                  order.items.reduce(
+                    (s, i) => s + (i.deliverableArea || i.requestedArea || 0),
+                    0,
+                  ) * 100,
+                ) / 100;
+              return totalArea > 0
+                ? ` • متراژ کلی: ${toPersianDigits(totalArea)} متر`
+                : "";
             })()}
           </span>
         </h3>
 
         <div className="divide-y divide-separator/50">
           {order.items.map((item: OrderItem, idx: number) => (
-            <div key={idx} className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div
+              key={idx}
+              className="py-4 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+            >
               <div className="flex items-center gap-3">
                 <Link
                   to="/product"
@@ -362,12 +425,16 @@ function OrderDetailPage() {
                   className="relative w-16 h-16 shrink-0 block hover:opacity-90 transition-opacity"
                 >
                   <img
-                    src={item.productImage || '/assets/images/placeholder.svg'}
+                    src={item.productImage || "/assets/images/placeholder.svg"}
                     alt={item.productName}
                     className="w-16 h-16 rounded-2xl object-cover"
                     onError={(e) => {
-                      if (!e.currentTarget.src.endsWith('/assets/images/placeholder.svg')) {
-                        e.currentTarget.src = '/assets/images/placeholder.svg'
+                      if (
+                        !e.currentTarget.src.endsWith(
+                          "/assets/images/placeholder.svg",
+                        )
+                      ) {
+                        e.currentTarget.src = "/assets/images/placeholder.svg";
                       }
                     }}
                   />
@@ -386,7 +453,13 @@ function OrderDetailPage() {
                     <span>{toPersianDigits(item.dimension)}</span>
                   </div>
                   <div className="text-xs text-muted mt-1">
-                    متراژ کلی: <strong>{toPersianDigits(item.deliverableArea || item.requestedArea)}</strong> متر ({toPersianDigits(item.cartonCount)} کارتن)
+                    متراژ کلی:{" "}
+                    <strong>
+                      {toPersianDigits(
+                        item.deliverableArea || item.requestedArea,
+                      )}
+                    </strong>{" "}
+                    متر ({toPersianDigits(item.cartonCount)} کارتن)
                   </div>
                 </div>
               </div>
@@ -438,7 +511,9 @@ function OrderDetailPage() {
             <StoreIcon size={16} className="text-muted mt-0.5 shrink-0" />
             <div>
               <span className="text-muted block">فروشگاه:</span>
-              <span className="font-bold text-foreground">{order.storeName}</span>
+              <span className="font-bold text-foreground">
+                {order.storeName}
+              </span>
             </div>
           </div>
 
@@ -456,20 +531,25 @@ function OrderDetailPage() {
             <MapPinIcon size={16} className="text-muted mt-0.5 shrink-0" />
             <div>
               <span className="text-muted block">نشانی تحویل:</span>
-              <span className="font-bold text-foreground">{order.deliveryAddress}</span>
+              <span className="font-bold text-foreground">
+                {order.deliveryAddress}
+              </span>
             </div>
           </div>
         </div>
 
         {order.notes && (
-          <div className="p-3 bg-muted/10 rounded-2xl text-xs text-muted mt-2">
+          <div className="p-3 bg-muted/5 rounded-2xl text-xs text-muted mt-2">
             <strong>یادداشت سفارش:</strong> {order.notes}
           </div>
         )}
       </div>
 
       {/* HeroUI Cancel Order Confirmation Modal */}
-      <HeroUIModal.Root isOpen={showCancelModal} onOpenChange={(open) => !open && setShowCancelModal(false)}>
+      <HeroUIModal.Root
+        isOpen={showCancelModal}
+        onOpenChange={(open) => !open && setShowCancelModal(false)}
+      >
         <HeroUIModal.Backdrop
           isDismissable
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
@@ -484,7 +564,11 @@ function OrderDetailPage() {
                   لغو سفارش
                 </HeroUIModal.Heading>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
-                  آیا از لغو سفارش <strong>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</strong> در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
+                  آیا از لغو سفارش{" "}
+                  <strong>
+                    #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
+                  </strong>{" "}
+                  در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
                 <div className="mt-2.5 p-2 bg-success/15 rounded-xl text-[11px] text-success text-start">
                   اقلام سفارش به موجودی انبار بازگردانده می‌شوند.
@@ -501,8 +585,12 @@ function OrderDetailPage() {
                   onChange={(e) => setCancelReason(e.target.value)}
                   className="w-full h-10 px-3 rounded-2xl bg-muted/5 text-xs font-medium text-foreground outline-hidden cursor-pointer"
                 >
-                  <option value="تغییر در متراژ یا اقلام سفارش">تغییر در متراژ یا اقلام سفارش</option>
-                  <option value="تغییر در زمان‌بندی پروژه و ارسال">تغییر در زمان‌بندی پروژه و ارسال</option>
+                  <option value="تغییر در متراژ یا اقلام سفارش">
+                    تغییر در متراژ یا اقلام سفارش
+                  </option>
+                  <option value="تغییر در زمان‌بندی پروژه و ارسال">
+                    تغییر در زمان‌بندی پروژه و ارسال
+                  </option>
                   <option value="ثبت اشتباه فاکتور">ثبت اشتباه فاکتور</option>
                   <option value="انصراف موقت خریدار">انصراف موقت خریدار</option>
                 </select>
@@ -512,7 +600,7 @@ function OrderDetailPage() {
                 <Button
                   type="button"
                   onPress={() => setShowCancelModal(false)}
-                  className="h-10 px-4 rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
+                  className="h-10 px-4 rounded-2xl bg-muted/5 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
                 >
                   انصراف
                 </Button>
@@ -537,21 +625,18 @@ function OrderDetailPage() {
         quantities={reorderQuantities}
         editOrderId={order?.id}
         onEdit={() => {
-          setIsReorderModalOpen(false)
-          handleEditOrder()
+          setIsReorderModalOpen(false);
+          handleEditOrder();
         }}
         onSuccess={(newOrderId) => {
-          setIsReorderModalOpen(false)
-          toast.success(
-            'ثبت قطعی سفارش مجدد',
-            'سفارش مجدد شما با موفقیت ثبت شد.'
-          )
+          setIsReorderModalOpen(false);
+          toast.success("سفارش مجدد شما با موفقیت ثبت شد.");
           navigate({
-            to: '/orders/$id',
+            to: "/orders/$id",
             params: { id: newOrderId },
-          })
+          });
         }}
       />
     </div>
-  )
+  );
 }

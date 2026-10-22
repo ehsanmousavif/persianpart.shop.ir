@@ -401,11 +401,18 @@ export interface Plan {
   title?: string | null;
   users: (number | User)[];
   content: string;
-  type: 'credit_terms' | 'product_discount';
+  type: 'credit_terms' | 'product_discount' | 'informational';
   discountPercent?: number | null;
   discountAmount?: number | null;
   status: 'active' | 'expired' | 'draft';
   products?: (number | Product)[] | null;
+  /**
+   * در صورت فعال بودن، شمارش معکوس زمان باقی‌مانده بالای آیکون طرح نمایش داده می‌شود.
+   */
+  hasTimer?: boolean | null;
+  /**
+   * تاریخ و ساعت پایان طرح که تایمر معکوس بر اساس آن شمارش می‌کند.
+   */
   expiresAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -737,6 +744,7 @@ export interface PlansSelect<T extends boolean = true> {
   discountAmount?: T;
   status?: T;
   products?: T;
+  hasTimer?: T;
   expiresAt?: T;
   updatedAt?: T;
   createdAt?: T;

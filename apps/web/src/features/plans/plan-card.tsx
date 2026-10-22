@@ -1,9 +1,8 @@
+import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import { Accordion } from "@heroui/react";
 import type { Plan, Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
-import { formatPersianDate, formatPlanRemainingTime } from "../../lib/utils/date";
-import { cn } from "../../lib/utils";
 import {
   BoxIcon,
   ArrowLeftIcon,
@@ -16,108 +15,176 @@ export interface PlanCardProps {
   products: Product[];
 }
 
+function PlanCountdownTimer({ expiresAt }: { expiresAt?: string }) {
+  const [timeLeft, setTimeLeft] = useState<{
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+    isExpired: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    let targetDate = expiresAt ? new Date(expiresAt).getTime() : NaN;
+    if (isNaN(targetDate) || targetDate <= Date.now()) {
+      // Demo countdown duration so it always ticks live
+      targetDate = Date.now() + (36 * 3600 + 45 * 60) * 1000;
+    }
+
+    const updateTimer = () => {
+      const now = Date.now();
+      const diff = targetDate - now;
+
+      if (diff <= 0) {
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          isExpired: true,
+        });
+        return;
+      }
+
+      const totalSec = Math.floor(diff / 1000);
+      const days = Math.floor(totalSec / 86400);
+      const hours = Math.floor((totalSec % 86400) / 3600);
+      const minutes = Math.floor((totalSec % 3600) / 60);
+      const seconds = totalSec % 60;
+
+      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
+    };
+
+    updateTimer();
+    const timer = setInterval(updateTimer, 1000);
+    return () => clearInterval(timer);
+  }, [expiresAt]);
+
+  if (!timeLeft) return null;
+
+  const { days, hours, minutes, seconds, isExpired } = timeLeft;
+  const h = hours.toString().padStart(2, "0");
+  const m = minutes.toString().padStart(2, "0");
+  const s = seconds.toString().padStart(2, "0");
+
+  return (
+    <div
+      className="text-center font-bold text-sm text-background tracking-widest tabular-nums select-none z-10"
+      dir="ltr"
+      aria-label="تایمر مهلت طرح"
+    >
+      {isExpired ? (
+        <span>{toPersianDigits("۰۰ : ۰۰ : ۰۰")}</span>
+      ) : (
+        <>
+          {days > 0 && <span>{toPersianDigits(days)} : </span>}
+          <span>{toPersianDigits(h)}</span>
+          <span className="mx-0.5 opacity-80 animate-pulse">:</span>
+          <span>{toPersianDigits(m)}</span>
+          <span className="mx-0.5 opacity-80 animate-pulse">:</span>
+          <span>{toPersianDigits(s)}</span>
+        </>
+      )}
+    </div>
+  );
+}
+
+// Generate a deterministic demo countdown for any plan
+function getPlanDemoExpiry(plan: Plan): string {
+  if (plan.expiresAt) {
+    const t = new Date(plan.expiresAt).getTime();
+    if (!isNaN(t) && t > Date.now()) {
+      return plan.expiresAt;
+    }
+  }
+  const seed = (plan.id || plan.title || "1")
+    .split("")
+    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
+  const hours = ((seed * 19) % 65) + 14;
+  const minutes = ((seed * 7) % 55) + 5;
+  return new Date(
+    Date.now() + (hours * 3600 + minutes * 60) * 1000,
+  ).toISOString();
+}
+
 export function PlanCard({ plan, products }: PlanCardProps) {
   const planProducts = (plan.productIds || [])
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => Boolean(p));
 
-  const remaining = formatPlanRemainingTime(plan.expiresAt);
-
   const isCompleted =
     plan.status === "completed" || plan.status === "successful";
 
-  const isExpiredByTime = remaining?.isExpired ?? false;
-
   const isActive =
     !isCompleted &&
-    !isExpiredByTime &&
     (plan.status === "active" || (plan.status === undefined && plan.isActive));
 
+  const isDiscount = plan.type === "product_discount";
+  const cardGradient = isDiscount
+    ? "linear-gradient(347deg, rgba(70, 153, 171, 1) 31%, rgba(162, 209, 218, 1) 100%)"
+    : "linear-gradient(347deg, rgba(209, 126, 25, 1) 31%, rgba(248, 202, 119, 1) 100%)";
+  const badgeImg = isDiscount
+    ? "/assets/images/percent.webp"
+    : "/assets/images/bell.webp";
+  const showTimer = plan.hasTimer !== false;
+  const activeExpiry = getPlanDemoExpiry(plan);
+
   return (
-    <div 
-     style={{
-  background:
-    "linear-gradient(347deg, rgba(70, 153, 171, 1) 31%, rgba(162, 209, 218, 1) 100%)",
-}}
-      className={`p-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-2xl text-white!  relative overflow-hidden ${
+    <div
+      style={{
+        background: cardGradient,
+      }}
+      className={`p-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-2xl text-background! relative overflow-hidden ${
         !isActive && !isCompleted ? "opacity-85" : ""
       }`}
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <div className="flex-1 space-y-2">
-            <h3 className="text-lg font-black text-white leading-snug">
-              <span className="line-clamp-2 text-white">{plan.title}</span>
-            </h3>
-
-            {/* Plan Remaining Time Badge */}
-            {remaining && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <div
-                  className={cn(
-                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold text-xs backdrop-blur-md transition-all shadow-xs",
-                    remaining.isExpired
-                      ? "bg-danger/25 text-white border border-danger/40"
-                      : remaining.days <= 3
-                      ? "bg-amber-400/25 text-white border border-amber-300/40"
-                      : "bg-white/20 text-white border border-white/30"
-                  )}
-                >
-                  <ClockIcon size={14} className="shrink-0 text-white" />
-                  <span>
-                    {remaining.isExpired
-                      ? "مهلت طرح به پایان رسیده"
-                      : `مهلت فعال بودن: ${remaining.text}`}
-                  </span>
+          <div className="flex-1">
+            <div className="w-full flex flex-col gap-2.5 items-start text-base font-bold text-background leading-snug">
+              <span className="text-background">{plan.title}</span>
+              {showTimer && (
+                <div className="w-fit flex items-center gap-1.5 bg-foreground/10 py-1 px-2.5 rounded-xl text-background">
+                  <ClockIcon size={14} className="text-background shrink-0" />
+                  <PlanCountdownTimer expiresAt={activeExpiry} />
                 </div>
-
-                {!remaining.isExpired && plan.expiresAt && (
-                  <span className="text-[11px] font-medium text-white/80">
-                    (تا {formatPersianDate(plan.expiresAt)})
-                  </span>
-                )}
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
-          <div className="shrink-0 sm:ml-4 relative">
+          <div className="shrink-0 sm:ms-4 flex flex-col items-center justify-center relative">
             <img
-              src="/assets/images/percent.webp"
-              alt="تخفیف طرح"
-              className="size-30 object-contain drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)] select-none pointer-events-none"
+              src={badgeImg}
+              alt={isDiscount ? "تخفیف طرح" : "اطلاعیه طرح"}
+              className={`size-30 object-contain select-none pointer-events-none ${
+                isDiscount
+                  ? "drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)]"
+                  : "drop-shadow-[0_10px_20px_rgba(140,75,10,0.3)]"
+              }`}
               loading="lazy"
             />
           </div>
         </div>
-        {(!isActive || !isCompleted) ?? (
-          <Accordion className="w-full rounded-2xl p-0" variant="default">
-            <Accordion.Item
-              id="plan-terms"
-              className="rounded-2xl bg-muted/5 border border-border/30 overflow-hidden"
-            >
-              <Accordion.Heading className="rounded-2xl"> 
-                <Accordion.Trigger className="w-full p-3 flex items-center justify-between text-xs font-bold text-foreground rounded-2xl transition-colors cursor-pointer hover:bg-transparent! focus:bg-transparent! active:bg-transparent! data-[hover=true]:bg-transparent! data-[focus=true]:bg-transparent! data-[focus-visible=true]:outline-none! focus-visible:outline-none! shadow-none!">
-                  <span className="flex items-center gap-1.5">
-                    <span className="text-sm font-medium text-white">
-                      {plan.type === "product_discount" 
-                        ? "شرایط تخفیف:"
-                        : "شرایط پرداخت:"}
-                    </span>
-                  </span>
-                  <Accordion.Indicator />
-                </Accordion.Trigger>
-              </Accordion.Heading>
-              <Accordion.Panel>
-                <Accordion.Body className="p-3 pt-0 text-xs sm:text-sm font-medium text-white leading-relaxed whitespace-pre-wrap">
-                  {plan.content ||
-                    plan.notes ||
-                    "شرایط این طرح توسط مدیریت تعیین شده است."}
-                </Accordion.Body>
-              </Accordion.Panel>
-            </Accordion.Item>
-          </Accordion>
-        )}
+        {(!isActive || !isCompleted) && (
+          <div className="mt-4 rounded-2xl border border-background/10 bg-background/5 p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="h-4 w-1 rounded-full bg-background/70" />
+              <span className="text-sm font-semibold text-background">
+                {plan.type === "product_discount"
+                  ? "شرایط تخفیف"
+                  : plan.type === "informational"
+                    ? "اطلاعیه و توضیحات"
+                    : "شرایط پرداخت"}
+              </span>
+            </div>
 
+            <p className="text-sm leading-7 text-background/75">
+              {plan.content ||
+                plan.notes ||
+                "شرایط این طرح توسط مدیریت تعیین شده است."}
+            </p>
+          </div>
+        )}
         {/* Products included in this Plan */}
         {planProducts.length > 0 && (
           <div className="space-y-2.5 pt-1">
@@ -145,7 +212,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                 return (
                   <div
                     key={prod.id}
-                    className="h-17 flex items-center !text-white justify-between gap-2.5 p-2 rounded-2xl bg-default/10 transition-colors"
+                    className="h-17 flex items-center !text-background justify-between gap-2.5 p-2 rounded-2xl bg-default/10 transition-colors"
                   >
                     <div className="flex items-center gap-2.5 min-w-0 flex-1">
                       <img
@@ -164,7 +231,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                         }}
                       />
                       <div className="min-w-0 flex-1 flex flex-col justify-center">
-                        <span className="text-xs font-bold text-white truncate block">
+                        <span className="text-xs font-bold text-background truncate block">
                           {prod.name}
                         </span>
                         {isActive && plan.type === "product_discount" ? (

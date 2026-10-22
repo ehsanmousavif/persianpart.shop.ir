@@ -87,12 +87,13 @@ interface OrderSeed {
 interface PlanSeed {
   title: string
   userPhone: string
-  type: 'credit_terms' | 'product_discount'
-  discountPercent: number
+  type: 'credit_terms' | 'product_discount' | 'informational'
+  discountPercent?: number
   status: 'active' | 'draft'
   productSkus: string[]
   content: string
   notes: string
+  hasTimer?: boolean
   expiresAt?: string
 }
 
@@ -279,9 +280,64 @@ const PLANS_SEED: PlanSeed[] = [
     productSkus: ['PP-CAL-60120-P', 'PP-ONX-80160-P', 'PP-MRQ-120240-P'],
     content: 'اعمال ۱۲٪ تخفیف اختصاصی برای خرید عمده پرسلان‌های لوکس کلاکاتا و اونیکس ویژه بازرگانی دهقان',
     notes: 'اعمال ۱۲٪ تخفیف اضافه برای سفارش‌های بیش از ۱۰۰ متر اسلب و پرسلان لوکس',
+    hasTimer: true,
     expiresAt: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
   },
-  
+  {
+    title: 'طرح ویژه تسویه اعتباری و تسهیلات بازرگانی',
+    userPhone: '09123456789',
+    type: 'informational',
+    status: 'active',
+    productSkus: [],
+    content: 'امکان خرید اعتباری ۶۰ روزه با ارائه چک صیادی بنفش بدون کارمزد برای پروژه‌های فعال ساختمانی و همکاران گرامی.',
+    notes: 'اطلاع‌رسانی شرایط جدید اعتباری',
+    hasTimer: true,
+    expiresAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    title: 'اطلاعیه ویژه بارگیری مستقیم اسلب‌های صادراتی',
+    userPhone: '09123456789',
+    type: 'informational',
+    status: 'active',
+    productSkus: ['PP-MRQ-120240-P'],
+    content: 'پارتی جدید اسلب‌های پرسلان با بسته‌بندی پالت چوبی تقویت‌شده آماده ترخیص و بارگیری مستقیم از کارخانه می‌باشد.',
+    notes: 'اعلامیه بارگیری و مهلت محدود ثبت سفارش انبار',
+    hasTimer: true,
+    expiresAt: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    title: 'اعلامیه ورود پارت جدید پرسلان‌های لوکس کلاکاتا پالرمو',
+    userPhone: '09123456789',
+    type: 'informational',
+    status: 'active',
+    productSkus: ['PP-CAL-60120-P', 'PP-ONX-80160-P'],
+    content: 'محموله جدید پرسلان‌های نانو سوپرپولیش کلاکاتا و اونیکس با کالیبراسیون دقیق وارد انبار مرکزی شد. همکاران گرامی جهت رزرو متراژ پروژه‌ای با واحد فروش هماهنگ فرمایند.',
+    notes: 'اطلاع‌رسانی ورود بار پرسلان‌های سوپر پولیش',
+    hasTimer: true,
+    expiresAt: new Date(Date.now() + 4 * 24 * 60 * 60 * 1000 + 12 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    title: 'اطلاعیه مهلت ارسال اسناد اعتباری و چک‌های صیادی ماه جاری',
+    userPhone: '09123456789',
+    type: 'informational',
+    status: 'active',
+    productSkus: [],
+    content: 'پایان مهلت ثبت و تایید چک‌های صیادی بنفش در سامانه صیاد جهت تسویه فاکتورهای اعتباری این دوره، تا پایان این هفته می‌باشد.',
+    notes: 'مهلت زمانی تایید چک‌های صیادی',
+    hasTimer: true,
+    expiresAt: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000 + 8 * 60 * 60 * 1000).toISOString(),
+  },
+  {
+    title: 'اطلاعیه زمان‌بندی بارگیری و خروج تریلر در انبار مرکزی',
+    userPhone: '09123456789',
+    type: 'informational',
+    status: 'active',
+    productSkus: ['PP-CEM-100100-M', 'PP-WOD-20120-R'],
+    content: 'جهت تسریع در تحویل بار به پروژه‌ها، پذیرش و بارگیری تریلرهای حمل پرسلان کف و طرح چوب تا ساعت ۱۸ روز جاری ادامه دارد.',
+    notes: 'نوبت‌دهی و زمان‌بندی بارگیری روزانه',
+    hasTimer: true,
+    expiresAt: new Date(Date.now() + 18 * 60 * 60 * 1000 + 42 * 60 * 1000).toISOString(),
+  },
 ]
 
 interface ProductSeed {
@@ -1215,15 +1271,17 @@ export async function runSeed() {
       }
     }
 
+    const allUserIds = Array.from(userMap.values())
     const planData: any = {
       title: pl.title,
       content: pl.content,
-      users: userId ? [userId] : [],
+      users: allUserIds.length > 0 ? allUserIds : (userId ? [userId] : []),
       type: pl.type,
       discountPercent: pl.discountPercent,
       status: pl.status,
       products: productIds,
       notes: pl.notes,
+      hasTimer: Boolean(pl.hasTimer),
       expiresAt: pl.expiresAt,
     }
 

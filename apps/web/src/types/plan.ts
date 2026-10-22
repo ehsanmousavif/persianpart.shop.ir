@@ -18,7 +18,7 @@ export interface Plan {
   customerGreeting: string
   customerId: string
   customerName: string
-  type?: 'credit_terms' | 'product_discount'
+  type?: 'credit_terms' | 'product_discount' | 'informational'
   discountPercent?: number
   discountAmount?: number
   isActive: boolean
@@ -26,6 +26,7 @@ export interface Plan {
   content?: string
   productIds: string[]
   notes?: string
+  hasTimer?: boolean
   expiresAt?: string
   createdAt: string
 }

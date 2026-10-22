@@ -20,10 +20,13 @@ function getInitialPlans(): Plan[] {
             if (mapped.createdAt && (mapped.createdAt.includes('2026') || mapped.createdAt.includes('2025') || mapped.createdAt.includes('2024') || mapped.createdAt.startsWith('20'))) {
               mapped.createdAt = formatPersianDate(mapped.createdAt)
             }
+            if (mapped.hasTimer === undefined) {
+              mapped.hasTimer = true
+            }
             if (!mapped.expiresAt) {
-              // 25 days validity default for active stored plan
-              const future = new Date(Date.now() + 25 * 24 * 60 * 60 * 1000)
-              mapped.expiresAt = future.toISOString()
+              const seed = (mapped.id || mapped.title || '1').split('').reduce((acc: number, c: string) => acc + c.charCodeAt(0), 0)
+              const hours = ((seed * 19) % 65) + 14
+              mapped.expiresAt = new Date(Date.now() + hours * 3600 * 1000).toISOString()
             }
             return mapped
           })
@@ -83,6 +86,7 @@ function mapApiPlanToPlan(p: any): Plan {
     content,
     productIds,
     notes: content,
+    hasTimer: Boolean(p.hasTimer),
     expiresAt: p.expiresAt || p.expires_at || undefined,
     createdAt: p.createdAt ? formatPersianDate(p.createdAt) : formatPersianDate(new Date()),
   }
@@ -189,6 +193,7 @@ export const plansStore = {
           discountAmount: data.discountAmount,
           status: (data.status as any) || (data.isActive ? 'active' : 'expired'),
           products: data.productIds?.map(Number).filter(Boolean),
+          hasTimer: Boolean(data.hasTimer),
           expiresAt: data.expiresAt,
         })
       } else {
@@ -201,6 +206,7 @@ export const plansStore = {
           discountAmount: data.discountAmount,
           status: (data.status as any) || (data.isActive ? 'active' : 'expired'),
           products: data.productIds?.map(Number).filter(Boolean),
+          hasTimer: Boolean(data.hasTimer),
           expiresAt: data.expiresAt,
         })
         if (created?.id) {
@@ -237,6 +243,7 @@ export const plansStore = {
         content: data.content || '',
         productIds: data.productIds,
         notes: data.notes,
+        hasTimer: Boolean(data.hasTimer),
         expiresAt: data.expiresAt,
         createdAt: formatPersianDate(new Date()),
       }

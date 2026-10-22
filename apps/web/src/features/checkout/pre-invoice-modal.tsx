@@ -10,11 +10,7 @@ import { orderStore } from "../orders/order-store";
 import { selectionStore } from "../products/selection-store";
 import { api } from "../../lib/api-client";
 import { queryKeys, mutationKeys } from "../../lib/query-keys";
-import {
-  XIcon,
-  PencilIcon,
-  TomanIcon,
-} from "../../components/ui/icons";
+import { XIcon, PencilIcon, TomanIcon } from "../../components/ui/icons";
 
 export interface PreInvoiceModalProps {
   isOpen: boolean;
@@ -173,12 +169,15 @@ export function PreInvoiceModal({
       onEdit();
       return;
     }
-    if (typeof window !== "undefined" && !window.location.pathname.includes("/product/new")) {
+    if (
+      typeof window !== "undefined" &&
+      !window.location.pathname.includes("/product/new")
+    ) {
       selectionStore.setBatchSelection(
         products.map((p) => ({
           id: p.id,
           quantity: quantities[p.id] ?? p.sqmPerCarton ?? 10,
-        }))
+        })),
       );
       onClose();
       (navigate as any)({
@@ -313,7 +312,8 @@ export function PreInvoiceModal({
                       متراژ کلی:
                     </span>
                     <span className="text-sm font-bold text-foreground">
-                      {toPersianDigits(invoiceTotals.totalDeliverableArea)} مترمربع
+                      {toPersianDigits(invoiceTotals.totalDeliverableArea)}{" "}
+                      مترمربع
                     </span>
                   </div>
                   <div className="flex items-center justify-between pt-1">
