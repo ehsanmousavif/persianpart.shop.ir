@@ -2,10 +2,13 @@ import { Link } from "@tanstack/react-router";
 import { Accordion } from "@heroui/react";
 import type { Plan, Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
+import { formatPersianDate, formatPlanRemainingTime } from "../../lib/utils/date";
+import { cn } from "../../lib/utils";
 import {
   BoxIcon,
   ArrowLeftIcon,
   TomanIcon,
+  ClockIcon,
 } from "../../components/ui/icons";
 
 export interface PlanCardProps {
@@ -18,11 +21,16 @@ export function PlanCard({ plan, products }: PlanCardProps) {
     .map((id) => products.find((p) => p.id === id))
     .filter((p): p is Product => Boolean(p));
 
+  const remaining = formatPlanRemainingTime(plan.expiresAt);
+
   const isCompleted =
     plan.status === "completed" || plan.status === "successful";
 
+  const isExpiredByTime = remaining?.isExpired ?? false;
+
   const isActive =
     !isCompleted &&
+    !isExpiredByTime &&
     (plan.status === "active" || (plan.status === undefined && plan.isActive));
 
   return (
@@ -37,9 +45,40 @@ export function PlanCard({ plan, products }: PlanCardProps) {
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
-          <h3 className="text-lg font-black text-white leading-snug flex-1">
-            <span className="line-clamp-2 text-white">{plan.title}</span>
-          </h3>
+          <div className="flex-1 space-y-2">
+            <h3 className="text-lg font-black text-white leading-snug">
+              <span className="line-clamp-2 text-white">{plan.title}</span>
+            </h3>
+
+            {/* Plan Remaining Time Badge */}
+            {remaining && (
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <div
+                  className={cn(
+                    "inline-flex items-center gap-1.5 px-3 py-1 rounded-xl font-bold text-xs backdrop-blur-md transition-all shadow-xs",
+                    remaining.isExpired
+                      ? "bg-danger/25 text-white border border-danger/40"
+                      : remaining.days <= 3
+                      ? "bg-amber-400/25 text-white border border-amber-300/40"
+                      : "bg-white/20 text-white border border-white/30"
+                  )}
+                >
+                  <ClockIcon size={14} className="shrink-0 text-white" />
+                  <span>
+                    {remaining.isExpired
+                      ? "مهلت طرح به پایان رسیده"
+                      : `مهلت فعال بودن: ${remaining.text}`}
+                  </span>
+                </div>
+
+                {!remaining.isExpired && plan.expiresAt && (
+                  <span className="text-[11px] font-medium text-white/80">
+                    (تا {formatPersianDate(plan.expiresAt)})
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="shrink-0 sm:ml-4 relative">
             <img
@@ -50,39 +89,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             />
           </div>
         </div>
-        {isActive || isCompleted ? (
-          // <div
-          //   className={`p-3.5 rounded-2xl space-y-1 ${
-          //     isCompleted
-          //       ? "bg-success/10 border border-success/20"
-          //       : plan.type === "product_discount"
-          //         ? "bg-success/15"
-          //         : "bg-primary/5"
-          //   }`}
-          // >
-          //   <div
-          //     className={`text-xs font-bold flex items-center gap-1 ${
-          //       isCompleted
-          //         ? "text-whote"
-          //         : plan.type === "product_discount"
-          //           ? "text-whote"
-          //           : "text-primary"
-          //     }`}
-          //   >
-          //     <span className="text-sm  text-white font-medium">
-          //       {plan.type === "product_discount"
-          //         ? "شرایط تخفیف:"
-          //         : "شرایط پرداخت:"}
-          //     </span>
-          //   </div>
-          //   <p className="text-sm font-base text-white leading-relaxed whitespace-pre-wrap">
-          //     {plan.content ||
-          //       plan.notes ||
-          //       "شرایط این طرح توسط مدیریت تعیین شده است."}
-          //   </p>
-          // </div>
-          <div></div>
-        ) : (
+        {(!isActive || !isCompleted) ?? (
           <Accordion className="w-full rounded-2xl p-0" variant="default">
             <Accordion.Item
               id="plan-terms"

@@ -16,13 +16,16 @@ function getInitialPlans(): Plan[] {
         const mapped = parsed
           .filter((p) => !p.id?.startsWith('demo-'))
           .map((p) => {
-            if (p.createdAt && (p.createdAt.includes('2026') || p.createdAt.includes('2025') || p.createdAt.includes('2024') || p.createdAt.startsWith('20'))) {
-              return {
-                ...p,
-                createdAt: formatPersianDate(p.createdAt),
-              }
+            const mapped = { ...p }
+            if (mapped.createdAt && (mapped.createdAt.includes('2026') || mapped.createdAt.includes('2025') || mapped.createdAt.includes('2024') || mapped.createdAt.startsWith('20'))) {
+              mapped.createdAt = formatPersianDate(mapped.createdAt)
             }
-            return p
+            if (!mapped.expiresAt) {
+              // 25 days validity default for active stored plan
+              const future = new Date(Date.now() + 25 * 24 * 60 * 60 * 1000)
+              mapped.expiresAt = future.toISOString()
+            }
+            return mapped
           })
         return mapped
       }
@@ -80,6 +83,7 @@ function mapApiPlanToPlan(p: any): Plan {
     content,
     productIds,
     notes: content,
+    expiresAt: p.expiresAt || p.expires_at || undefined,
     createdAt: p.createdAt ? formatPersianDate(p.createdAt) : formatPersianDate(new Date()),
   }
 }
@@ -185,6 +189,7 @@ export const plansStore = {
           discountAmount: data.discountAmount,
           status: (data.status as any) || (data.isActive ? 'active' : 'expired'),
           products: data.productIds?.map(Number).filter(Boolean),
+          expiresAt: data.expiresAt,
         })
       } else {
         const created: any = await api.plan.create({
@@ -196,6 +201,7 @@ export const plansStore = {
           discountAmount: data.discountAmount,
           status: (data.status as any) || (data.isActive ? 'active' : 'expired'),
           products: data.productIds?.map(Number).filter(Boolean),
+          expiresAt: data.expiresAt,
         })
         if (created?.id) {
           backendId = String(created.id)
@@ -231,6 +237,7 @@ export const plansStore = {
         content: data.content || '',
         productIds: data.productIds,
         notes: data.notes,
+        expiresAt: data.expiresAt,
         createdAt: formatPersianDate(new Date()),
       }
       currentPlans = [newPlan, ...currentPlans]

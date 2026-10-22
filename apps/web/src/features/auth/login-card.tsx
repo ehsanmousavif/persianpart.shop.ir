@@ -162,7 +162,7 @@ export function LoginCard() {
           </h1>
 
           <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
-            سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک پرسلان
+            سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک 
           </p>
         </div>
 
@@ -208,7 +208,7 @@ export function LoginCard() {
                   شماره تلفن همراه
                 </label>
 
-                <InputGroup fullWidth className="h-12 rounded-2xl bg-muted/10 transition-all shadow-none">
+                <InputGroup fullWidth className="h-12 rounded-2xl text-s bg-muted/10 transition-all shadow-none">
                   <InputGroup.Prefix className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
                     <PhoneIcon size={18} />
                   </InputGroup.Prefix>
@@ -236,7 +236,7 @@ export function LoginCard() {
                     dir="ltr"
                     autoFocus
                     disabled={isLoading}
-                    className="h-12 flex-1 shadow-none! bg-transparent px-4 text-start text-base font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm sm:text-lg border-0 ring-0 "
+                    className="h-12 flex-1 shadow-none! px-4 text-start text-sm font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm border-0 ring-0 "
                   />
                 </InputGroup>
 
@@ -270,7 +270,7 @@ export function LoginCard() {
               className="space-y-4"
             >
               {/* Phone Info */}
-              <div className="flex items-center justify-between rounded-2xl border border-border/40 bg-muted/10 p-3">
+              <div className="flex items-center justify-between rounded-2xl bg-muted/5 p-3">
                 <div className="text-start">
                   <span className="block text-xs text-muted">
                     کد تأیید ارسال شد به:
@@ -291,7 +291,7 @@ export function LoginCard() {
                     setErrorMessage(null)
                   }}
                   isDisabled={isLoading}
-                  className="flex h-8 cursor-pointer items-center gap-1 rounded-xl bg-primary/10 px-3 text-xs font-bold text-primary transition-colors hover:bg-primary/15"
+                  className="flex h-8 cursor-pointer items-center gap-1 rounded-xl px-3 text-xs font-bold text-foreground bg-muted/10 transition-color hover:scale-[1.01]"
                 >
                   <PencilIcon size={14} />
                   <span>ویرایش شماره</span>
@@ -320,7 +320,7 @@ export function LoginCard() {
                         <InputOTP.Slot
                           key={index}
                           index={index}
-                          className="rounded-2xl border border-border/50 bg-muted/15 text-xl font-bold text-foreground sm:size-14"
+                          className="rounded-2xl shadow-none! border-none  bg-muted/15 text-xl font-bold text-foreground h-16"
                         />
                       ))}
                     </InputOTP.Group>

@@ -93,6 +93,7 @@ interface PlanSeed {
   productSkus: string[]
   content: string
   notes: string
+  expiresAt?: string
 }
 
 const USERS_SEED: UserSeed[] = [
@@ -278,6 +279,7 @@ const PLANS_SEED: PlanSeed[] = [
     productSkus: ['PP-CAL-60120-P', 'PP-ONX-80160-P', 'PP-MRQ-120240-P'],
     content: 'اعمال ۱۲٪ تخفیف اختصاصی برای خرید عمده پرسلان‌های لوکس کلاکاتا و اونیکس ویژه بازرگانی دهقان',
     notes: 'اعمال ۱۲٪ تخفیف اضافه برای سفارش‌های بیش از ۱۰۰ متر اسلب و پرسلان لوکس',
+    expiresAt: new Date(Date.now() + 25 * 24 * 60 * 60 * 1000).toISOString(),
   },
   
 ]
@@ -1222,6 +1224,7 @@ export async function runSeed() {
       status: pl.status,
       products: productIds,
       notes: pl.notes,
+      expiresAt: pl.expiresAt,
     }
 
     const existing = await payload.find({

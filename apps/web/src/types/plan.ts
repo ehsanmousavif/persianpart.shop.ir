@@ -26,6 +26,7 @@ export interface Plan {
   content?: string
   productIds: string[]
   notes?: string
+  expiresAt?: string
   createdAt: string
 }
 
