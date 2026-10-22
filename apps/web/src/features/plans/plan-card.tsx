@@ -134,7 +134,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
       style={{
         background: cardGradient,
       }}
-      className={`p-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-2xl text-background! relative overflow-hidden ${
+      className={`p-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden ${
         !isActive && !isCompleted ? "opacity-85" : ""
       }`}
     >

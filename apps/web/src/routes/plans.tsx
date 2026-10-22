@@ -1,39 +1,39 @@
-import { useState, useMemo } from 'react'
-import { createFileRoute, Link } from '@tanstack/react-router'
-import { usePlans } from '../features/plans/plans-store'
-import type { Plan } from '../types'
-import { PlanCard } from '../features/plans/plan-card'
-import { PlanCardSkeleton } from '../components/ui/skeleton'
-import { ArrowLeftIcon, SparklesIcon } from '../components/ui/icons'
+import { useState, useMemo } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { usePlans } from "../features/plans/plans-store";
+import type { Plan } from "../types";
+import { PlanCard } from "../features/plans/plan-card";
+import { PlanCardSkeleton } from "../components/ui/skeleton";
+import { ArrowLeftIcon, SparklesIcon } from "../components/ui/icons";
 
-export const Route = createFileRoute('/plans')({
+export const Route = createFileRoute("/plans")({
   component: CustomerPlansPage,
-})
+});
 
 function CustomerPlansPage() {
-  const { plans, allProducts, isLoading } = usePlans()
-  const [filterMode] = useState<'all' | 'active'>('all')
+  const { plans, allProducts, isLoading } = usePlans();
+  const [filterMode] = useState<"all" | "active">("all");
 
   const filteredPlans = (plans as Plan[]).filter((p: Plan) => {
-    if (filterMode === 'active') return p.status === 'active' || p.isActive
-    return true
-  })
+    if (filterMode === "active") return p.status === "active" || p.isActive;
+    return true;
+  });
 
   const sortedPlans = useMemo(() => {
     const getPlanRank = (p: Plan) => {
       // 3: Active, 2: Completed/Successful, 1: Expired/Draft
-      if (p.status === 'active' || (p.status === undefined && p.isActive)) return 3
-      if (p.status === 'completed' || p.status === 'successful') return 2
-      return 1
-    }
+      if (p.status === "active" || (p.status === undefined && p.isActive))
+        return 3;
+      if (p.status === "completed" || p.status === "successful") return 2;
+      return 1;
+    };
 
-    return [...filteredPlans].sort((a, b) => getPlanRank(b) - getPlanRank(a))
-  }, [filteredPlans])
+    return [...filteredPlans].sort((a, b) => getPlanRank(b) - getPlanRank(a));
+  }, [filteredPlans]);
 
   return (
-    <div className="w-full  px-3 py-3 space-y-3.5 text-start">
-      <div className="flex items-center justify-between gap-2">
-      </div>
+    <div className="w-full px-4 py-3 space-y-3.5 text-start">
+      <div className="flex items-center justify-between gap-2"></div>
       {isLoading && plans.length === 0 ? (
         <div className="grid grid-cols-1 gap-4 items-stretch">
           <PlanCardSkeleton />
@@ -63,14 +63,10 @@ function CustomerPlansPage() {
       ) : (
         <div className="space-y-2 gap-4 items-stretch">
           {sortedPlans.map((plan) => (
-            <PlanCard
-              key={plan.id}
-              plan={plan}
-              products={allProducts}
-            />
+            <PlanCard key={plan.id} plan={plan} products={allProducts} />
           ))}
         </div>
       )}
     </div>
-  )
+  );
 }
