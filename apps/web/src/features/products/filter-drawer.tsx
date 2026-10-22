@@ -154,7 +154,9 @@ export function FilterDrawer({
 
                   <Dropdown.Popover
                     dir="rtl"
-                    className="w-[calc(100vw-25%)] text-right max-w-md rounded-2xl p-1.5 bg-surface z-60"
+                    placement="bottom"
+                    shouldFlip={false}
+                    className="w-[calc(100vw-25%)] text-right max-w-md rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"
@@ -217,7 +219,9 @@ export function FilterDrawer({
 
                   <Dropdown.Popover
                     dir="rtl"
-                    className="w-[calc(100vw-25%)] text-right max-w-md max-h-60 overflow-y-auto rounded-2xl p-1.5 bg-surface z-60"
+                    placement="bottom"
+                    shouldFlip={false}
+                    className="w-[calc(100vw-25%)] text-right max-w-md max-h-56 overflow-y-auto rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"

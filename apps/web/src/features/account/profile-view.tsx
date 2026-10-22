@@ -2,13 +2,11 @@ import { useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import {
   Modal as HeroUIModal,
+  Drawer,
   Button,
-  Fieldset,
-  FieldGroup,
   TextField,
   Label,
   Input,
-  TextArea,
 } from '@heroui/react'
 import { useAuth } from '../auth/auth-store'
 import { toPersianDigits } from '../../lib/utils/currency'
@@ -17,9 +15,7 @@ import {
   UserIcon,
   StoreIcon,
   PhoneIcon,
-  MapPinIcon,
   LogOutIcon,
-  ShieldCheckIcon,
   AlertCircleIcon,
   PencilIcon,
   CheckIcon,
@@ -36,10 +32,6 @@ export function ProfileView() {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     storeName: user?.storeName || '',
-    economicCode: user?.economicCode || '',
-    province: user?.province || '',
-    city: user?.city || '',
-    address: user?.address || '',
   })
 
   if (!user) {
@@ -63,10 +55,6 @@ export function ProfileView() {
     setFormData({
       name: user.name,
       storeName: user.storeName,
-      economicCode: user.economicCode || '',
-      province: user.province || '',
-      city: user.city || '',
-      address: user.address || '',
     })
     setIsEditing(true)
   }
@@ -75,10 +63,6 @@ export function ProfileView() {
     setFormData({
       name: user.name,
       storeName: user.storeName,
-      economicCode: user.economicCode || '',
-      province: user.province || '',
-      city: user.city || '',
-      address: user.address || '',
     })
     setIsEditing(false)
   }
@@ -99,10 +83,6 @@ export function ProfileView() {
     updateProfile({
       name: formData.name.trim(),
       storeName: formData.storeName.trim(),
-      economicCode: formData.economicCode.trim(),
-      province: formData.province.trim(),
-      city: formData.city.trim(),
-      address: formData.address.trim(),
     })
 
     toast.success('تغییرات ذخیره شد', 'اطلاعات حساب کاربری با موفقیت به‌روزرسانی گردید.')
@@ -118,7 +98,7 @@ export function ProfileView() {
 
   return (
     <div className="space-y-3.5 w-full">
-      {/* User Header Card */}
+      {/* Top Header Card */}
       <div className="bg-muted/5 rounded-2xl p-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-3">
           <div>
@@ -145,226 +125,167 @@ export function ProfileView() {
         </div>
       </div>
 
-      {/* Main Profile Content: Edit Form vs View Mode */}
-      {isEditing ? (
-        <form onSubmit={handleSaveProfile} className="bg-muted/5 rounded-2xl p-4 sm:p-5">
-          <Fieldset className="space-y-4">
-            <Fieldset.Legend className="w-full">
-              <div className="flex items-center justify-between pb-2 w-full">
-                <div className="flex items-center gap-2">
-                  <span className="w-7 h-7 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
-                    <PencilIcon size={14} />
-                  </span>
-                  <span className="text-sm font-bold text-foreground">
-                    ویرایش اطلاعات حساب کاربری
-                  </span>
-                </div>
-                <span className="text-xs font-semibold text-warning bg-warning/15 px-2 py-0.5 rounded-lg">
-                  حالت ویرایش
-                </span>
-              </div>
-            </Fieldset.Legend>
-
-            <FieldGroup className="space-y-3.5">
-              {/* Representative Name */}
-              <TextField name="name" isRequired className="space-y-1 text-start">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <UserIcon size={13} className="text-muted" />
-                  <span>نام و نام خانوادگی</span>
-                  <span className="text-danger">*</span>
-                </Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
-                  placeholder="مثال: آرش دهقان"
-                />
-              </TextField>
-
-              {/* Store Name */}
-              <TextField name="storeName" isRequired className="space-y-1 text-start">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <StoreIcon size={13} className="text-muted" />
-                  <span>نام فروشگاه / شرکت</span>
-                  <span className="text-danger">*</span>
-                </Label>
-                <Input
-                  value={formData.storeName}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
-                  placeholder="مثال: بازرگانی پرشین پارت"
-                />
-              </TextField>
-
-              {/* Phone Number - Strictly Non-Editable */}
-              <div className="space-y-1 text-start">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <PhoneIcon size={13} className="text-muted" />
-                    <span>شماره همراه</span>
-                  </label>
-                  <span className="text-xs font-semibold text-muted bg-muted/10 px-2 py-0.5 rounded-lg flex items-center gap-1">
-                    <LockIcon size={10} className="text-muted" />
-                    <span>ثابت</span>
-                  </span>
-                </div>
-                <div className="flex items-center justify-between px-3 py-2 bg-muted/10 rounded-2xl text-foreground select-none">
-                  <span className="text-xs font-bold tracking-wider" dir="ltr">
-                    {toPersianDigits(user.phone)}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs font-medium text-muted bg-muted/20 px-2 py-0.5 rounded-lg">
-                    <LockIcon size={11} className="text-muted" />
-                    <span>غیرقابل تغییر</span>
-                  </span>
-                </div>
-              </div>
-
-              {/* Economic / National Code */}
-              <TextField name="economicCode" className="space-y-1 text-start">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <ShieldCheckIcon size={14} className="text-muted" />
-                  <span>کد اقتصادی / شناسه ملی</span>
-                </Label>
-                <Input
-                  dir="ltr"
-                  value={formData.economicCode}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, economicCode: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all text-start"
-                  placeholder="مثال: 411589324156"
-                />
-              </TextField>
-
-              {/* Province & City */}
-              <div className="grid grid-cols-2 gap-2.5 text-start">
-                <TextField name="province" className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <MapPinIcon size={14} className="text-muted" />
-                    <span>استان</span>
-                  </Label>
-                  <Input
-                    value={formData.province}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, province: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
-                    placeholder="تهران"
-                  />
-                </TextField>
-                <TextField name="city" className="space-y-1">
-                  <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                    <MapPinIcon size={14} className="text-muted" />
-                    <span>شهر</span>
-                  </Label>
-                  <Input
-                    value={formData.city}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, city: e.target.value }))}
-                    className="w-full px-3 py-2 text-xs font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
-                    placeholder="تهران"
-                  />
-                </TextField>
-              </div>
-
-              {/* Delivery Warehouse Address */}
-              <TextField name="address" className="space-y-1 text-start">
-                <Label className="text-xs font-semibold text-foreground flex items-center gap-1">
-                  <MapPinIcon size={14} className="text-muted" />
-                  <span>نشانی تحویل</span>
-                </Label>
-                <TextArea
-                  rows={3}
-                  value={formData.address}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, address: e.target.value }))}
-                  className="w-full px-3 py-2 text-xs font-medium text-foreground bg-muted/10 rounded-2xl outline-none transition-all leading-relaxed"
-                  placeholder="نشانی کامل انبار یا محل تحویل سفارش..."
-                />
-              </TextField>
-            </FieldGroup>
-
-            {/* Form Actions */}
-            <Fieldset.Actions className="pt-2 flex items-center gap-2">
-              <Button
-                type="submit"
-                className="flex-1 h-10 px-4 rounded-2xl bg-success/15 text-success hover:bg-success/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
-              >
-                <CheckIcon size={15} />
-                <span>ذخیره تغییرات</span>
-              </Button>
-              <Button
-                type="button"
-                onPress={handleCancelEdit}
-                className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
-              >
-                <XIcon size={15} />
-                <span>انصراف</span>
-              </Button>
-            </Fieldset.Actions>
-          </Fieldset>
-        </form>
-      ) : (
-        /* View Mode: Separated Elements with Gap and Individual Radius */
-        <div className="space-y-2.5">
-          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
-            <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
-            <div className="flex-1 text-start">
-              <span className="text-xs font-semibold text-muted block">نام نماینده / مدیر خرید</span>
-              <span className="text-xs sm:text-sm font-bold text-foreground">{user.name}</span>
-            </div>
-          </div>
-
-          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
-            <StoreIcon size={17} className="text-muted mt-0.5 shrink-0" />
-            <div className="flex-1 text-start">
-              <span className="text-xs font-semibold text-muted block">عنوان فروشگاه / شرکت حقوقی</span>
-              <span className="text-xs sm:text-sm font-bold text-foreground">{user.storeName}</span>
-            </div>
-          </div>
-
-          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start justify-start gap-3">
-            <PhoneIcon size={17} className="text-muted mt-0.5 shrink-0" />
-            <div className="flex-1 text-start">
-              <div className="flex items-start justify-start">
-                <span className="text-xs font-semibold text-muted block">شماره تلفن همراه</span>
-              </div>
-              <span className="text-xs sm:text-sm text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
-                {toPersianDigits(user.phone)}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
-            <ShieldCheckIcon size={17} className="text-muted mt-0.5 shrink-0" />
-            <div className="flex-1 text-start">
-              <span className="text-xs font-semibold text-muted block">شناسه ملی / کد اقتصادی</span>
-              <span className="text-xs sm:text-sm font-bold text-foreground mt-0.5 block">
-                {toPersianDigits(user.economicCode || 'ثبت نشده')}
-              </span>
-            </div>
-          </div>
-
-          <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
-            <MapPinIcon size={17} className="text-muted mt-0.5 shrink-0" />
-            <div className="flex-1 text-start">
-              <span className="text-xs font-semibold text-muted block">نشانی انبار یا محل تحویل</span>
-              <span className="text-xs sm:text-sm font-bold text-foreground leading-relaxed block mt-0.5">
-                {user.address}
-              </span>
-              <span className="text-xs text-muted font-medium block mt-1">
-                استان {user.province}، شهر {user.city}
-              </span>
-            </div>
-          </div>
-
-          {/* Quick Edit CTA */}
-          <div className="pt-1">
-            <Button
-              type="button"
-              onPress={handleStartEdit}
-              className="h-12 w-full px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
-            >
-              <PencilIcon size={16} />
-              <span>ویرایش اطلاعات</span>
-            </Button>
+      {/* Main View Cards */}
+      <div className="space-y-2.5">
+        <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+          <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
+          <div className="flex-1 text-start">
+            <span className="text-xs font-semibold text-muted block">نام نماینده / مدیر خرید</span>
+            <span className="text-xs sm:text-sm font-bold text-foreground">{user.name}</span>
           </div>
         </div>
-      )}
+
+        <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
+          <StoreIcon size={17} className="text-muted mt-0.5 shrink-0" />
+          <div className="flex-1 text-start">
+            <span className="text-xs font-semibold text-muted block">عنوان فروشگاه / شرکت حقوقی</span>
+            <span className="text-xs sm:text-sm font-bold text-foreground">{user.storeName}</span>
+          </div>
+        </div>
+
+        <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start justify-start gap-3">
+          <PhoneIcon size={17} className="text-muted mt-0.5 shrink-0" />
+          <div className="flex-1 text-start">
+            <div className="flex items-start justify-start">
+              <span className="text-xs font-semibold text-muted block">شماره تلفن همراه</span>
+            </div>
+            <span className="text-xs sm:text-sm text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
+              {toPersianDigits(user.phone)}
+            </span>
+          </div>
+        </div>
+
+        {/* Quick Edit CTA Button */}
+        <div className="pt-1">
+          <Button
+            type="button"
+            onPress={handleStartEdit}
+            className="h-12 w-full px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-sm flex items-center justify-center gap-1.5 cursor-pointer active:scale-95 transition-all"
+          >
+            <PencilIcon size={16} />
+            <span>ویرایش اطلاعات</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Edit Profile Bottom Sheet (Drawer) */}
+      <Drawer>
+        <Drawer.Backdrop
+          isOpen={isEditing}
+          onOpenChange={(open) => !open && handleCancelEdit()}
+          className="fixed z-50 backdrop-blur-xs bg-foreground/30 min-h-60 flex items-end justify-center fade-up transition-all duration-300"
+        >
+          <Drawer.Content
+            placement="bottom"
+            className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[90dvh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
+          >
+            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[90dvh]! min-h-0 outline-none text-start overscroll-contain">
+              {/* Drag Handle UI */}
+              <div className="flex justify-center w-full shrink-0 pt-2">
+                <Drawer.Handle className="w-16 h-1.5 rounded-full" />
+              </div>
+
+              {/* Header */}
+              <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <PencilIcon size={16} />
+                  </span>
+                  <Drawer.Heading className="text-sm font-extrabold text-foreground">
+                    ویرایش اطلاعات حساب کاربری
+                  </Drawer.Heading>
+                </div>
+
+                <Button
+                  type="button"
+                  onClick={handleCancelEdit}
+                  aria-label="بستن"
+                  className="size-10 rounded-2xl bg-muted/10 hover:bg-muted/20 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
+                >
+                  <XIcon />
+                </Button>
+              </Drawer.Header>
+
+              {/* Form & Body */}
+              <form onSubmit={handleSaveProfile} className="flex flex-col flex-1 min-h-0">
+                <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-4 scrollbar-none">
+                  {/* Name Field */}
+                  <TextField name="name" isRequired className="space-y-1 text-start">
+                    <Label className="text-base font-semibold text-foreground flex items-center gap-1">
+                      <UserIcon size={15} className="text-muted" />
+                      <span>نام و نام خانوادگی</span>
+                    </Label>
+                    <Input
+                      value={formData.name}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      style={{ fontSize: "12px" }}
+                      className="w-full px-4 py-2 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
+                      placeholder="مثال: آرش دهقان"
+                    />
+                  </TextField>
+
+                  {/* Store Name Field */}
+                  <TextField name="storeName" isRequired className="space-y-1 text-start">
+                    <Label className="text-base font-semibold text-foreground flex items-center gap-1">
+                      <StoreIcon size={15} className="text-muted" />
+                      <span>نام فروشگاه / شرکت</span>
+                    </Label>
+                    <Input
+                      value={formData.storeName}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
+                      style={{ fontSize: "12px" }}
+                      className="w-full px-4 py-2 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
+                      placeholder="مثال: بازرگانی پرشین پارت"
+                    />
+                  </TextField>
+
+                  {/* Phone Number - Strictly Non-Editable */}
+                  <div className="space-y-1 text-start">
+                    <div className="flex items-center justify-between">
+                      <label className="text-base font-semibold text-foreground flex items-center gap-1">
+                        <PhoneIcon size={15} className="text-muted" />
+                        <span>شماره همراه</span>
+                      </label>
+                      <span className="text-xs font-semibold text-muted bg-muted/10 px-3 py-0.5 rounded-lg flex items-center gap-1">
+                        <LockIcon size={10} className="text-muted" />
+                        <span>ثابت</span>
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between px-4 py-2 bg-muted/10 rounded-2xl text-foreground select-none">
+                      <span className="text-xs! font-bold tracking-wider" style={{ fontSize: "12px" }} dir="ltr">
+                        {toPersianDigits(user.phone)}
+                      </span>
+                      <span className="flex items-center gap-1 text-xs font-medium text-muted bg-muted/20 px-3 py-0.5 rounded-lg">
+                        <LockIcon size={11} className="text-muted" />
+                        <span>غیرقابل تغییر</span>
+                      </span>
+                    </div>
+                  </div>
+                </Drawer.Body>
+
+                {/* Footer Actions */}
+                <Drawer.Footer className="px-5 py-3 shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
+                  <Button
+                    type="submit"
+                    className="flex-1 h-12 px-4 rounded-2xl bg-success/15 text-success hover:bg-success/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
+                  >
+                    <CheckIcon size={15} />
+                    <span>ذخیره تغییرات</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    onClick={handleCancelEdit}
+                    className="h-12 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <XIcon size={15} />
+                    <span>انصراف</span>
+                  </Button>
+                </Drawer.Footer>
+              </form>
+            </Drawer.Dialog>
+          </Drawer.Content>
+        </Drawer.Backdrop>
+      </Drawer>
 
       {/* HeroUI Logout Confirmation Modal */}
       <HeroUIModal.Root isOpen={showLogoutConfirm} onOpenChange={(open) => !open && setShowLogoutConfirm(false)}>

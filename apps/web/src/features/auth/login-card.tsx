@@ -146,10 +146,10 @@ export function LoginCard() {
       transition={{ duration: 0.5, ease: 'easeIn' }}
       className="mb-5 w-full overflow-hidden"
     >
-      <div className="w-full rounded-3xl bg-primary/3 p-6 sm:p-8">
+      <div className="w-full rounded-3xl bg-background p-6 sm:p-8 ">
         {/* Brand Header */}
         <div className="mb-6 flex flex-col items-center text-center">
-          <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 p-2.5 shadow-xs">
+          <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 p-2.5">
             <img
               src="/assets/images/persian-part-logo.png"
               alt="پرشین‌پارت"
@@ -161,7 +161,7 @@ export function LoginCard() {
             ورود به پرشین‌پارت
           </h1>
 
-          <p className="mt-1.5 max-w-xs text-xs leading-relaxed text-muted">
+          <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
             سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک پرسلان
           </p>
         </div>
@@ -208,7 +208,7 @@ export function LoginCard() {
                   شماره تلفن همراه
                 </label>
 
-                <InputGroup fullWidth className="h-12 rounded-2xl border border-border/50 bg-muted/10 transition-all focus-within:border-primary/50 focus-within:ring-2 focus-within:ring-primary/10">
+                <InputGroup fullWidth className="h-12 rounded-2xl bg-muted/10 transition-all shadow-none">
                   <InputGroup.Prefix className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
                     <PhoneIcon size={18} />
                   </InputGroup.Prefix>
@@ -236,11 +236,11 @@ export function LoginCard() {
                     dir="ltr"
                     autoFocus
                     disabled={isLoading}
-                    className="h-12 flex-1 bg-transparent px-4 text-start text-base font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm sm:text-lg border-0 ring-0 shadow-none"
+                    className="h-12 flex-1 shadow-none! bg-transparent px-4 text-start text-base font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm sm:text-lg border-0 ring-0 "
                   />
                 </InputGroup>
 
-                <p className="mt-2 text-start text-xs font-medium leading-relaxed text-muted">
+                <p className="mt-2 text-start text-xs  leading-relaxed text-muted">
                   کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال خواهد شد.
                 </p>
               </div>
@@ -248,7 +248,7 @@ export function LoginCard() {
               <Button
                 type="submit"
                 isDisabled={isLoading || !/^09\d{9}$/.test(phone)}
-                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-xs transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground  ransition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />
@@ -304,7 +304,7 @@ export function LoginCard() {
                 </label>
 
                 <div
-                  className="flex w-full items-center justify-center py-1"
+                  className="flex w-full items-center justify-center py-1 shadow-none" 
                   dir="ltr"
                 >
                   <InputOTP
@@ -354,7 +354,7 @@ export function LoginCard() {
                 type="button"
                 onPress={() => handleVerifyOtp()}
                 isDisabled={isLoading || otpCode.length !== 5}
-                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground shadow-xs transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                className="flex h-12 shadow-xs shadow-white w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground  ransition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />

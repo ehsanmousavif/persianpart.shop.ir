@@ -195,26 +195,22 @@ select {
   touch-action: manipulation;
 }
 
-input,
-textarea,
-select {
-  font-size: inherit;
-}
-
-/* Enforce 16px minimum font-size on mobile inputs to eliminate iOS Safari focus auto-zoom */
-@media screen and (max-width: 768px) {
+@layer base {
   input,
   textarea,
-  select,
-  [data-slot="input"],
-  [data-slot="search-input"],
-  input[type="text"],
-  input[type="number"],
-  input[type="search"],
-  input[type="tel"],
-  input[type="email"],
-  input[type="password"] {
-    font-size: 16px !important;
+  select {
+    font-size: inherit;
+  }
+}
+
+/* Enforce 16px minimum font-size on mobile inputs to eliminate iOS Safari focus auto-zoom, unless an explicit text-* size is set */
+@media screen and (max-width: 768px) {
+  input:not([class*="text-"]):not([style*="font-size"]),
+  textarea:not([class*="text-"]):not([style*="font-size"]),
+  select:not([class*="text-"]):not([style*="font-size"]),
+  [data-slot="input"]:not([class*="text-"]):not([style*="font-size"]),
+  [data-slot="search-input"]:not([class*="text-"]):not([style*="font-size"]) {
+    font-size: 16px;
   }
 }
 
@@ -309,7 +305,6 @@ h6 {
     transform: translateY(0);
   }
 }
-
 .animate-card-fade-in {
   animation: cardFadeIn 300ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;

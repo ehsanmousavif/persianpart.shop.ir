@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { Modal as HeroUIModal, Button } from "@heroui/react";
+import { useMemo } from "react";
+import { Drawer, Button } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product, OrderItem } from "../../types";
@@ -12,7 +12,6 @@ import { api } from "../../lib/api-client";
 import { queryKeys, mutationKeys } from "../../lib/query-keys";
 import {
   XIcon,
-  ClockIcon,
   PencilIcon,
   TomanIcon,
 } from "../../components/ui/icons";
@@ -47,32 +46,6 @@ export function PreInvoiceModal({
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all });
     },
   });
-
-  // 10-Minute Validity Countdown (600 seconds)
-  const [secondsRemaining, setSecondsRemaining] = useState(600);
-
-  useEffect(() => {
-    if (!isOpen) return;
-
-    setSecondsRemaining(600);
-    const interval = setInterval(() => {
-      setSecondsRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [isOpen]);
-
-  const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${toPersianDigits(mins.toString().padStart(2, "0"))}:${toPersianDigits(secs.toString().padStart(2, "0"))}`;
-  };
 
   // Calculate detailed items and invoice totals
   const invoiceItems = useMemo(() => {
@@ -218,64 +191,42 @@ export function PreInvoiceModal({
   };
 
   return (
-    <HeroUIModal.Root
-      isOpen={isOpen}
-      onOpenChange={(open) => !open && onClose()}
-    >
-      <HeroUIModal.Backdrop
-        isDismissable
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4 animate-backdrop-enter"
+    <Drawer>
+      <Drawer.Backdrop
+        isOpen={isOpen}
+        onOpenChange={(open) => !open && onClose()}
+        className="fixed z-50 backdrop-blur-xs bg-foreground/30 min-h-60 flex items-end justify-center fade-up transition-all duration-300"
       >
-        <HeroUIModal.Container className="pointer-events-none w-full max-w-2xl h-auto p-0 flex flex-col items-center">
-          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-2xl flex flex-col max-h-[92vh] z-10 overflow-hidden animate-modal-enter text-start">
+        <Drawer.Content
+          placement="bottom"
+          className="w-full max-w-xl mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[92dvh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
+        >
+          <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[92dvh]! min-h-0 outline-none text-start overscroll-contain">
+            {/* Drag Handle UI */}
+            <div className="flex justify-center w-full shrink-0 pt-2">
+              <Drawer.Handle className="w-16 h-1.5 rounded-full" />
+            </div>
+
             {/* Header */}
-            <HeroUIModal.Header className="px-4 sm:px-6 py-3.5 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-2.5">
-                <div>
-                  <HeroUIModal.Heading className="text-sm sm:text-base font-bold text-foreground">
-                    پیش‌فاکتور تایید سفارش
-                  </HeroUIModal.Heading>
-                </div>
+            <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
+              <div className="flex items-center gap-2">
+                <Drawer.Heading className="text-sm sm:text-base font-extrabold text-foreground">
+                  پیش‌فاکتور تایید سفارش
+                </Drawer.Heading>
               </div>
 
-              <HeroUIModal.CloseTrigger
+              <Button
+                type="button"
                 onClick={onClose}
-                className="w-8 h-8 px-2 py-1.5 rounded-2xl text-muted hover:text-foreground hover:bg-muted/10 flex items-center justify-center transition-colors cursor-pointer"
                 aria-label="بستن پیش‌فاکتور"
+                className="size-10 rounded-2xl bg-muted/10 hover:bg-muted/20 text-muted hover:text-foreground flex items-center justify-center cursor-pointer transition-colors shrink-0"
               >
-                <XIcon size={18} />
-              </HeroUIModal.CloseTrigger>
-            </HeroUIModal.Header>
+                <XIcon />
+              </Button>
+            </Drawer.Header>
 
             {/* Scrollable Body */}
-            <HeroUIModal.Body className="p-4 sm:p-6 overflow-y-auto overscroll-contain space-y-4">
-              {/* 10-Minute Expiration Warning Banner with Stable Non-Jittering Live Countdown */}
-              <div className="p-3 bg-warning/15 rounded-2xl flex items-center justify-between gap-2.5 text-foreground">
-                <div className="flex items-center gap-2.5 flex-1 min-w-0">
-                  <div className="w-8 h-8 rounded-2xl bg-warning/20 text-warning flex items-center justify-center shrink-0">
-                    <ClockIcon size={18} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <span className="font-bold text-xs block leading-snug text-foreground">
-                      این فاکتور به مدت ۱۰ دقیقه معتبر است و پس از آن امکان لغو
-                      توسط کاربر مقدور نمی‌باشد
-                    </span>
-                  </div>
-                </div>
-
-                <div className="w-fit px-2 h-8 shrink-0 flex items-center justify-center gap-1.5 rounded-2xl bg-muted/10 select-none">
-                  <span
-                    className={`w-2 h-2 rounded-full shrink-0 ${secondsRemaining < 120 ? "bg-danger animate-ping" : "bg-warning"}`}
-                  />
-                  <span
-                    className="font-bold text-xs sm:text-sm text-foreground tabular-nums font-mono w-11 text-center"
-                    dir="ltr"
-                  >
-                    {formatTimer(secondsRemaining)}
-                  </span>
-                </div>
-              </div>
-
+            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-5 py-3 space-y-3.5 scrollbar-none">
               {/* Items List (Mobile-styled Cards on all viewports) */}
               <div className="space-y-2.5">
                 {invoiceItems.map((item) => (
@@ -308,7 +259,7 @@ export function PreInvoiceModal({
                           {item.product.name}
                         </h4>
                         <div className="flex items-center gap-1.5 text-xs text-muted mt-1 flex-wrap">
-                          <span className="px-2 py-1 rounded-lg bg-muted/10 text-foreground font-semibold text-xs">
+                          <span className="px-2 py-0.5 rounded-lg bg-muted/10 text-foreground font-semibold text-xs">
                             ابعاد:{" "}
                             {toPersianDigits(item.product.dimensions.width)} ×{" "}
                             {toPersianDigits(item.product.dimensions.height)}
@@ -321,7 +272,7 @@ export function PreInvoiceModal({
                       </div>
                     </div>
 
-                    {/* Calculation Metrics: 3-column bottom strip like mobile */}
+                    {/* Calculation Metrics: 3-column bottom strip */}
                     <div className="flex items-center justify-between text-xs pt-2 -mx-3 -mb-3 px-3 py-2 rounded-b-2xl bg-muted/5">
                       <div className="text-start">
                         <span className="font-bold text-primary">
@@ -331,7 +282,7 @@ export function PreInvoiceModal({
 
                       <div className="text-center">
                         <span className="font-bold text-foreground">
-                          {toPersianDigits(item.deliverableArea)}
+                          {toPersianDigits(item.deliverableArea)} متر
                         </span>
                       </div>
 
@@ -347,59 +298,64 @@ export function PreInvoiceModal({
               </div>
 
               {/* Financial Summary */}
-              <div className="pt-3 space-y-2 text-xs">
+              <div className="pt-3 pb-1 space-y-2 text-xs border-t border-border/20">
                 <div className="flex flex-col w-full px-1 gap-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-foreground">
-                      تعداد کارتون ها:
+                      تعداد کارتن‌ها:
                     </span>
                     <span className="text-sm font-bold text-foreground">
-                      {formatToman(invoiceTotals.totalCartons)}عدد
+                      {toPersianDigits(invoiceTotals.totalCartons)} عدد
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-bold text-foreground">
+                      متراژ کلی:
+                    </span>
+                    <span className="text-sm font-bold text-foreground">
+                      {toPersianDigits(invoiceTotals.totalDeliverableArea)} مترمربع
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between pt-1">
+                    <span className="text-sm font-bold text-foreground">
                       قیمت کل:
                     </span>
-                    <span className="text-base font-bold text-foreground inline-flex items-center gap-1">
+                    <span className="text-base font-extrabold text-foreground inline-flex items-center gap-1">
                       <span>{formatToman(invoiceTotals.finalPayable)}</span>
                       <TomanIcon className="size-4" />
                     </span>
                   </div>
                 </div>
               </div>
-            </HeroUIModal.Body>
+            </Drawer.Body>
 
-            {/* Modal Footer with Two Required Action Buttons */}
-            <HeroUIModal.Footer className="w-full px-4 flex shrink-0">
-              <div className="flex w-full items-stretch gap-2">
-                {/* Button 1: ویرایش مقادیر */}
-                <Button
-                  type="button"
-                  onPress={handleEditClick}
-                  className="shrink-0 px-2 py-6 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold flex items-center justify-center gap-1 transition-colors cursor-pointer active:scale-95 touch-manipulation"
-                >
-                  <PencilIcon size={15} />
-                  <span>ویرایش</span>
-                </Button>
+            {/* Bottom Sheet Footer with Two Action Buttons */}
+            <Drawer.Footer className="w-full px-4 sm:px-5 py-3 shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
+              {/* Button 1: ویرایش مقادیر */}
+              <Button
+                type="button"
+                onPress={handleEditClick}
+                className="shrink-0 h-12 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
+              >
+                <PencilIcon size={15} />
+                <span>ویرایش</span>
+              </Button>
 
-                <div className="flex-1 min-w-0">
-                  <HoldConfirmButton
-                    onConfirmed={handleFinalConfirm}
-                    holdDurationMs={3000}
-                    disabled={
-                      secondsRemaining === 0 || invoiceItems.length === 0
-                    }
-                    idleText="برای ثبت سفارش نگه دارید "
-                    holdingText="در حال تایید..."
-                    confirmedText="تایید شد"
-                  />
-                </div>
+              {/* Button 2: Hold to Confirm */}
+              <div className="flex-1 min-w-0">
+                <HoldConfirmButton
+                  onConfirmed={handleFinalConfirm}
+                  holdDurationMs={3000}
+                  disabled={invoiceItems.length === 0}
+                  idleText="برای ثبت سفارش نگه دارید"
+                  holdingText="در حال تایید..."
+                  confirmedText="تایید شد"
+                />
               </div>
-            </HeroUIModal.Footer>
-          </HeroUIModal.Dialog>
-        </HeroUIModal.Container>
-      </HeroUIModal.Backdrop>
-    </HeroUIModal.Root>
+            </Drawer.Footer>
+          </Drawer.Dialog>
+        </Drawer.Content>
+      </Drawer.Backdrop>
+    </Drawer>
   );
 }

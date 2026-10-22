@@ -119,9 +119,9 @@ export function ProductBottomSheet({
         >
           <Drawer.Content
             placement="bottom"
-            className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[95dvh]! max-h-[95vh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
+            className="w-full max-w-xl mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[95dvh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
           >
-            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[95dvh]! max-h-[95vh]! min-h-0 outline-none text-start overscroll-contain">
+            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[95dvh]! min-h-0 outline-none text-start overscroll-contain">
               {/* Drag Handle UI */}
               <div className="flex justify-center w-full shrink-0 pt-1">
                 <Drawer.Handle className="w-16 h-1.5 rounded-full" />
@@ -349,7 +349,7 @@ export function ProductBottomSheet({
                         <SolarLayersIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-medium block leading-tight mb-0.5">
                         تعداد در هر کارتن
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">

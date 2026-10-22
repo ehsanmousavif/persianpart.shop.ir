@@ -6,64 +6,31 @@ import { formatPersianDate } from '../../lib/utils/date'
 
 const STORAGE_KEY = 'persianpart_plans_v1'
 
-const DEMO_COMPLETED_PLANS: Plan[] = [
-  {
-    id: 'demo-completed-1',
-    title: 'طرح موفق تأمین پرسلان پروژه برج مروارید',
-    customerGreeting: 'طرح موفق تأمین پرسلان پروژه برج مروارید',
-    customerId: 'demo-cust-1',
-    customerName: 'مهندس کامران سهرابی',
-    type: 'credit_terms',
-    discountPercent: 10,
-    isActive: false,
-    status: 'completed',
-    content: 'مهندس کامران سهرابی عزیز؛ تسویه کامل تعهدات اعتباری ۶۰ روزه با حسن انجام کار و بهره‌مندی از ۱۰٪ تخفیف نقدی تأمین پرسلان‌های لوکس پروژه برج مروارید.',
-    productIds: ['33', '34'],
-    notes: 'مهندس کامران سهرابی عزیز؛ تسویه کامل تعهدات اعتباری ۶۰ روزه با حسن انجام کار و بهره‌مندی از ۱۰٪ تخفیف نقدی تأمین پرسلان‌های لوکس پروژه برج مروارید.',
-    createdAt: '۱۴۰۵/۰۶/۱۵',
-  },
-  {
-    id: 'demo-completed-2',
-    title: 'طرح موفق جشنواره طلایی فصلی بازرگانی دهقان',
-    customerGreeting: 'طرح موفق جشنواره طلایی فصلی بازرگانی دهقان',
-    customerId: 'demo-cust-2',
-    customerName: 'آرش دهقان',
-    type: 'product_discount',
-    discountPercent: 15,
-    isActive: false,
-    status: 'completed',
-    content: 'آرش دهقان عزیز؛ خرید موفق عمده جشنواره فصلی با اعمال ۱۵٪ تخفیف حجمی و تحویل کامل ۱۰۰٪ سفارش‌های پالتی در انبار مرکزی.',
-    productIds: ['35', '37'],
-    notes: 'آرش دهقان عزیز؛ خرید موفق عمده جشنواره فصلی با اعمال ۱۵٪ تخفیف حجمی و تحویل کامل ۱۰۰٪ سفارش‌های پالتی در انبار مرکزی.',
-    createdAt: '۱۴۰۵/۰۵/۲۸',
-  },
-]
-
 function getInitialPlans(): Plan[] {
-  if (typeof window === 'undefined') return DEMO_COMPLETED_PLANS
+  if (typeof window === 'undefined') return []
   try {
     const saved = localStorage.getItem(STORAGE_KEY)
     if (saved) {
       const parsed = JSON.parse(saved)
       if (Array.isArray(parsed) && parsed.length > 0) {
-        const mapped = parsed.map((p) => {
-          if (p.createdAt && (p.createdAt.includes('2026') || p.createdAt.includes('2025') || p.createdAt.includes('2024') || p.createdAt.startsWith('20'))) {
-            return {
-              ...p,
-              createdAt: formatPersianDate(p.createdAt),
+        const mapped = parsed
+          .filter((p) => !p.id?.startsWith('demo-'))
+          .map((p) => {
+            if (p.createdAt && (p.createdAt.includes('2026') || p.createdAt.includes('2025') || p.createdAt.includes('2024') || p.createdAt.startsWith('20'))) {
+              return {
+                ...p,
+                createdAt: formatPersianDate(p.createdAt),
+              }
             }
-          }
-          return p
-        })
-        const existingIds = new Set(mapped.map((p) => p.id))
-        const demoToAdd = DEMO_COMPLETED_PLANS.filter((dp) => !existingIds.has(dp.id))
-        return [...mapped, ...demoToAdd]
+            return p
+          })
+        return mapped
       }
     }
   } catch {
     // fallback
   }
-  return DEMO_COMPLETED_PLANS
+  return []
 }
 
 function mapApiPlanToPlan(p: any): Plan {
@@ -145,9 +112,7 @@ async function fetchFromBackend() {
     if (plansRes.status === 'fulfilled' && plansRes.value?.items) {
       const mapped = plansRes.value.items.map(mapApiPlanToPlan)
       if (mapped.length > 0) {
-        const existingIds = new Set(mapped.map((p) => p.id))
-        const demoToAdd = DEMO_COMPLETED_PLANS.filter((dp) => !existingIds.has(dp.id))
-        currentPlans = [...mapped, ...demoToAdd]
+        currentPlans = mapped
       }
     }
 
@@ -297,12 +262,9 @@ export function usePlans() {
       const res = await api.plan.list({})
       if (res?.items && res.items.length > 0) {
         const mapped = res.items.map(mapApiPlanToPlan)
-        const existingIds = new Set(mapped.map((p) => p.id))
-        const demoToAdd = DEMO_COMPLETED_PLANS.filter((dp) => !existingIds.has(dp.id))
-        const fullPlans = [...mapped, ...demoToAdd]
-        currentPlans = fullPlans
+        currentPlans = mapped
         broadcast()
-        return fullPlans
+        return mapped
       }
       return plansStore.getPlans()
     },
