@@ -1,6 +1,6 @@
 services:
   migration:
-    image: ${ADMIN_IMAGE:-ghcr.io/persianpart/persianpart.shop/admin}:${ADMIN_TAG:-${TAG:-latest}}
+    image: ${ADMIN_IMAGE:-ghcr.io/ehsanmousavif/persianpart.shop.ir/admin}:${ADMIN_TAG:-${TAG:-latest}}
     restart: "no"
     command: ["pnpm", "--filter", "@persianpart/cms", "migrate"]
     environment:
@@ -10,7 +10,7 @@ services:
       - dokploy-network
 
   server:
-    image: ${SERVER_IMAGE:-ghcr.io/persianpart/persianpart.shop/server}:${SERVER_TAG:-${TAG:-latest}}
+    image: ${SERVER_IMAGE:-ghcr.io/ehsanmousavif/persianpart.shop.ir/server}:${SERVER_TAG:-${TAG:-latest}}
     restart: unless-stopped
     command: ["bun", "run", "apps/api/src/server.ts"]
     expose:
@@ -37,7 +37,7 @@ services:
       - dokploy-network
 
   admin:
-    image: ${ADMIN_IMAGE:-ghcr.io/persianpart/persianpart.shop/admin}:${ADMIN_TAG:-${TAG:-latest}}
+    image: ${ADMIN_IMAGE:-ghcr.io/ehsanmousavif/persianpart.shop.ir/admin}:${ADMIN_TAG:-${TAG:-latest}}
     restart: unless-stopped
     command: ["pnpm", "--filter", "@persianpart/cms", "start"]
     expose:
@@ -59,7 +59,7 @@ services:
       - dokploy-network
 
   customer-app:
-    image: ${CUSTOMER_APP_IMAGE:-ghcr.io/persianpart/persianpart.shop/customer-app}:${CUSTOMER_APP_TAG:-${TAG:-latest}}
+    image: ${CUSTOMER_APP_IMAGE:-ghcr.io/ehsanmousavif/persianpart.shop.ir/customer-app}:${CUSTOMER_APP_TAG:-${TAG:-latest}}
     restart: unless-stopped
     expose:
       - "80"

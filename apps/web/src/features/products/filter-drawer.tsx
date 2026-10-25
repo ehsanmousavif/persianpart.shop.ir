@@ -7,7 +7,7 @@ import {
   Label,
   Switch,
 } from "@heroui/react";
-import { StarIcon } from "@solar-icons/react/Bold";
+import { StarIcon } from "@solar-icons/react/bold";
 import { useProducts } from "./product-store";
 import {
   RefreshCwIcon,
