@@ -8,8 +8,8 @@ export const Plans: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'title',
-    defaultColumns: ['title', 'type', 'discountPercent', 'status', 'users', 'createdAt'],
-    group: 'فروشگاه و مشتریان',
+    defaultColumns: ['title', 'users', 'createdAt'],
+    group: 'مشتریان',
     description: 'طرح‌ها و تخفیف‌های مشتریان.',
   },
   access: {
@@ -80,6 +80,13 @@ export const Plans: CollectionConfig = {
           data.content = personalizedContent
         }
 
+        if (!data.status) {
+          data.status = 'active'
+        }
+        if (!data.type) {
+          data.type = 'credit_terms'
+        }
+
         return data
       },
     ],
@@ -112,120 +119,31 @@ export const Plans: CollectionConfig = {
   },
   fields: [
     {
-      name: 'title',
-      type: 'text',
-      label: 'عنوان طرح',
-      admin: {
-        description: 'در صورت خالی بودن، خودکار بر اساس نام مشتری ساخته می‌شود. امکان درج {name} در متن وجود دارد.',
-      },
-    },
-    {
       name: 'users',
       type: 'relationship',
       relationTo: 'users',
       hasMany: true,
       required: true,
-      label: 'مشتریان هدف',
+      label: 'مشتری هدف',
+      admin: {
+        description: 'کاربری که این طرح به او اختصاص داده می‌شود.',
+      },
     },
     {
       name: 'content',
       type: 'textarea',
       required: true,
       label: 'متن طرح',
-    },
-    {
-      name: 'type',
-      type: 'select',
-      required: true,
-      defaultValue: 'credit_terms',
-      label: 'نوع طرح',
-      options: [
-        {
-          label: 'شرایط اعتباری و مدت‌دار',
-          value: 'credit_terms',
-        },
-        {
-          label: 'تخفیف روی کالاها',
-          value: 'product_discount',
-        },
-        {
-          label: 'اطلاع‌رسانی و اعلامیه ویژه',
-          value: 'informational',
-        },
-      ],
-    },
-    {
-      type: 'row',
       admin: {
-        condition: (data) => data?.type === 'product_discount',
-      },
-      fields: [
-        {
-          name: 'discountPercent',
-          type: 'number',
-          defaultValue: 10,
-          label: 'درصد تخفیف (%)',
-          admin: {
-            width: '50%',
-          },
-        },
-        {
-          name: 'discountAmount',
-          type: 'number',
-          label: 'مبلغ تخفیف ثابت (تومان)',
-          admin: {
-            width: '50%',
-          },
-        },
-      ],
-    },
-    {
-      name: 'status',
-      type: 'select',
-      required: true,
-      defaultValue: 'active',
-      label: 'وضعیت',
-      options: [
-        {
-          label: 'فعال',
-          value: 'active',
-        },
-        {
-          label: 'منقضی شده',
-          value: 'expired',
-        },
-        {
-          label: 'پیش‌نویس',
-          value: 'draft',
-        },
-      ],
-    },
-    {
-      name: 'products',
-      type: 'relationship',
-      relationTo: 'products',
-      hasMany: true,
-      label: 'محصولات شامل طرح',
-    },
-    {
-      name: 'hasTimer',
-      type: 'checkbox',
-      label: 'فعال‌سازی تایمر شمارش معکوس',
-      defaultValue: false,
-      admin: {
-        description: 'در صورت فعال بودن، شمارش معکوس زمان باقی‌مانده بالای آیکون طرح نمایش داده می‌شود.',
+        description: 'متن پیام یا توضیحات طرح برای کاربر.',
       },
     },
     {
-      name: 'expiresAt',
-      type: 'date',
-      label: 'مهلت انقضا و زمان پایان تایمر',
+      name: 'title',
+      type: 'text',
+      label: 'عنوان طرح',
       admin: {
-        condition: (data) => Boolean(data?.hasTimer),
-        description: 'تاریخ و ساعت پایان طرح که تایمر معکوس بر اساس آن شمارش می‌کند.',
-        date: {
-          pickerAppearance: 'dayAndTime',
-        },
+        hidden: true,
       },
     },
   ],

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Modal as HeroUIModal, Button, cn } from "@heroui/react";
+import { Modal as HeroUIModal, Button, Dropdown, cn } from "@heroui/react";
 import {
   useOrders,
   buildFullOrderTimeline,
@@ -28,10 +28,13 @@ import {
   ClockIcon,
   TomanIcon,
   PencilIcon,
+  ChevronDownIcon,
+  CheckIcon,
 } from "../../components/ui/icons";
 import { PreInvoiceModal } from "../../features/checkout/pre-invoice-modal";
 import { useProducts } from "../../features/products/product-store";
 import { selectionStore } from "../../features/products/selection-store";
+import { Counter } from "../../components/ui/counter";
 
 export const Route = createFileRoute("/orders/$id")({
   loader: async ({ params }) => {
@@ -49,30 +52,42 @@ function cleanOrderNumber(orderNumber: string): string {
   return stripped;
 }
 
+const CANCELLATION_REASONS = [
+  "تغییر در متراژ یا اقلام سفارش",
+  "تغییر در زمان‌بندی پروژه و ارسال",
+  "ثبت اشتباه فاکتور",
+  "انصراف موقت خریدار",
+] as const;
+
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData();
   const navigate = useNavigate();
   const { getOrderById, fetchOrderById, cancelOrder, orders } = useOrders();
   const { allProducts } = useProducts();
   const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancelReason, setCancelReason] = useState(
-    "تغییر در متراژ یا اقلام سفارش",
+  const [cancelReason, setCancelReason] = useState<string>(
+    CANCELLATION_REASONS[0],
   );
+  const [isCancelReasonOpen, setIsCancelReasonOpen] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
   const [order, setOrder] = useState<Order | null>(
     () => getOrderById(orderId) || null,
   );
   const [isLoading, setIsLoading] = useState(!order);
 
-  // 10-Minute Countdown Timer calculation (calculated purely from order createdAt)
-  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(() => {
-    if (!order) return 0;
-    const createdAtMs = order.createdAt
-      ? new Date(order.createdAt).getTime()
-      : Date.now();
-    const deadline = createdAtMs + 10 * 60 * 1000;
-    return Math.max(0, Math.floor((deadline - Date.now()) / 1000));
-  });
+  const isCancelled =
+    order?.status === "cancel" ||
+    order?.status === "cancelled" ||
+    order?.status === "cancelled_by_customer" ||
+    order?.status === "cancelled_by_admin";
+
+  const isCompleted =
+    order?.status === "completed" ||
+    order?.status === "approved" ||
+    order?.status === "approve";
+
+  // 10-Minute Countdown Timer calculation (starts at 10 minutes for pending orders)
+  const [timeLeftSeconds, setTimeLeftSeconds] = useState<number>(600);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,38 +112,26 @@ function OrderDetailPage() {
   }, [orderId, orders]);
 
   useEffect(() => {
-    if (!order) return;
-    const createdAtMs = order.createdAt
-      ? new Date(order.createdAt).getTime()
-      : Date.now();
-    const deadline = createdAtMs + 10 * 60 * 1000;
+    if (!order || isCancelled || isCompleted) return;
 
-    const updateTimer = () => {
-      const remaining = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+    // Set to 10 minutes (600s) as requested
+    const initialTime = 600;
+    const startTime = Date.now();
+
+    setTimeLeftSeconds(initialTime);
+
+    const timer = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const remaining = Math.max(0, initialTime - elapsed);
       setTimeLeftSeconds(remaining);
-    };
+      if (remaining <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
 
-    updateTimer();
-    const timer = setInterval(updateTimer, 1000);
     return () => clearInterval(timer);
-  }, [order?.createdAt]);
+  }, [order?.id, isCancelled, isCompleted]);
 
-  const formatCountdown = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${toPersianDigits(mins.toString().padStart(2, "0"))}:${toPersianDigits(secs.toString().padStart(2, "0"))}`;
-  };
-
-  const isCancelled =
-    order?.status === "cancel" ||
-    order?.status === "cancelled" ||
-    order?.status === "cancelled_by_customer" ||
-    order?.status === "cancelled_by_admin";
-
-  const isCompleted =
-    order?.status === "completed" ||
-    order?.status === "approved" ||
-    order?.status === "approve";
   const isWithin10Minutes = timeLeftSeconds > 0;
   const is10MinutesPassed = timeLeftSeconds <= 0;
   const isCancellableByCustomer =
@@ -320,22 +323,58 @@ function OrderDetailPage() {
             {!isCancelled && !isCompleted && (
               <span
                 className={cn(
-                  "px-2 py-1 rounded-lg text-xs font-bold flex items-center gap-1.5",
+                  "px-2.5 py-1 rounded-xl text-xs font-bold flex items-center gap-1.5 border-none shadow-none",
                   isWithin10Minutes
-                    ? "bg-warning/15 text-warning animate-pulse"
-                    : "bg-muted/5 text-muted",
+                    ? "bg-warning/15 text-warning"
+                    : "bg-muted/10 text-muted",
                 )}
               >
                 <ClockIcon
-                  size={13}
+                  size={20}
                   className={cn(
                     isWithin10Minutes ? "text-warning" : "text-muted",
                   )}
                 />
-                <span>
-                  {isWithin10Minutes
-                    ? `مهلت ۱۰ دقیقه‌ای لغو: ${formatCountdown(timeLeftSeconds)}`
-                    : "مهلت ۱۰ دقیقه‌ای لغو پایان یافت"}
+                <span className="inline-flex items-center gap-1.5">
+                  <span>
+                    به مدت ۱۰ دقیقه وقت دارید سفارش خود را ویرایش یا لغو کنید
+                  </span>
+                  {isWithin10Minutes ? (
+                    <span
+                      className="inline-flex items-center gap-0.5 font-bold tracking-wider"
+                      dir="ltr"
+                    >
+                      <Counter
+                        value={Math.floor(timeLeftSeconds / 60)}
+                        minDigits={2}
+                        bounce={0}
+                        stagger={0.11}
+                        duration={0.6}
+                        fontSize={16}
+                        fontWeight={700}
+                        textColor="currentColor"
+                        locale="fa-IR"
+                        fade={0.2}
+                        tabular
+                      />
+                      <span className="font-bold -translate-y-[0.5px]">:</span>
+                      <Counter
+                        value={timeLeftSeconds % 60}
+                        minDigits={2}
+                        bounce={0}
+                        stagger={0.11}
+                        duration={0.6}
+                        fontSize={13}
+                        fontWeight={700}
+                        textColor="currentColor"
+                        locale="fa-IR"
+                        fade={0.2}
+                        tabular
+                      />
+                    </span>
+                  ) : (
+                    <span>پایان یافت</span>
+                  )}
                 </span>
               </span>
             )}
@@ -448,8 +487,6 @@ function OrderDetailPage() {
                     {item.productName}
                   </Link>
                   <div className="flex items-center gap-2 text-xs text-muted mt-1">
-                    <span>کد کالا: {toPersianDigits(item.productSku)}</span>
-                    <span>•</span>
                     <span>{toPersianDigits(item.dimension)}</span>
                   </div>
                   <div className="text-xs text-muted mt-1">
@@ -462,17 +499,6 @@ function OrderDetailPage() {
                     متر ({toPersianDigits(item.cartonCount)} کارتن)
                   </div>
                 </div>
-              </div>
-
-              <div className="text-start sm:text-end pt-2 sm:pt-0 flex flex-col items-start sm:items-end">
-                <span className="text-xs text-muted inline-flex items-center gap-1">
-                  <span>{formatToman(item.unitPrice)}</span>
-                  <TomanIcon className="size-3" />
-                </span>
-                <span className="text-sm font-bold text-foreground inline-flex items-center gap-1">
-                  <span>{formatToman(item.totalPrice)}</span>
-                  <TomanIcon className="size-3.5" />
-                </span>
               </div>
             </div>
           ))}
@@ -575,25 +601,77 @@ function OrderDetailPage() {
                 </div>
               </div>
 
-              {/* Cancellation Reason Selector */}
-              <div className="text-start space-y-1">
+              {/* Cancellation Reason Selector with HeroUI Dropdown */}
+              <div className="text-start space-y-1.5 w-full">
                 <label className="text-[11px] font-bold text-foreground block">
                   دلیل لغو:
                 </label>
-                <select
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                  className="w-full h-10 px-3 rounded-2xl bg-muted/5 text-xs font-medium text-foreground outline-hidden cursor-pointer"
+                <Dropdown
+                  isOpen={isCancelReasonOpen}
+                  onOpenChange={setIsCancelReasonOpen}
                 >
-                  <option value="تغییر در متراژ یا اقلام سفارش">
-                    تغییر در متراژ یا اقلام سفارش
-                  </option>
-                  <option value="تغییر در زمان‌بندی پروژه و ارسال">
-                    تغییر در زمان‌بندی پروژه و ارسال
-                  </option>
-                  <option value="ثبت اشتباه فاکتور">ثبت اشتباه فاکتور</option>
-                  <option value="انصراف موقت خریدار">انصراف موقت خریدار</option>
-                </select>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="w-full justify-between h-11 px-3.5 rounded-2xl bg-muted/5 text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-muted/10 transition-colors border-none shadow-none"
+                  >
+                    <span className="truncate">{cancelReason}</span>
+                    <ChevronDownIcon
+                      size={16}
+                      className={cn(
+                        "text-muted transition-transform duration-200 shrink-0 ms-2",
+                        isCancelReasonOpen && "rotate-180",
+                      )}
+                    />
+                  </Button>
+
+                  <Dropdown.Popover
+                    dir="rtl"
+                    placement="bottom"
+                    className="w-[280px] text-right rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
+                  >
+                    <Dropdown.Menu
+                      dir="rtl"
+                      className="text-right"
+                      selectionMode="single"
+                      selectedKeys={new Set([cancelReason])}
+                      onAction={(key) => {
+                        setCancelReason(String(key));
+                        setIsCancelReasonOpen(false);
+                      }}
+                      onSelectionChange={(keys) => {
+                        const selected = Array.from(keys)[0] as string;
+                        if (selected) setCancelReason(selected);
+                        setIsCancelReasonOpen(false);
+                      }}
+                    >
+                      {CANCELLATION_REASONS.map((reason) => {
+                        const isSelected = cancelReason === reason;
+                        return (
+                          <Dropdown.Item
+                            key={reason}
+                            id={reason}
+                            textValue={reason}
+                            className={cn(
+                              "rounded-xl px-3 py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between text-right w-full",
+                              isSelected
+                                ? "bg-primary/15 text-primary"
+                                : "hover:bg-default/20 text-foreground",
+                            )}
+                          >
+                            <span className="truncate">{reason}</span>
+                            {isSelected && (
+                              <CheckIcon
+                                size={14}
+                                className="shrink-0 text-primary ms-2"
+                              />
+                            )}
+                          </Dropdown.Item>
+                        );
+                      })}
+                    </Dropdown.Menu>
+                  </Dropdown.Popover>
+                </Dropdown>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">

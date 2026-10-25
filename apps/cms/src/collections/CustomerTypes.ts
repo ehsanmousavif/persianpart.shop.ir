@@ -9,7 +9,7 @@ export const CustomerTypes: CollectionConfig = {
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'slug', 'markupPercent', 'isActive', 'createdAt'],
-    group: 'فروشگاه و مشتریان',
+    group: 'مشتریان',
     description: 'رده‌های مشتریان و ضریب قیمت (Markup).',
   },
   access: {

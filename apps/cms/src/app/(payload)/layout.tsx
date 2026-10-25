@@ -10,6 +10,7 @@ import React from 'react'
 
 import { importMap } from './admin/importMap.js'
 import './custom.css'
+import AdminEnhancements from './admin-enhancements'
 
 type Args = {
   children: React.ReactNode
@@ -31,6 +32,7 @@ const Layout = ({ children }: Args) => (
     serverFunction={serverFunction}
     htmlProps={{ dir: 'rtl', lang: 'fa' }}
   >
+    <AdminEnhancements />
     {children}
   </RootLayout>
 )

@@ -9,7 +9,7 @@ export const Orders: CollectionConfig = {
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'user', 'status', 'finalTotal', 'createdAt'],
-    group: 'فروشگاه و مشتریان',
+    group: 'مشتریان',
     description: 'فهرست و وضعیت سفارشات.',
   },
   access: {

@@ -1,16 +1,21 @@
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { Drawer, Button } from "@heroui/react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import type { Product, OrderItem } from "../../types";
 import { calculateCartonRequirement } from "../../lib/utils/math";
 import { formatToman, toPersianDigits } from "../../lib/utils/currency";
-import { HoldConfirmButton } from "../../components/ui/hold-confirm-button";
+import { SlideCommit } from "../../components/ui/slide-commit";
 import { orderStore } from "../orders/order-store";
 import { selectionStore } from "../products/selection-store";
 import { api } from "../../lib/api-client";
 import { queryKeys, mutationKeys } from "../../lib/query-keys";
-import { XIcon, PencilIcon, TomanIcon } from "../../components/ui/icons";
+import {
+  XIcon,
+  PencilIcon,
+  TomanIcon,
+  ChevronDownIcon,
+} from "../../components/ui/icons";
 
 export interface PreInvoiceModalProps {
   isOpen: boolean;
@@ -20,6 +25,116 @@ export interface PreInvoiceModalProps {
   onSuccess: (orderId: string) => void;
   onEdit?: () => void;
   editOrderId?: string;
+}
+
+interface PreInvoiceItemCardProps {
+  item: {
+    product: Product;
+    requestedArea: number;
+    cartonCount: number;
+    deliverableArea: number;
+    unitPrice: number;
+    totalPrice: number;
+  };
+}
+
+function PreInvoiceItemCard({ item }: PreInvoiceItemCardProps) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div
+      onClick={() => setIsOpen((prev) => !prev)}
+      className="p-3 bg-muted/5 rounded-2xl space-y-2.5 text-xs text-start cursor-pointer select-none transition-all hover:bg-muted/10 active:scale-[0.99]"
+      role="button"
+      tabIndex={0}
+      aria-expanded={isOpen}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          setIsOpen((prev) => !prev);
+        }
+      }}
+    >
+      {/* Product Thumbnail & Details Header */}
+      <div className="flex items-center justify-between gap-3 min-w-0">
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <img
+            src={item.product.images[0] || "/assets/images/placeholder.svg"}
+            alt={item.product.name}
+            className="w-13 h-13 rounded-2xl object-cover shrink-0"
+            onError={(e) => {
+              if (
+                !e.currentTarget.src.endsWith("/assets/images/placeholder.svg")
+              ) {
+                e.currentTarget.src = "/assets/images/placeholder.svg";
+              }
+            }}
+          />
+          <div className="min-w-0 flex-1">
+            <h4 className="font-bold text-foreground text-xs sm:text-sm truncate leading-snug">
+              {item.product.name}
+            </h4>
+            <div className="flex items-center gap-1.5 text-xs text-muted mt-1 flex-wrap">
+              <span className="px-2 py-0.5 rounded-lg bg-muted/10 text-foreground font-semibold text-xs">
+                ابعاد: {toPersianDigits(item.product.dimensions.width)} ×{" "}
+                {toPersianDigits(item.product.dimensions.height)}
+              </span>
+              <span className="text-muted">•</span>
+              <span className="text-muted font-medium text-[11px]">
+                {item.product.brand}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Dropdown toggle & total price preview */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="font-extrabold text-foreground inline-flex items-center gap-1 text-xs">
+            <span>{formatToman(item.totalPrice)}</span>
+            <TomanIcon className="size-3.5" />
+          </span>
+          <div
+            className={`text-muted transition-transform duration-200 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          >
+            <ChevronDownIcon size={16} />
+          </div>
+        </div>
+      </div>
+
+      {/* Calculation Metrics: dropdown details with same background as card */}
+      {isOpen && (
+        <div className="flex items-center justify-between text-xs pt-2.5 border-t border-border/10 bg-transparent">
+          <div className="text-start">
+            <span className="text-[11px] text-muted block mb-0.5">
+              تعداد کارتن
+            </span>
+            <span className="font-bold text-primary">
+              {toPersianDigits(item.cartonCount)} کارتن
+            </span>
+          </div>
+
+          <div className="text-center">
+            <span className="text-[11px] text-muted block mb-0.5">
+              متراژ تحویلی
+            </span>
+            <span className="font-bold text-foreground">
+              {toPersianDigits(item.deliverableArea)} متر
+            </span>
+          </div>
+
+          <div className="text-end">
+            <span className="text-[11px] text-muted block mb-0.5">مبلغ</span>
+            <span className="font-extrabold text-foreground inline-flex items-center gap-1">
+              <span>{formatToman(item.totalPrice)}</span>
+              <TomanIcon className="size-3.5" />
+            </span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function PreInvoiceModal({
@@ -194,20 +309,20 @@ export function PreInvoiceModal({
       <Drawer.Backdrop
         isOpen={isOpen}
         onOpenChange={(open) => !open && onClose()}
-        className="fixed z-50 backdrop-blur-xs bg-foreground/30 min-h-60 flex items-end justify-center fade-up transition-all duration-300"
+        className="fixed z-50 backdrop-blur-xs bg-foreground/30 min-h-100 flex items-end justify-center fade-up transition-all duration-300"
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-xl mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[92dvh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
+          className="w-full max-w-xl mx-auto fixed z-50 bottom-0 top-auto h-[85dvh]! max-h-[92dvh]! rounded-t-3xl flex flex-col overflow-hidden pb-safe shadow-2xl"
         >
-          <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[92dvh]! min-h-0 outline-none text-start overscroll-contain">
+          <Drawer.Dialog className="flex flex-col bg-background h-full max-h-full min-h-0 outline-none text-start overscroll-contain">
             {/* Drag Handle UI */}
             <div className="flex justify-center w-full shrink-0 pt-2">
               <Drawer.Handle className="w-16 h-1.5 rounded-full" />
             </div>
 
             {/* Header */}
-            <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
+            <Drawer.Header className="w-full flex flex-row! items-center justify-between px-4 pt-2 pb-2 shrink-0">
               <div className="flex items-center gap-2">
                 <Drawer.Heading className="text-sm sm:text-base font-extrabold text-foreground">
                   پیش‌فاکتور تایید سفارش
@@ -224,132 +339,69 @@ export function PreInvoiceModal({
               </Button>
             </Drawer.Header>
 
-            {/* Scrollable Body */}
-            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 sm:px-5 py-3 space-y-3.5 scrollbar-none">
-              {/* Items List (Mobile-styled Cards on all viewports) */}
-              <div className="space-y-2.5">
-                {invoiceItems.map((item) => (
-                  <div
-                    key={item.product.id}
-                    className="p-3 bg-muted/5 rounded-2xl space-y-2.5 text-xs text-start"
-                  >
-                    {/* Product Thumbnail & Details */}
-                    <div className="flex items-center gap-3 min-w-0">
-                      <img
-                        src={
-                          item.product.images[0] ||
-                          "/assets/images/placeholder.svg"
-                        }
-                        alt={item.product.name}
-                        className="w-13 h-13 rounded-2xl object-cover shrink-0"
-                        onError={(e) => {
-                          if (
-                            !e.currentTarget.src.endsWith(
-                              "/assets/images/placeholder.svg",
-                            )
-                          ) {
-                            e.currentTarget.src =
-                              "/assets/images/placeholder.svg";
-                          }
-                        }}
-                      />
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-bold text-foreground text-xs sm:text-sm truncate leading-snug">
-                          {item.product.name}
-                        </h4>
-                        <div className="flex items-center gap-1.5 text-xs text-muted mt-1 flex-wrap">
-                          <span className="px-2 py-0.5 rounded-lg bg-muted/10 text-foreground font-semibold text-xs">
-                            ابعاد:{" "}
-                            {toPersianDigits(item.product.dimensions.width)} ×{" "}
-                            {toPersianDigits(item.product.dimensions.height)}
-                          </span>
-                          <span className="text-muted">•</span>
-                          <span className="text-muted font-medium text-[11px]">
-                            {item.product.brand}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Calculation Metrics: 3-column bottom strip */}
-                    <div className="flex items-center justify-between text-xs pt-2 -mx-3 -mb-3 px-3 py-2 rounded-b-2xl bg-muted/5">
-                      <div className="text-start">
-                        <span className="font-bold text-primary">
-                          {toPersianDigits(item.cartonCount)} کارتن
-                        </span>
-                      </div>
-
-                      <div className="text-center">
-                        <span className="font-bold text-foreground">
-                          {toPersianDigits(item.deliverableArea)} متر
-                        </span>
-                      </div>
-
-                      <div className="text-end">
-                        <span className="font-extrabold text-foreground inline-flex items-center gap-1">
-                          <span>{formatToman(item.totalPrice)}</span>
-                          <TomanIcon className="size-4" />
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Financial Summary */}
-              <div className="pt-3 pb-1 space-y-2 text-xs border-t border-border/20">
-                <div className="flex flex-col w-full px-1 gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">
-                      تعداد کارتن‌ها:
-                    </span>
-                    <span className="text-sm font-bold text-foreground">
-                      {toPersianDigits(invoiceTotals.totalCartons)} عدد
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-foreground">
-                      متراژ کلی:
-                    </span>
-                    <span className="text-sm font-bold text-foreground">
-                      {toPersianDigits(invoiceTotals.totalDeliverableArea)}{" "}
-                      مترمربع
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="text-sm font-bold text-foreground">
-                      قیمت کل:
-                    </span>
-                    <span className="text-base font-extrabold text-foreground inline-flex items-center gap-1">
-                      <span>{formatToman(invoiceTotals.finalPayable)}</span>
-                      <TomanIcon className="size-4" />
-                    </span>
-                  </div>
-                </div>
-              </div>
+            {/* Scrollable Body: Items List */}
+            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-3 space-y-2.5">
+              {invoiceItems.map((item) => (
+                <PreInvoiceItemCard key={item.product.id} item={item} />
+              ))}
             </Drawer.Body>
 
-            {/* Bottom Sheet Footer with Two Action Buttons */}
-            <Drawer.Footer className="w-full px-4 sm:px-5 py-3 shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
+            {/* Financial Summary (Pinned above footer) */}
+            <div className="shrink-0 px-4 py-2.5 space-y-1.5 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted">
+                  تعداد کارتن‌ها:
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  {toPersianDigits(invoiceTotals.totalCartons)} عدد
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-muted">
+                  متراژ کلی:
+                </span>
+                <span className="text-xs font-bold text-foreground">
+                  {toPersianDigits(invoiceTotals.totalDeliverableArea)} مترمربع
+                </span>
+              </div>
+              <div className="flex items-center justify-between pt-1 ">
+                <span className="text-sm font-bold text-foreground">
+                  قیمت کل:
+                </span>
+                <span className="text-base font-extrabold text-foreground inline-flex items-center gap-1">
+                  <span>{formatToman(invoiceTotals.finalPayable)}</span>
+                  <TomanIcon className="size-4" />
+                </span>
+              </div>
+            </div>
+
+            <Drawer.Footer className="w-full py-3 shrink-0 flex items-center gap-2.5 bg-background">
               {/* Button 1: ویرایش مقادیر */}
               <Button
                 type="button"
                 onPress={handleEditClick}
-                className="shrink-0 h-12 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
+                className=" w-auto h-12 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer active:scale-95 touch-manipulation"
               >
-                <PencilIcon size={15} />
+                <PencilIcon size={16} />
                 <span>ویرایش</span>
               </Button>
 
-              {/* Button 2: Hold to Confirm */}
-              <div className="flex-1 min-w-0">
-                <HoldConfirmButton
-                  onConfirmed={handleFinalConfirm}
-                  holdDurationMs={3000}
-                  disabled={invoiceItems.length === 0}
-                  idleText="برای ثبت سفارش نگه دارید"
-                  holdingText="در حال تایید..."
-                  confirmedText="تایید شد"
+              <div className="w-full flex-1 ">
+                <SlideCommit
+                  label="برای ثبت سفارش بکشید"
+                  doneLabel="سفارش تایید شد"
+                  errorLabel="خطا در ثبت سفارش"
+                  height={48}
+                  radius={16}
+                  trackColor="rgba(5, 150, 105, 0.12)"
+                  handleColor="#059669"
+                  successColor="#059669"
+                  textColor="var(--color-foreground, #0e0c2d)"
+                  disabled={
+                    invoiceItems.length === 0 || submitOrderMutation.isPending
+                  }
+                  onConfirm={handleFinalConfirm}
+                  className="w-full h-12! border-none! shadow-none! [box-shadow:none]!"
                 />
               </div>
             </Drawer.Footer>

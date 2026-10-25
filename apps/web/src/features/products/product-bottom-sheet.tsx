@@ -129,7 +129,6 @@ export function ProductBottomSheet({
 
               <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-1 pb-1 shrink-0">
                 <div className="min-w-0 flex-1 flex flex-col items-start text-start">
-                
                   <Drawer.Heading className="text-sm font-extrabold text-foreground mt-0.5 text-start leading-snug">
                     {activeProduct.name}
                   </Drawer.Heading>
@@ -301,7 +300,7 @@ export function ProductBottomSheet({
                         <SolarRulerIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
                           ابعاد
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
@@ -317,7 +316,7 @@ export function ProductBottomSheet({
                         <SolarBoxIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
                           متراژ در هر کارتن
                         </span>
                         <span className="font-bold text-primary text-xs leading-normal truncate block">
@@ -331,7 +330,7 @@ export function ProductBottomSheet({
                         <SolarTagIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
                           موجودی انبار{" "}
                         </span>
                         <span
@@ -349,8 +348,8 @@ export function ProductBottomSheet({
                         <SolarLayersIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-xs text-muted font-medium block leading-tight mb-0.5">
-                        تعداد در هر کارتن
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
+                          تعداد در هر کارتن
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
                           {toPersianDigits(activeProduct.piecesPerCarton)} برگ
@@ -364,7 +363,7 @@ export function ProductBottomSheet({
                         <SolarShopIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
                           برند
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
@@ -379,7 +378,7 @@ export function ProductBottomSheet({
                         <SolarShieldCheckIcon size={14} />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <span className="text-[10px] text-muted font-medium block leading-tight mb-0.5">
+                        <span className="text-xs text-muted font-base block leading-tight mb-0.5">
                           درجه کیفی
                         </span>
                         <span className="font-bold text-foreground text-xs leading-normal truncate block">
@@ -407,7 +406,7 @@ export function ProductBottomSheet({
                 {/* Tags */}
                 {/* {activeProduct.tags.length > 0 && (
                   <div className="pt-2 flex flex-wrap items-center gap-1.5">
-                    <span className="text-xs text-muted font-medium">
+                    <span className="text-xs text-muted font-base">
                       ویژگی‌ها:
                     </span>
                     {activeProduct.tags.map((tag) => (

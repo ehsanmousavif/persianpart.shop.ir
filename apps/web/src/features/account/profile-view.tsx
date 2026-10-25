@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from '@tanstack/react-router'
+import { useState } from "react";
+import { useNavigate } from "@tanstack/react-router";
 import {
   Modal as HeroUIModal,
   Drawer,
@@ -7,10 +7,10 @@ import {
   TextField,
   Label,
   Input,
-} from '@heroui/react'
-import { useAuth } from '../auth/auth-store'
-import { toPersianDigits } from '../../lib/utils/currency'
-import { toast } from '../../components/feedback/toast'
+} from "@heroui/react";
+import { useAuth } from "../auth/auth-store";
+import { toPersianDigits } from "../../lib/utils/currency";
+import { toast } from "../../components/feedback/toast";
 import {
   UserIcon,
   StoreIcon,
@@ -21,80 +21,87 @@ import {
   CheckIcon,
   XIcon,
   LockIcon,
-} from '../../components/ui/icons'
+} from "../../components/ui/icons";
 
 export function ProfileView() {
-  const navigate = useNavigate()
-  const { user, logout, updateProfile } = useAuth()
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false)
-  const [isEditing, setIsEditing] = useState(false)
+  const navigate = useNavigate();
+  const { user, logout, updateProfile } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   const [formData, setFormData] = useState({
-    name: user?.name || '',
-    storeName: user?.storeName || '',
-  })
+    name: user?.name || "",
+    storeName: user?.storeName || "",
+  });
 
   if (!user) {
     return (
       <div className="bg-muted/5 rounded-2xl p-8 text-center max-w-md mx-auto my-12">
         <AlertCircleIcon size={36} className="text-muted mx-auto mb-3" />
-        <h3 className="text-base font-bold text-foreground">حساب کاربری یافت نشد</h3>
-        <p className="text-xs text-muted mt-1 mb-5">جهت مشاهده حساب کاربری لطفاً وارد سامانه شوید.</p>
+        <h3 className="text-base font-bold text-foreground">
+          حساب کاربری یافت نشد
+        </h3>
+        <p className="text-xs text-muted mt-1 mb-5">
+          جهت مشاهده حساب کاربری لطفاً وارد سامانه شوید.
+        </p>
         <Button
           type="button"
-          onPress={() => navigate({ to: '/login' })}
+          onPress={() => navigate({ to: "/login" })}
           className="w-full h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs cursor-pointer"
         >
           ورود به حساب کاربری
         </Button>
       </div>
-    )
+    );
   }
 
   const handleStartEdit = () => {
     setFormData({
       name: user.name,
       storeName: user.storeName,
-    })
-    setIsEditing(true)
-  }
+    });
+    setIsEditing(true);
+  };
 
   const handleCancelEdit = () => {
     setFormData({
       name: user.name,
       storeName: user.storeName,
-    })
-    setIsEditing(false)
-  }
+    });
+    setIsEditing(false);
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!formData.name.trim()) {
-      toast.warning('نام و نام خانوادگی الزامی است.')
-      return
+      toast.warning("نام و نام خانوادگی الزامی است.");
+      return;
     }
 
     if (!formData.storeName.trim()) {
-      toast.warning('عنوان فروشگاه یا شرکت الزامی است.')
-      return
+      toast.warning("عنوان فروشگاه یا شرکت الزامی است.");
+      return;
     }
 
     updateProfile({
       name: formData.name.trim(),
       storeName: formData.storeName.trim(),
-    })
+    });
 
-    toast.success('تغییرات ذخیره شد', 'اطلاعات حساب کاربری با موفقیت به‌روزرسانی گردید.')
-    setIsEditing(false)
-  }
+    toast.success(
+      "تغییرات ذخیره شد",
+      "اطلاعات حساب کاربری با موفقیت به‌روزرسانی گردید.",
+    );
+    setIsEditing(false);
+  };
 
   const handleLogout = () => {
-    setShowLogoutConfirm(false)
-    logout()
-    toast.info('خروج از حساب', 'از حساب کاربری خود خارج شدید.')
-    navigate({ to: '/login' })
-  }
+    setShowLogoutConfirm(false);
+    logout();
+    toast.info("خروج از حساب", "از حساب کاربری خود خارج شدید.");
+    navigate({ to: "/login" });
+  };
 
   return (
     <div className="space-y-3.5 w-full">
@@ -103,7 +110,9 @@ export function ProfileView() {
         <div className="flex items-center gap-3">
           <div>
             <div className="flex items-center gap-1.5">
-              <h2 className="text-base font-bold text-foreground">{user.name}</h2>
+              <h2 className="text-base font-bold text-foreground">
+                {user.name}
+              </h2>
             </div>
             <p className="text-xs text-muted mt-0.5 flex items-center gap-1">
               <StoreIcon size={12} className="text-muted shrink-0" />
@@ -130,16 +139,24 @@ export function ProfileView() {
         <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
           <UserIcon size={17} className="text-muted mt-0.5 shrink-0" />
           <div className="flex-1 text-start">
-            <span className="text-xs font-semibold text-muted block">نام نماینده / مدیر خرید</span>
-            <span className="text-xs sm:text-sm font-bold text-foreground">{user.name}</span>
+            <span className="text-xs font-semibold text-muted block">
+              نام نماینده / مدیر خرید
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-foreground">
+              {user.name}
+            </span>
           </div>
         </div>
 
         <div className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 flex items-start gap-3">
           <StoreIcon size={17} className="text-muted mt-0.5 shrink-0" />
           <div className="flex-1 text-start">
-            <span className="text-xs font-semibold text-muted block">عنوان فروشگاه / شرکت حقوقی</span>
-            <span className="text-xs sm:text-sm font-bold text-foreground">{user.storeName}</span>
+            <span className="text-xs font-semibold text-muted block">
+              عنوان فروشگاه / شرکت حقوقی
+            </span>
+            <span className="text-xs sm:text-sm font-bold text-foreground">
+              {user.storeName}
+            </span>
           </div>
         </div>
 
@@ -147,9 +164,14 @@ export function ProfileView() {
           <PhoneIcon size={17} className="text-muted mt-0.5 shrink-0" />
           <div className="flex-1 text-start">
             <div className="flex items-start justify-start">
-              <span className="text-xs font-semibold text-muted block">شماره تلفن همراه</span>
+              <span className="text-xs font-semibold text-muted block">
+                شماره تلفن همراه
+              </span>
             </div>
-            <span className="text-xs sm:text-sm text-right font-bold text-foreground tracking-wider mt-0.5 block" dir="ltr">
+            <span
+              className="text-xs sm:text-sm text-right font-bold text-foreground tracking-wider mt-0.5 block"
+              dir="ltr"
+            >
               {toPersianDigits(user.phone)}
             </span>
           </div>
@@ -207,57 +229,75 @@ export function ProfileView() {
               </Drawer.Header>
 
               {/* Form & Body */}
-              <form onSubmit={handleSaveProfile} className="flex flex-col flex-1 min-h-0">
+              <form
+                onSubmit={handleSaveProfile}
+                className="flex flex-col flex-1 min-h-0"
+              >
                 <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-4 scrollbar-none">
                   {/* Name Field */}
-                  <TextField name="name" isRequired className="space-y-1 text-start">
-                    <Label className="text-base font-semibold text-foreground flex items-center gap-1">
+                  <TextField
+                    name="name"
+                    isRequired
+                    className="space-y-1 text-start"
+                  >
+                    <Label className="text-sm font-semibold text-foreground flex items-center gap-1">
                       <UserIcon size={15} className="text-muted" />
                       <span>نام و نام خانوادگی</span>
                     </Label>
                     <Input
                       value={formData.name}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          name: e.target.value,
+                        }))
+                      }
                       style={{ fontSize: "12px" }}
-                      className="w-full px-4 py-2 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
+                      className="w-full p-4 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                       placeholder="مثال: آرش دهقان"
                     />
                   </TextField>
 
                   {/* Store Name Field */}
-                  <TextField name="storeName" isRequired className="space-y-1 text-start">
-                    <Label className="text-base font-semibold text-foreground flex items-center gap-1">
+                  <TextField
+                    name="storeName"
+                    isRequired
+                    className="space-y-1 text-start"
+                  >
+                    <Label className="text-sm font-semibold text-foreground flex items-center gap-1">
                       <StoreIcon size={15} className="text-muted" />
                       <span>نام فروشگاه / شرکت</span>
                     </Label>
                     <Input
                       value={formData.storeName}
-                      onChange={(e) => setFormData((prev) => ({ ...prev, storeName: e.target.value }))}
-                      style={{ fontSize: "12px" }}
-                      className="w-full px-4 py-2 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          storeName: e.target.value,
+                        }))
+                      }
+                      className="w-full p-4 text-xs! placeholder:text-xs! font-bold text-foreground bg-muted/10 rounded-2xl outline-none transition-all"
                       placeholder="مثال: بازرگانی پرشین پارت"
                     />
                   </TextField>
 
                   {/* Phone Number - Strictly Non-Editable */}
-                  <div className="space-y-1 text-start">
+                  <div className="space-y-1 text-start  cursor-no-drop">
                     <div className="flex items-center justify-between">
-                      <label className="text-base font-semibold text-foreground flex items-center gap-1">
+                      <label className="text-sm font-semibold text-foreground flex items-center gap-1">
                         <PhoneIcon size={15} className="text-muted" />
                         <span>شماره همراه</span>
                       </label>
-                      <span className="text-xs font-semibold text-muted bg-muted/10 px-3 py-0.5 rounded-lg flex items-center gap-1">
-                        <LockIcon size={10} className="text-muted" />
-                        <span>ثابت</span>
-                      </span>
                     </div>
-                    <div className="flex items-center justify-between px-4 py-2 bg-muted/10 rounded-2xl text-foreground select-none">
-                      <span className="text-xs! font-bold tracking-wider" style={{ fontSize: "12px" }} dir="ltr">
+                    <div className="flex items-center justify-between p-4 bg-muted/10 rounded-2xl text-foreground select-none">
+                      <span
+                        className="text-xs! font-bold tracking-wider"
+                        dir="ltr"
+                      >
                         {toPersianDigits(user.phone)}
                       </span>
-                      <span className="flex items-center gap-1 text-xs font-medium text-muted bg-muted/20 px-3 py-0.5 rounded-lg">
-                        <LockIcon size={11} className="text-muted" />
-                        <span>غیرقابل تغییر</span>
+                      <span className="flex items-center gap-1 text-xs font-medium text-muted w-fit rounded-lg">
+                        <LockIcon size={16} className="text-muted" />
                       </span>
                     </div>
                   </div>
@@ -266,19 +306,19 @@ export function ProfileView() {
                 {/* Footer Actions */}
                 <Drawer.Footer className="px-5 py-3 shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
                   <Button
-                    type="submit"
-                    className="flex-1 h-12 px-4 rounded-2xl bg-success/15 text-success hover:bg-success/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
-                  >
-                    <CheckIcon size={15} />
-                    <span>ذخیره تغییرات</span>
-                  </Button>
-                  <Button
                     type="button"
                     onClick={handleCancelEdit}
                     className="h-12 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                   >
                     <XIcon size={15} />
                     <span>انصراف</span>
+                  </Button>
+                  <Button
+                    type="submit"
+                    className="flex-1 h-12 px-4 rounded-2xl bg-success/15 text-success hover:bg-success/20 font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer active:scale-98"
+                  >
+                    <CheckIcon size={15} />
+                    <span>ذخیره تغییرات</span>
                   </Button>
                 </Drawer.Footer>
               </form>
@@ -288,7 +328,10 @@ export function ProfileView() {
       </Drawer>
 
       {/* HeroUI Logout Confirmation Modal */}
-      <HeroUIModal.Root isOpen={showLogoutConfirm} onOpenChange={(open) => !open && setShowLogoutConfirm(false)}>
+      <HeroUIModal.Root
+        isOpen={showLogoutConfirm}
+        onOpenChange={(open) => !open && setShowLogoutConfirm(false)}
+      >
         <HeroUIModal.Backdrop
           isDismissable
           className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
@@ -327,5 +370,5 @@ export function ProfileView() {
         </HeroUIModal.Backdrop>
       </HeroUIModal.Root>
     </div>
-  )
+  );
 }

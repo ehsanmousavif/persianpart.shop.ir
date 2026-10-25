@@ -41,17 +41,20 @@ export default buildConfig({
     },
   },
   collections: [
-    Admins,
-    Users,
-    CustomerTypes,
-    Media,
+    // کاتالوگ و انبارداری
+    Products,
     Categories,
+    Dimensions,
     Brands,
     Tags,
-    Dimensions,
-    Products,
+    // مشتریان
+    CustomerTypes,
     Orders,
     Plans,
+    Users,
+    // سایر
+    Media,
+    Admins,
   ],
   editor: lexicalEditor(),
   graphQL: {

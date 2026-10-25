@@ -1,14 +1,17 @@
 import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
-import { Accordion } from "@heroui/react";
 import type { Plan, Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
+import { cn } from "../../lib/utils";
 import {
   BoxIcon,
   ArrowLeftIcon,
   TomanIcon,
   ClockIcon,
 } from "../../components/ui/icons";
+import {
+  BellBoldDuotoneIcon,
+} from "@solar-icons/react";
 
 export interface PlanCardProps {
   plan: Plan;
@@ -69,7 +72,9 @@ function PlanCountdownTimer({ expiresAt }: { expiresAt?: string }) {
 
   return (
     <div
-      className="text-center font-bold text-sm text-background tracking-widest tabular-nums select-none z-10"
+      className={cn(
+        "text-center font-bold text-sm text-background tracking-widest tabular-nums select-none z-10",
+      )}
       dir="ltr"
       aria-label="تایمر مهلت طرح"
     >
@@ -119,30 +124,22 @@ export function PlanCard({ plan, products }: PlanCardProps) {
     !isCompleted &&
     (plan.status === "active" || (plan.status === undefined && plan.isActive));
 
-  const isDiscount = plan.type === "product_discount";
-  const cardGradient = isDiscount
-    ? "linear-gradient(347deg, rgba(70, 153, 171, 1) 31%, rgba(162, 209, 218, 1) 100%)"
-    : "linear-gradient(347deg, rgba(209, 126, 25, 1) 31%, rgba(248, 202, 119, 1) 100%)";
-  const badgeImg = isDiscount
-    ? "/assets/images/percent.webp"
-    : "/assets/images/bell.webp";
   const showTimer = plan.hasTimer !== false;
   const activeExpiry = getPlanDemoExpiry(plan);
 
   return (
     <div
-      style={{
-        background: cardGradient,
-      }}
-      className={`p-4 flex flex-col justify-between gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden ${
-        !isActive && !isCompleted ? "opacity-85" : ""
-      }`}
+      className={cn(
+        "px-4 pt-4 flex flex-col justify-around bg-foreground/20 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
+        !isActive && !isCompleted && "opacity-85",
+      )}
     >
       <div className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
-            <div className="w-full flex flex-col gap-2.5 items-start text-base font-bold text-background leading-snug">
-              <span className="text-background">{plan.title}</span>
+            <div className="w-full flex gap-1 items-center text-base font-semibold text-foreground leading-snug">
+              <BellBoldDuotoneIcon className="text-yellow-500" />
+              <span className="text-base">{plan.title}</span>
               {showTimer && (
                 <div className="w-fit flex items-center gap-1.5 bg-foreground/10 py-1 px-2.5 rounded-xl text-background">
                   <ClockIcon size={14} className="text-background shrink-0" />
@@ -153,28 +150,22 @@ export function PlanCard({ plan, products }: PlanCardProps) {
           </div>
 
           <div className="shrink-0 sm:ms-4 flex flex-col items-center justify-center relative">
-            <img
+            {/* <img
               src={badgeImg}
-              alt={isDiscount ? "تخفیف طرح" : "اطلاعیه طرح"}
-              className={`size-30 object-contain select-none pointer-events-none ${
-                isDiscount
-                  ? "drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)]"
-                  : "drop-shadow-[0_10px_20px_rgba(140,75,10,0.3)]"
-              }`}
+              alt="تخفیف طرح"
+              className={cn(
+                "size-30 object-contain select-none pointer-events-none drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)]",
+              )}
               loading="lazy"
-            />
+            /> */}
           </div>
         </div>
         {(!isActive || !isCompleted) && (
-          <div className="mt-4 rounded-2xl border border-background/10 bg-background/5 p-4">
+          <div className="mt-4 rounded-2xl p-4 bg-foreground/90">
             <div className="mb-2 flex items-center gap-2">
               <span className="h-4 w-1 rounded-full bg-background/70" />
               <span className="text-sm font-semibold text-background">
-                {plan.type === "product_discount"
-                  ? "شرایط تخفیف"
-                  : plan.type === "informational"
-                    ? "اطلاعیه و توضیحات"
-                    : "شرایط پرداخت"}
+                شرایط طرح
               </span>
             </div>
 
@@ -201,13 +192,9 @@ export function PlanCard({ plan, products }: PlanCardProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {planProducts.map((prod) => {
                 const originalPrice = prod.finalCustomerPricePerSqm;
-                const discountedPrice =
-                  plan.type === "product_discount"
-                    ? Math.round(
-                        originalPrice *
-                          (1 - (plan.discountPercent || 10) / 100),
-                      )
-                    : originalPrice;
+                const discountedPrice = plan.discountPercent
+                  ? Math.round(originalPrice * (1 - plan.discountPercent / 100))
+                  : originalPrice;
 
                 return (
                   <div
@@ -234,7 +221,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                         <span className="text-xs font-bold text-background truncate block">
                           {prod.name}
                         </span>
-                        {isActive && plan.type === "product_discount" ? (
+                        {isActive && plan.discountPercent ? (
                           <div className="flex items-center gap-1.5 mt-0.5">
                             <span className="text-[10px] text-muted line-through inline-flex items-center gap-0.5">
                               <span>{formatToman(originalPrice)}</span>
@@ -261,13 +248,19 @@ export function PlanCard({ plan, products }: PlanCardProps) {
                       <Link
                         to="/product"
                         search={{ productname: prod.slug }}
-                        className="h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shrink-0 flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                        className={cn(
+                          "h-8 px-3 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold shrink-0 flex items-center justify-center gap-1 cursor-pointer active:scale-95",
+                        )}
                       >
                         <span>سفارش</span>
                         <ArrowLeftIcon size={12} />
                       </Link>
                     ) : (
-                      <span className="h-8 px-2.5 rounded-lg bg-default/20 text-muted text-xs font-semibold shrink-0 flex items-center justify-center gap-1 cursor-not-allowed">
+                      <span
+                        className={cn(
+                          "h-8 px-2.5 rounded-lg bg-default/20 text-muted text-xs font-semibold shrink-0 flex items-center justify-center gap-1 cursor-not-allowed",
+                        )}
+                      >
                         <span>منقضی</span>
                       </span>
                     )}
@@ -281,14 +274,16 @@ export function PlanCard({ plan, products }: PlanCardProps) {
 
       {/* Footer / CTA Section - Pinned to bottom */}
       <div className="mt-auto ">
-        {isActive ?? (
+        {isActive && (
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
             <span className="text-xs text-muted">
               برای بهره‌مندی از تخفیف و سهمیه این طرح، سفارش خود را ثبت نمایید.
             </span>
             <Link
               to="/product"
-              className="h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95"
+              className={cn(
+                "h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold flex items-center justify-center gap-1.5 shrink-0 cursor-pointer active:scale-95",
+              )}
             >
               <span>مشاهده محصولات و ثبت سفارش</span>
               <ArrowLeftIcon size={14} />

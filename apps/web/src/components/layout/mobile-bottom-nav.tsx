@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   GridIcon,
@@ -5,7 +6,7 @@ import {
   UserIcon,
   ClipboardListIcon,
 } from "../ui/icons";
-import { cn } from "../../lib/utils";
+import { PillNav, type PillNavItem } from "../ui/pill-nav";
 
 export function MobileBottomNav() {
   const routerState = useRouterState();
@@ -19,77 +20,64 @@ export function MobileBottomNav() {
     return null;
   }
 
-  const navItems = [
-    {
-      to: "/product",
-      label: "محصولات",
-      icon: GridIcon,
-      isActive: pathname.startsWith("/product") || pathname === "/",
-    },
-    {
-      to: "/plans",
-      label: "طرح‌ها",
-      icon: ClipboardListIcon,
-      isActive: pathname.startsWith("/plans"),
-    },
-    {
-      to: "/orders",
-      label: "سفارش‌ها",
-      icon: PackageIcon,
-      isActive: pathname.startsWith("/orders"),
-    },
-    {
-      to: "/account",
-      label: "حساب من",
-      icon: UserIcon,
-      isActive: pathname === "/account",
-    },
-  ];
+  const activeHref = useMemo(() => {
+    if (pathname.startsWith("/plans")) return "/plans";
+    if (pathname.startsWith("/orders")) return "/orders";
+    if (pathname.startsWith("/account")) return "/account";
+    return "/product";
+  }, [pathname]);
+
+  const navItems: PillNavItem[] = useMemo(
+    () => [
+      {
+        href: "/product",
+        label: "محصولات",
+        icon: <GridIcon size={19} className="shrink-0" />,
+      },
+      {
+        href: "/plans",
+        label: "طرح‌ها",
+        icon: <ClipboardListIcon size={19} className="shrink-0" />,
+      },
+      {
+        href: "/orders",
+        label: "سفارش‌ها",
+        icon: <PackageIcon size={19} className="shrink-0" />,
+      },
+      {
+        href: "/account",
+        label: "حساب من",
+        icon: <UserIcon size={19} className="shrink-0" />,
+      },
+    ],
+    [],
+  );
 
   return (
     <>
       <nav
-        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] inset-x-0 mx-auto w-[calc(100%-32px)] max-w-xl z-40 p-1.5 rounded-2xl bg-[#252745] backdrop-blur-xl"
+        className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom,0px))] inset-x-0 mx-auto w-[calc(100%-32px)] max-w-xl z-40 p-1.5 rounded-2xl bg-[#252745] backdrop-blur-xl border-none shadow-none"
+        aria-label="منوی ناوبری"
       >
-        <div className="flex h-14 w-full items-center justify-between gap-1 px-1">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            return (
-              <Link
-                key={item.to}
-                to={item.to}
-                className={cn(
-                  "flex flex-col w-fit rounded-2xl px-4 text-muted hover:bg-default/15 items-center justify-center gap-0.5 transition-all relative cursor-pointer active:scale-95 py-1",
-                  item.isActive
-                    ? "text-primary"
-                    : "text-muted hover:text-foreground"
-                )}
-              >
-                <div
-                  className={cn(
-                    "relative px-3 py-1 rounded-xl transition-all flex items-center justify-center",
-                    item.isActive && "bg-primary/10 text-primary"
-                  )}
-                >
-                  <Icon
-                    size={19}
-                    className={cn(
-                      item.isActive ? "stroke-[2.2] text-background" : "stroke-2 text-[#b8b9c3]"
-                    )}
-                  />
-                </div>
-                <span
-                  className={cn(
-                    "text-[11px] font-bold tracking-tight transition-colors",
-                    item.isActive ? "text-background" : "text-[#b8b9c3]"
-                  )}
-                >
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-        </div>
+        <PillNav
+          items={navItems}
+          activeHref={activeHref}
+          linkComponent={Link}
+          layout="joined"
+          itemStyle="pill"
+          hoverEffect="glide"
+          indicator="pill"
+          collapse="never"
+          bounce={0.7}
+          stretch={1}
+          surface="none"
+          tileColor="#252745"
+          highlightColor="#ffffff"
+          highlightTextColor="#1c1696"
+          textColor="#ffffff"
+          orientation="vertical"
+          className="w-full h-14 border-none! shadow-none! [box-shadow:none]!"
+        />
       </nav>
       {/* Solid white underlay for the space below nav bottom */}
       <div

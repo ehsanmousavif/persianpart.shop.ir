@@ -61,14 +61,14 @@ function RootComponent() {
             isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
           )}
         >
-          <AppHeader />
+          {!isLoginPage && <AppHeader />}
           <ToastContainer />
           {/* Main App Content Area */}
           <main
             className={cn(
               'flex-1 w-full flex flex-col',
               isLoginPage
-                ? 'overflow-hidden relative'
+                ? 'h-full overflow-hidden relative'
                 : 'max-w-xl mx-auto pb-[calc(5.5rem+env(safe-area-inset-bottom,0px))]'
             )}
           >

@@ -1,11 +1,14 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "@tanstack/react-router";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button, InputGroup } from "@heroui/react";
+import {
+  CodeSlots,
+  type CodeSlotsStatus,
+} from "../../components/ui/code-slots";
 
-import React, { useState, useEffect } from 'react'
-import { useNavigate } from '@tanstack/react-router'
-import { motion, AnimatePresence } from 'framer-motion'
-import { InputOTP, Button, InputGroup } from '@heroui/react'
-
-import { useAuth } from './auth-store'
-import { toast } from '../../components/feedback/toast'
+import { useAuth } from "./auth-store";
+import { toast } from "../../components/feedback/toast";
 import {
   PhoneIcon,
   ArrowLeftIcon,
@@ -14,137 +17,144 @@ import {
   PencilIcon,
   ShieldCheckIcon,
   LockIcon,
-} from '../../components/ui/icons'
-import { toPersianDigits } from '../../lib/utils/currency'
+} from "../../components/ui/icons";
+import { toPersianDigits } from "../../lib/utils/currency";
 
 export function LoginCard() {
-  const navigate = useNavigate()
-  const { sendOtp, verifyOtp } = useAuth()
+  const navigate = useNavigate();
+  const { sendOtp, verifyOtp } = useAuth();
 
-  const [step, setStep] = useState<'phone' | 'otp'>('phone')
-  const [phone, setPhone] = useState('')
-  const [otpCode, setOtpCode] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  const [countdown, setCountdown] = useState(120)
+  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [phone, setPhone] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [otpStatus, setOtpStatus] = useState<CodeSlotsStatus>("idle");
+  const [isLoading, setIsLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(120);
 
   useEffect(() => {
-    if (step !== 'otp' || countdown <= 0) return
+    if (step !== "otp" || countdown <= 0) return;
 
     const timer = setInterval(() => {
-      setCountdown((prev) => Math.max(0, prev - 1))
-    }, 1000)
+      setCountdown((prev) => Math.max(0, prev - 1));
+    }, 1000);
 
-    return () => clearInterval(timer)
-  }, [step, countdown])
+    return () => clearInterval(timer);
+  }, [step, countdown]);
 
   const handleSendPhone = async (e?: React.FormEvent) => {
-    e?.preventDefault()
-    setErrorMessage(null)
+    e?.preventDefault();
+    setErrorMessage(null);
 
-    const cleaned = phone.trim()
+    const cleaned = phone.trim();
 
     if (!/^09\d{9}$/.test(cleaned)) {
       setErrorMessage(
-        'لطفاً شماره موبایل معتبر ۱۱ رقمی (مانند ۰۹۱۲۳۴۵۶۷۸۹) وارد نمایید.',
-      )
-      return
+        "لطفاً شماره موبایل معتبر ۱۱ رقمی (مانند ۰۹۱۲۳۴۵۶۷۸۹) وارد نمایید.",
+      );
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await sendOtp(cleaned)
+      await sendOtp(cleaned);
 
-      setStep('otp')
-      setCountdown(120)
-      setOtpCode('')
+      setStep("otp");
+      setCountdown(120);
+      setOtpCode("");
+      setOtpStatus("idle");
 
       toast.info(
-        'کد تأیید ارسال شد',
-        `پیامک حاوی کد تأیید ۵ رقمی برای شماره ${toPersianDigits(cleaned)} ارسال گردید.`,
-      )
+        "کد تأیید ارسال شد",
+        `پیامک حاوی کد تأیید ۴ رقمی برای شماره ${toPersianDigits(cleaned)} ارسال گردید.`,
+      );
     } catch (err: unknown) {
       const msg =
-        err instanceof Error ? err.message : 'خطا در ارسال کد اعتبارسنجی'
+        err instanceof Error ? err.message : "خطا در ارسال کد اعتبارسنجی";
 
-      setErrorMessage(msg)
-      toast.error('خطای ورود', msg)
+      setErrorMessage(msg);
+      toast.error("خطای ورود", msg);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleVerifyOtp = async (codeToVerify?: string) => {
-    const code = (codeToVerify ?? otpCode).trim()
-    setErrorMessage(null)
+    const code = (codeToVerify ?? otpCode).trim();
+    setErrorMessage(null);
 
-    if (!/^\d{5}$/.test(code)) {
-      setErrorMessage('کد تأیید یکبار مصرف باید ۵ رقم باشد.')
-      return
+    if (!/^\d{4}$/.test(code)) {
+      setErrorMessage("کد تأیید یکبار مصرف باید ۴ رقم باشد.");
+      setOtpStatus("error");
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     try {
-      await verifyOtp(code)
+      await verifyOtp(code);
+      setOtpStatus("success");
 
       toast.success(
-        'ورود موفقیت‌آمیز',
-        'به سامانه سفارش‌گذاری عمده پرشین‌پارت خوش آمدید.',
-      )
+        "ورود موفقیت‌آمیز",
+        "به سامانه سفارش‌گذاری عمده پرشین‌پارت خوش آمدید.",
+      );
 
-      const search = new URLSearchParams(window.location.search)
-      const redirectUrl = search.get('redirect')
+      const search = new URLSearchParams(window.location.search);
+      const redirectUrl = search.get("redirect");
 
-      if (redirectUrl && !redirectUrl.includes('/login')) {
-        try {
-          const url = new URL(redirectUrl, window.location.origin)
+      setTimeout(() => {
+        if (redirectUrl && !redirectUrl.includes("/login")) {
+          try {
+            const url = new URL(redirectUrl, window.location.origin);
 
-          if (url.origin !== window.location.origin) {
-            navigate({ to: '/product' })
-            return
+            if (url.origin !== window.location.origin) {
+              navigate({ to: "/product" });
+              return;
+            }
+
+            navigate({
+              to: url.pathname as any,
+              search: Object.fromEntries(url.searchParams.entries()) as any,
+            });
+          } catch {
+            navigate({ to: "/product" });
           }
-
-          navigate({
-            to: url.pathname as any,
-            search: Object.fromEntries(url.searchParams.entries()) as any,
-          })
-        } catch {
-          navigate({ to: '/product' })
+        } else {
+          navigate({ to: "/product" });
         }
-      } else {
-        navigate({ to: '/product' })
-      }
+      }, 1200);
     } catch (err: unknown) {
+      setOtpStatus("error");
       const msg =
         err instanceof Error
           ? err.message
-          : 'کد تأیید وارد شده نادرست یا منقضی است.'
+          : "کد تأیید وارد شده نادرست یا منقضی است.";
 
-      setErrorMessage(msg)
-      toast.error('خطای ورود', msg)
+      setErrorMessage(msg);
+      toast.error("خطای ورود", msg);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const formatTimer = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
 
     return toPersianDigits(
-      `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`,
-    )
-  }
+      `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`,
+    );
+  };
 
   return (
     <motion.div
-      initial={{ opacity: 0.5, y: -8, height: 0 }}
-      animate={{ opacity: 1, y: 0, height: 'auto' }}
-      exit={{ opacity: 0, y: -8, height: 0 }}
-      transition={{ duration: 0.5, ease: 'easeIn' }}
-      className="mb-5 w-full overflow-hidden"
+      initial={{ opacity: 0, y: 28 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -16 }}
+      transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+      className="w-full"
     >
       <div className="w-full rounded-3xl bg-background p-6 sm:p-8 ">
         {/* Brand Header */}
@@ -162,7 +172,7 @@ export function LoginCard() {
           </h1>
 
           <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
-            سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک 
+            سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک
           </p>
         </div>
 
@@ -172,9 +182,9 @@ export function LoginCard() {
             <motion.div
               key="login-error"
               initial={{ opacity: 0, height: 0, y: -8 }}
-              animate={{ opacity: 1, height: 'auto', y: 0 }}
+              animate={{ opacity: 1, height: "auto", y: 0 }}
               exit={{ opacity: 0, height: 0, y: -8 }}
-              transition={{ duration: 0.2, ease: 'easeOut' }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
               className="mb-4 overflow-hidden"
             >
               <div className="flex items-start gap-2.5 rounded-2xl border border-danger/20 bg-danger/10 p-3.5 text-xs font-semibold text-danger">
@@ -190,13 +200,13 @@ export function LoginCard() {
 
         {/* Step Transition */}
         <AnimatePresence mode="wait">
-          {step === 'phone' ? (
+          {step === "phone" ? (
             <motion.form
               key="step-phone"
-              initial={{ opacity: 0, x: 12 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -12 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              initial={{ opacity: 0, y: 28 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -16 }}
+              transition={{ duration: 0.4, ease: "easeInOut" }}
               onSubmit={handleSendPhone}
               className="space-y-4"
             >
@@ -208,7 +218,10 @@ export function LoginCard() {
                   شماره تلفن همراه
                 </label>
 
-                <InputGroup fullWidth className="h-12 rounded-2xl text-s bg-muted/10 transition-all shadow-none">
+                <InputGroup
+                  fullWidth
+                  className="h-12 rounded-2xl text-s bg-muted/10 transition-all shadow-none"
+                >
                   <InputGroup.Prefix className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
                     <PhoneIcon size={18} />
                   </InputGroup.Prefix>
@@ -222,15 +235,15 @@ export function LoginCard() {
                     onChange={(e) => {
                       const cleaned = e.target.value
                         .replace(/[۰-۹]/g, (d) =>
-                          String('۰۱۲۳۴۵۶۷۸۹'.indexOf(d)),
+                          String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)),
                         )
                         .replace(/[٠-٩]/g, (d) =>
-                          String('٠١٢٣٤٥٦٧٨٩'.indexOf(d)),
+                          String("٠١٢٣٤٥٦٧٨٩".indexOf(d)),
                         )
-                        .replace(/\D/g, '')
-                        .slice(0, 11)
+                        .replace(/\D/g, "")
+                        .slice(0, 11);
 
-                      setPhone(cleaned)
+                      setPhone(cleaned);
                     }}
                     placeholder="۰۹۱۲۳۴۵۶۷۸۹"
                     dir="ltr"
@@ -241,7 +254,8 @@ export function LoginCard() {
                 </InputGroup>
 
                 <p className="mt-2 text-start text-xs  leading-relaxed text-muted">
-                  کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال خواهد شد.
+                  کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال
+                  خواهد شد.
                 </p>
               </div>
 
@@ -266,7 +280,7 @@ export function LoginCard() {
               initial={{ opacity: 0, x: -12 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 12 }}
-              transition={{ duration: 0.22, ease: 'easeOut' }}
+              transition={{ duration: 0.22, ease: "easeOut" }}
               className="space-y-4"
             >
               {/* Phone Info */}
@@ -287,8 +301,8 @@ export function LoginCard() {
                 <Button
                   type="button"
                   onPress={() => {
-                    setStep('phone')
-                    setErrorMessage(null)
+                    setStep("phone");
+                    setErrorMessage(null);
                   }}
                   isDisabled={isLoading}
                   className="flex h-8 cursor-pointer items-center gap-1 rounded-xl px-3 text-xs font-bold text-foreground bg-muted/10 transition-color hover:scale-[1.01]"
@@ -300,31 +314,33 @@ export function LoginCard() {
 
               <div>
                 <label className="mb-2.5 block text-start text-xs font-bold text-foreground/80">
-                  کد تأیید ۵ رقمی پیامک‌شده
+                  کد تأیید ۴ رقمی پیامک‌شده
                 </label>
 
                 <div
-                  className="flex w-full items-center justify-center py-1 shadow-none" 
+                  className="flex w-full items-center justify-center py-2"
                   dir="ltr"
                 >
-                  <InputOTP
-                    maxLength={5}
+                  <CodeSlots
+                    length={4}
+                    radius={20}
+                    rise={9}
+                    cascade={60}
+                    status={otpStatus}
                     value={otpCode}
-                    onChange={setOtpCode}
+                    onChange={(val) => {
+                      setOtpCode(val);
+                      if (otpStatus !== "idle") setOtpStatus("idle");
+                    }}
                     onComplete={(code) => handleVerifyOtp(code)}
-                    isDisabled={isLoading}
+                    disabled={isLoading}
                     autoFocus
-                  >
-                    <InputOTP.Group className="flex justify-center gap-2 sm:gap-2.5 flex-1">
-                      {Array.from({ length: 5 }, (_, index) => (
-                        <InputOTP.Slot
-                          key={index}
-                          index={index}
-                          className="rounded-2xl shadow-none! border-none  bg-muted/15 text-xl font-bold text-foreground h-16"
-                        />
-                      ))}
-                    </InputOTP.Group>
-                  </InputOTP>
+                    slotSize={56}
+                    bounce={0.3}
+                    gap={12}
+                    settle={0.5}
+                    className="border-none! shadow-none! [box-shadow:none]!"
+                  />
                 </div>
               </div>
 
@@ -332,7 +348,7 @@ export function LoginCard() {
               <div className="flex items-center justify-between pt-1 text-xs">
                 {countdown > 0 ? (
                   <span className="font-medium text-muted">
-                    امکان ارسال مجدد تا:{' '}
+                    امکان ارسال مجدد تا:{" "}
                     <strong className="font-bold text-foreground">
                       {formatTimer(countdown)}
                     </strong>
@@ -353,8 +369,8 @@ export function LoginCard() {
               <Button
                 type="button"
                 onPress={() => handleVerifyOtp()}
-                isDisabled={isLoading || otpCode.length !== 5}
-                className="flex h-12 shadow-xs shadow-white w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground  ransition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                isDisabled={isLoading || otpCode.length !== 4}
+                className="flex h-12 shadow-xs shadow-white w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />
@@ -372,26 +388,20 @@ export function LoginCard() {
         {/* Footer B2B Notice */}
         <div className="mt-7 border-t border-border/40 pt-4 text-center">
           <div className="mb-1 flex items-center justify-center gap-1.5 text-xs text-muted">
-            <ShieldCheckIcon
-              size={14}
-              className="shrink-0 text-primary/70"
-            />
+            <ShieldCheckIcon size={14} className="shrink-0 text-primary/70" />
             <span>
               افتتاح حساب مشتریان جدید منحصراً توسط مدیریت انجام می‌شود.
             </span>
           </div>
 
           <p className="text-xs text-muted/70">
-            پشتیبانی امور نمایندگان:{' '}
-            <span
-              className="font-bold text-foreground/80"
-              dir="ltr"
-            >
+            پشتیبانی امور نمایندگان:{" "}
+            <span className="font-bold text-foreground/80" dir="ltr">
               ۰۲۱-۸۸۸۸۸۸۸۸
             </span>
           </p>
         </div>
       </div>
     </motion.div>
-  )
+  );
 }

@@ -125,7 +125,7 @@ function ProductNewConfigurationPage() {
     let totalDeliverableArea = 0;
     let totalPrice = 0;
 
-    selectedProducts.forEach((product) => {
+    selectedProducts.map((product) => {
       const maxInv = product.inventorySqm > 0 ? product.inventorySqm : 500;
       const area = quantities[product.id] ?? 0;
       const calc = calculateCartonRequirement(
@@ -149,7 +149,6 @@ function ProductNewConfigurationPage() {
     };
   }, [selectedProducts, quantities]);
 
-  // Empty State if no products are selected
   if (selectedProducts.length === 0) {
     return (
       <div className="w-full max-w-2xl mx-auto px-4 py-12 text-center space-y-4">
@@ -166,7 +165,7 @@ function ProductNewConfigurationPage() {
         <Button
           type="button"
           onClick={() => navigate({ to: "/product" })}
-          className="inline-flex items-center gap-2 h-10 px-4 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold cursor-pointer transition-all active:scale-95"
+          className="inline-flex items-center gap-2 h-12 px-5 rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold cursor-pointer transition-all active:scale-95"
         >
           <ArrowRightIcon size={16} />
           <span>بازگشت به لیست محصولات</span>
@@ -176,20 +175,19 @@ function ProductNewConfigurationPage() {
   }
 
   return (
-    <div className="w-full max-w-xl mx-auto px-3.5 py-3 space-y-4 text-start pb-28">
+    <div className="w-full max-w-xl mx-auto px-4 py-3 space-y-4 text-start pb-28">
       {/* Top Navigation & Step Indicator */}
       <div className="flex items-center justify-between gap-2 pb-3">
         <Button
           type="button"
           onClick={handleBackToProducts}
-          className="inline-flex items-center gap-1.5 h-10 px-2 py-1.5 rounded-2xl bg-muted/5 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors cursor-pointer"
+          className="inline-flex items-center gap-1.5 h-12 px-5 py-2 rounded-2xl bg-muted/5 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors cursor-pointer"
         >
           <ArrowRightIcon size={14} />
           <span>بازگشت به لیست محصولات</span>
         </Button>
       </div>
 
-      {/* List of Selected Products: Structured Cards (Designed for max-w-xl container) */}
       <div className="space-y-4">
         {selectedProducts.map((product) => {
           const maxInventory =
@@ -211,7 +209,7 @@ function ProductNewConfigurationPage() {
           return (
             <div
               key={product.id}
-              className="bg-muted/5 rounded-2xl p-3.5 sm:p-4 transition-all space-y-3.5"
+              className="bg-muted/4 rounded-2xl p-4 transition-all space-y-3.5"
             >
               {/* 1. Header Row: Thumbnail + Product Info + Delete Button */}
               <div className="flex items-start justify-between gap-3">
@@ -236,7 +234,7 @@ function ProductNewConfigurationPage() {
                     />
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 space-y-2">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-muted/10 text-foreground">
                         {toPersianDigits(product.dimensions.width)} ×{" "}
@@ -277,50 +275,21 @@ function ProductNewConfigurationPage() {
               <div className="h-px bg-separator" />
 
               {/* 2. Meterage Controls: NumberField & Slider */}
-              <div className="space-y-2.5">
+              <div className="space-y-2.5 ">
                 <div className="flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-xs font-bold text-foreground block leading-normal">
-                      متراژ مورد نیاز:
-                    </span>
-                    <span className="text-xs text-muted">
-                      هر کارتن:{" "}
-                      <strong className="font-bold text-foreground">
-                        {toPersianDigits(product.sqmPerCarton)}
-                      </strong>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5 justify-center shrink-0">
-                    <I18nProvider locale="fa-IR">
-                      <NumberField
-                        minValue={0}
-                        maxValue={maxInventory}
-                        step={1}
-                        value={area}
-                        onChange={(val) =>
-                          handleAreaChange(product.id, val, maxInventory)
-                        }
-                        formatOptions={{
-                          useGrouping: false,
-                          minimumFractionDigits: 0,
-                          maximumFractionDigits: 1,
-                        }}
-                        aria-label={`متراژ ${product.name}`}
-                        className="max-w-40"
-                      >
-                        <NumberField.Group className="rounded-2xl bg-muted/10 transition-colors overflow-hidden">
-                          <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
-                          <NumberField.Input className="font-bold text-center text-foreground" />
-                          <NumberField.IncrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3" />
-                        </NumberField.Group>
-                      </NumberField>
-                    </I18nProvider>
-                  </div>
+                  <span className="text-xs font-bold text-foreground block leading-normal">
+                    متراژ مورد نیاز:
+                  </span>
+                  <span className="text-xs text-muted">
+                    هر کارتن:{" "}
+                    <strong className="font-bold text-foreground">
+                      {toPersianDigits(product.sqmPerCarton)}
+                    </strong>
+                  </span>
                 </div>
 
-                <div className="space-y-1 pt-0.5">
-                  <div className="w-full py-1">
+                <div className="space-y-4 pt-0.5">
+                  <div className="w-full">
                     <I18nProvider locale="fa-IR">
                       <Slider
                         minValue={0}
@@ -335,13 +304,11 @@ function ProductNewConfigurationPage() {
                         aria-label={`اسلایدر متراژ ${product.name}`}
                         className="w-full"
                       >
-                        <Slider.Track className="relative h-2.5 w-full rounded-full bg-muted/20 border-none">
+                        <Slider.Track className="relative h-2.5  w-full rounded-full bg-muted/20 border-none">
                           {/* RTL Accurate Fill: expands synchronously from right edge to the thumb without delay */}
                           <div
-                            className="absolute top-0 bottom-0 rounded-full bg-primary pointer-events-none"
+                            className="absolute left-auto right-0 top-0 bottom-0 rounded-full bg-primary pointer-events-none"
                             style={{
-                              right: 0,
-                              left: "auto",
                               width: `${percent}%`,
                             }}
                           />
@@ -351,20 +318,47 @@ function ProductNewConfigurationPage() {
                     </I18nProvider>
                   </div>
 
-                  <div className="flex justify-between rounded-lg mt-4 items-center text-xs text-foreground font-bold px-0.5">
+                  <div className="flex justify-between rounded-lg mt-3 items-center text-xs text-foreground font-bold">
                     <div
                       onClick={() =>
                         handleAreaChange(product.id, maxInventory, maxInventory)
                       }
-                      className="px-2 py-3 rounded-lg bg-primary text-primary-foreground cursor-pointer"
+                      className="p-2.5 rounded-xl bg-primary text-primary-foreground cursor-pointer select-none active:scale-95 transition-transform"
                     >
                       سقف موجودی: {toPersianDigits(maxInventory)}
+                    </div>
+
+                    <div className="flex items-center gap-1.5 justify-center shrink-0">
+                      <I18nProvider locale="fa-IR">
+                        <NumberField
+                          minValue={0}
+                          maxValue={maxInventory}
+                          step={1}
+                          value={area}
+                          onChange={(val) =>
+                            handleAreaChange(product.id, val, maxInventory)
+                          }
+                          formatOptions={{
+                            useGrouping: false,
+                            minimumFractionDigits: 0,
+                            maximumFractionDigits: 1,
+                          }}
+                          aria-label={`متراژ ${product.name}`}
+                          className="max-w-36 shadow-none! [box-shadow:none]! border-none!"
+                        >
+                          <NumberField.Group className="rounded-2xl bg-muted/10 transition-colors overflow-hidden shadow-none! [box-shadow:none]! border-none! ring-0!">
+                            <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3 shadow-none! [box-shadow:none]! border-none!" />
+                            <NumberField.Input className="font-bold text-center text-foreground shadow-none! [box-shadow:none]! border-none! ring-0!" />
+                            <NumberField.IncrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3 shadow-none! [box-shadow:none]! border-none!" />
+                          </NumberField.Group>
+                        </NumberField>
+                      </I18nProvider>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-2xl  grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-2xl grid grid-cols-2 gap-2 text-xs">
                 <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
                   <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
                     <SolarRulerIcon size={14} />
@@ -431,12 +425,12 @@ function ProductNewConfigurationPage() {
       </div>
 
       {/* Sticky Bottom Bar - ONLY "تایید" Button, Aligned with Container Width */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 backdrop-blur-md z-40 p-3 sm:p-4">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 backdrop-blur-md z-40 p-4">
         <Button
           type="button"
           onPress={() => setIsInvoiceOpen(true)}
           isDisabled={!totals.hasValidQuantities}
-          className="w-full h-12 px-2 py-1.5 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          className="w-full h-12 px-4 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
         >
           <span>تایید</span>
           <ArrowLeftIcon size={16} />

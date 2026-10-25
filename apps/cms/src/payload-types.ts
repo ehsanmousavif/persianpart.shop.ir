@@ -67,17 +67,17 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    admins: Admin;
-    users: User;
-    'customer-types': CustomerType;
-    media: Media;
+    products: Product;
     categories: Category;
+    dimensions: Dimension;
     brands: Brand;
     tags: Tag;
-    dimensions: Dimension;
-    products: Product;
+    'customer-types': CustomerType;
     orders: Order;
     plans: Plan;
+    users: User;
+    media: Media;
+    admins: Admin;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -85,17 +85,17 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    admins: AdminsSelect<false> | AdminsSelect<true>;
-    users: UsersSelect<false> | UsersSelect<true>;
-    'customer-types': CustomerTypesSelect<false> | CustomerTypesSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    products: ProductsSelect<false> | ProductsSelect<true>;
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    dimensions: DimensionsSelect<false> | DimensionsSelect<true>;
     brands: BrandsSelect<false> | BrandsSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
-    dimensions: DimensionsSelect<false> | DimensionsSelect<true>;
-    products: ProductsSelect<false> | ProductsSelect<true>;
+    'customer-types': CustomerTypesSelect<false> | CustomerTypesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
     plans: PlansSelect<false> | PlansSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
+    media: MediaSelect<false> | MediaSelect<true>;
+    admins: AdminsSelect<false> | AdminsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -136,169 +136,7 @@ export interface AdminAuthOperations {
   };
 }
 /**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins".
- */
-export interface Admin {
-  id: number;
-  name: string;
-  role: 'superadmin' | 'manager' | 'editor' | 'support';
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  resetPasswordRequestedAt?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'admins';
-}
-/**
- * فهرست مشتریان و خریداران تجاری.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
- */
-export interface User {
-  id: number;
-  /**
-   * شناسه ورود با کد یکبار مصرف (OTP).
-   */
-  phone: string;
-  fullName: string;
-  companyName?: string | null;
-  nationalCode?: string | null;
-  economicCode?: string | null;
-  /**
-   * تعیین‌کننده درصد قیمت و تخفیف کاتالوگ.
-   */
-  customerType: number | CustomerType;
-  status: 'active' | 'pending' | 'suspended';
-  province?: string | null;
-  city?: string | null;
-  address?: string | null;
-  addresses?:
-    | {
-        title: string;
-        province: string;
-        city: string;
-        postalCode?: string | null;
-        addressDetail: string;
-        id?: string | null;
-      }[]
-    | null;
-  notes?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * رده‌های مشتریان و ضریب قیمت (Markup).
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "customer-types".
- */
-export interface CustomerType {
-  id: number;
-  name: string;
-  slug: string;
-  /**
-   * اثر بر قیمت پایه (مثبت: افزایش، منفی: تخفیف).
-   */
-  markupPercent: number;
-  isActive?: boolean | null;
-  description?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * مدیریت تصاویر کالاها، لوگوها و فایل‌های سیستم
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
- */
-export interface Media {
-  id: number;
-  alt: string;
-  updatedAt: string;
-  createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "categories".
- */
-export interface Category {
-  id: number;
-  name: string;
-  slug: string;
-  ordering?: number | null;
-  parent?: (number | null) | Category;
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "brands".
- */
-export interface Brand {
-  id: number;
-  name: string;
-  slug: string;
-  logo?: (number | null) | Media;
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "tags".
- */
-export interface Tag {
-  id: number;
-  name: string;
-  slug: string;
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * ابعاد استاندارد کاشی و سرامیک.
- *
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "dimensions".
- */
-export interface Dimension {
-  id: number;
-  name: string;
-  width: number;
-  height: number;
-  slug: string;
-  isActive?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * کاتالوگ و موجودی کالاها.
+ * کاتالوگ و موجودی محصولات.
  *
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "products".
@@ -351,6 +189,101 @@ export interface Product {
   createdAt: string;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  ordering?: number | null;
+  parent?: (number | null) | Category;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "brands".
+ */
+export interface Brand {
+  id: number;
+  name: string;
+  slug: string;
+  logo?: (number | null) | Media;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * مدیریت تصاویر کالاها، لوگوها و فایل‌های سیستم
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media".
+ */
+export interface Media {
+  id: number;
+  alt: string;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  name: string;
+  slug: string;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * ابعاد استاندارد کاشی و سرامیک.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dimensions".
+ */
+export interface Dimension {
+  id: number;
+  name: string;
+  width: number;
+  height: number;
+  slug: string;
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * رده‌های مشتریان و ضریب قیمت (Markup).
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "customer-types".
+ */
+export interface CustomerType {
+  id: number;
+  name: string;
+  slug: string;
+  /**
+   * اثر بر قیمت پایه (مثبت: افزایش، منفی: تخفیف).
+   */
+  markupPercent: number;
+  isActive?: boolean | null;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * فهرست و وضعیت سفارشات.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -388,6 +321,44 @@ export interface Order {
   createdAt: string;
 }
 /**
+ * فهرست مشتریان و خریداران تجاری.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  /**
+   * شناسه ورود با کد یکبار مصرف (OTP).
+   */
+  phone: string;
+  fullName: string;
+  companyName?: string | null;
+  nationalCode?: string | null;
+  economicCode?: string | null;
+  /**
+   * تعیین‌کننده درصد قیمت و تخفیف کاتالوگ.
+   */
+  customerType: number | CustomerType;
+  status: 'active' | 'pending' | 'suspended';
+  province?: string | null;
+  city?: string | null;
+  address?: string | null;
+  addresses?:
+    | {
+        title: string;
+        province: string;
+        city: string;
+        postalCode?: string | null;
+        addressDetail: string;
+        id?: string | null;
+      }[]
+    | null;
+  notes?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
  * طرح‌ها و تخفیف‌های مشتریان.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -396,26 +367,45 @@ export interface Order {
 export interface Plan {
   id: number;
   /**
-   * در صورت خالی بودن، خودکار بر اساس نام مشتری ساخته می‌شود. امکان درج {name} در متن وجود دارد.
+   * کاربری که این طرح به او اختصاص داده می‌شود.
    */
-  title?: string | null;
   users: (number | User)[];
+  /**
+   * متن پیام یا توضیحات طرح برای کاربر.
+   */
   content: string;
-  type: 'credit_terms' | 'product_discount' | 'informational';
-  discountPercent?: number | null;
-  discountAmount?: number | null;
-  status: 'active' | 'expired' | 'draft';
-  products?: (number | Product)[] | null;
-  /**
-   * در صورت فعال بودن، شمارش معکوس زمان باقی‌مانده بالای آیکون طرح نمایش داده می‌شود.
-   */
-  hasTimer?: boolean | null;
-  /**
-   * تاریخ و ساعت پایان طرح که تایمر معکوس بر اساس آن شمارش می‌کند.
-   */
-  expiresAt?: string | null;
+  title?: string | null;
   updatedAt: string;
   createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admins".
+ */
+export interface Admin {
+  id: number;
+  name: string;
+  role: 'superadmin' | 'manager' | 'editor' | 'support';
+  isActive?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  resetPasswordRequestedAt?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'admins';
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -442,24 +432,16 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'admins';
-        value: number | Admin;
-      } | null)
-    | ({
-        relationTo: 'users';
-        value: number | User;
-      } | null)
-    | ({
-        relationTo: 'customer-types';
-        value: number | CustomerType;
-      } | null)
-    | ({
-        relationTo: 'media';
-        value: number | Media;
+        relationTo: 'products';
+        value: number | Product;
       } | null)
     | ({
         relationTo: 'categories';
         value: number | Category;
+      } | null)
+    | ({
+        relationTo: 'dimensions';
+        value: number | Dimension;
       } | null)
     | ({
         relationTo: 'brands';
@@ -470,12 +452,8 @@ export interface PayloadLockedDocument {
         value: number | Tag;
       } | null)
     | ({
-        relationTo: 'dimensions';
-        value: number | Dimension;
-      } | null)
-    | ({
-        relationTo: 'products';
-        value: number | Product;
+        relationTo: 'customer-types';
+        value: number | CustomerType;
       } | null)
     | ({
         relationTo: 'orders';
@@ -484,6 +462,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'plans';
         value: number | Plan;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
+      } | null)
+    | ({
+        relationTo: 'media';
+        value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'admins';
+        value: number | Admin;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -529,89 +519,36 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "admins_select".
+ * via the `definition` "products_select".
  */
-export interface AdminsSelect<T extends boolean = true> {
-  name?: T;
-  role?: T;
-  isActive?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  resetPasswordRequestedAt?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
-    | T
-    | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
-      };
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
- */
-export interface UsersSelect<T extends boolean = true> {
-  phone?: T;
-  fullName?: T;
-  companyName?: T;
-  nationalCode?: T;
-  economicCode?: T;
-  customerType?: T;
-  status?: T;
-  province?: T;
-  city?: T;
-  address?: T;
-  addresses?:
-    | T
-    | {
-        title?: T;
-        province?: T;
-        city?: T;
-        postalCode?: T;
-        addressDetail?: T;
-        id?: T;
-      };
-  notes?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "customer-types_select".
- */
-export interface CustomerTypesSelect<T extends boolean = true> {
+export interface ProductsSelect<T extends boolean = true> {
+  sku?: T;
   name?: T;
   slug?: T;
-  markupPercent?: T;
-  isActive?: T;
-  description?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
+  category?: T;
+  brand?: T;
+  color?: T;
+  grade?: T;
+  tags?: T;
+  dimension?: T;
+  sqmPerCarton?: T;
   width?: T;
   height?: T;
-  focalX?: T;
-  focalY?: T;
+  piecesPerCarton?: T;
+  basePricePerSqm?: T;
+  stockCartons?: T;
+  inventorySqm?: T;
+  cover?: T;
+  gallery?:
+    | T
+    | {
+        image?: T;
+        id?: T;
+      };
+  richDescription?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -622,6 +559,19 @@ export interface CategoriesSelect<T extends boolean = true> {
   slug?: T;
   ordering?: T;
   parent?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "dimensions_select".
+ */
+export interface DimensionsSelect<T extends boolean = true> {
+  name?: T;
+  width?: T;
+  height?: T;
+  slug?: T;
   isActive?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -651,47 +601,14 @@ export interface TagsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "dimensions_select".
+ * via the `definition` "customer-types_select".
  */
-export interface DimensionsSelect<T extends boolean = true> {
-  name?: T;
-  width?: T;
-  height?: T;
-  slug?: T;
-  isActive?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "products_select".
- */
-export interface ProductsSelect<T extends boolean = true> {
-  sku?: T;
+export interface CustomerTypesSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
-  category?: T;
-  brand?: T;
-  color?: T;
-  grade?: T;
-  tags?: T;
-  dimension?: T;
-  sqmPerCarton?: T;
-  width?: T;
-  height?: T;
-  piecesPerCarton?: T;
-  basePricePerSqm?: T;
-  stockCartons?: T;
-  inventorySqm?: T;
-  cover?: T;
-  gallery?:
-    | T
-    | {
-        image?: T;
-        id?: T;
-      };
-  richDescription?: T;
+  markupPercent?: T;
   isActive?: T;
+  description?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -736,18 +653,84 @@ export interface OrdersSelect<T extends boolean = true> {
  * via the `definition` "plans_select".
  */
 export interface PlansSelect<T extends boolean = true> {
-  title?: T;
   users?: T;
   content?: T;
-  type?: T;
-  discountPercent?: T;
-  discountAmount?: T;
-  status?: T;
-  products?: T;
-  hasTimer?: T;
-  expiresAt?: T;
+  title?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  phone?: T;
+  fullName?: T;
+  companyName?: T;
+  nationalCode?: T;
+  economicCode?: T;
+  customerType?: T;
+  status?: T;
+  province?: T;
+  city?: T;
+  address?: T;
+  addresses?:
+    | T
+    | {
+        title?: T;
+        province?: T;
+        city?: T;
+        postalCode?: T;
+        addressDetail?: T;
+        id?: T;
+      };
+  notes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "media_select".
+ */
+export interface MediaSelect<T extends boolean = true> {
+  alt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "admins_select".
+ */
+export interface AdminsSelect<T extends boolean = true> {
+  name?: T;
+  role?: T;
+  isActive?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  resetPasswordRequestedAt?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

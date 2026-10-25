@@ -4,7 +4,7 @@ export const Dimensions: CollectionConfig = {
   slug: "dimensions",
   labels: {
     singular: "بُعد / سایز",
-    plural: "ابعاد کاشی",
+    plural: "ابعاد",
   },
   admin: {
     useAsTitle: "name",

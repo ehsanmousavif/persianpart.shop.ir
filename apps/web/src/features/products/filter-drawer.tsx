@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { Drawer, Dropdown, ButtonGroup, Button, Label, Switch } from "@heroui/react";
+import {
+  Drawer,
+  Dropdown,
+  ButtonGroup,
+  Button,
+  Label,
+  Switch,
+} from "@heroui/react";
 import { StarIcon } from "@solar-icons/react/Bold";
 import { useProducts } from "./product-store";
 import {
@@ -46,13 +53,8 @@ export function FilterDrawer({
 }: FilterDrawerProps) {
   const hook = productHook || catalogHook!;
 
-  const {
-    filters,
-    toggleArrayFilter,
-    setFilter,
-    resetFilters,
-    dimensions,
-  } = hook;
+  const { filters, toggleArrayFilter, setFilter, resetFilters, dimensions } =
+    hook;
 
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isDimOpen, setIsDimOpen] = useState(false);
@@ -79,7 +81,6 @@ export function FilterDrawer({
           className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[22%] h-auto! rounded-t-2xl flex flex-col overflow-hidden"
         >
           <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
-        
             <div className="flex justify-center w-full shrink-0">
               <Drawer.Handle className="w-16 h-1.5 rounded-full" />
             </div>
@@ -103,7 +104,7 @@ export function FilterDrawer({
             <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-thin">
               {/* Only In Stock */}
               <div
-                className="py-2.5 px-4 rounded-2xl bg-muted/5 flex items-center justify-between cursor-pointer select-none"
+                className="py-4 px-4 rounded-2xl bg-muted/5 flex items-center justify-between cursor-pointer select-none"
                 onClick={() => setFilter("onlyInStock", !filters.onlyInStock)}
               >
                 <div>
@@ -121,11 +122,23 @@ export function FilterDrawer({
                     setFilter("onlyInStock", isSelected)
                   }
                   aria-label="فقط کالاهای موجود"
-                  className="rounded-full"  
+                  className="group rounded-full"
                 >
                   <Switch.Content className="rounded-full">
-                    <Switch.Control className="rounded-full">
-                      <Switch.Thumb className="rounded-full" />
+                    <Switch.Control
+                      className={cn(
+                        "rounded-full w-16! h-8! min-w-16! min-h-8! max-w-16! max-h-8! flex items-center transition-colors",
+                        filters.onlyInStock ? "bg-primary!" : "bg-muted/20!",
+                      )}
+                    >
+                      <Switch.Thumb
+                        className={cn(
+                          "rounded-full w-8! h-6.5! min-w-8! min-h-6.5! max-w-8! max-h-6.5! shrink-0! bg-white shadow-sm transition-[margin] duration-200 ease-out",
+                          filters.onlyInStock
+                            ? "ms-[calc(100%-35px)]!"
+                            : "ms-0.75!",
+                        )}
+                      />
                     </Switch.Control>
                   </Switch.Content>
                 </Switch>
@@ -140,7 +153,7 @@ export function FilterDrawer({
                 <Dropdown isOpen={isSortOpen} onOpenChange={setIsSortOpen}>
                   <Button
                     variant="secondary"
-                    className="w-full justify-between h-11 px-3.5 rounded-2xl bg-muted/5 text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-muted/10 transition-colors"
+                    className="w-full justify-between h-14 px-3.5 rounded-2xl bg-muted/5 text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-muted/10 transition-colors"
                   >
                     <span>{currentSortLabel}</span>
                     <ChevronDownIcon
@@ -205,7 +218,7 @@ export function FilterDrawer({
                 <Dropdown isOpen={isDimOpen} onOpenChange={setIsDimOpen}>
                   <Button
                     variant="secondary"
-                    className="w-full justify-between h-11 px-3.5 rounded-2xl bg-muted/5 text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-muted/10 transition-colors"
+                    className="w-full justify-between h-14 px-3.5 rounded-2xl bg-muted/5 text-foreground font-semibold text-xs flex items-center cursor-pointer hover:bg-muted/10 transition-colors"
                   >
                     <span>{currentDimLabel}</span>
                     <ChevronDownIcon
@@ -303,9 +316,10 @@ export function FilterDrawer({
                           toggleArrayFilter("selectedGrades", grade)
                         }
                         className={cn(
-                          "flex-1 h-10 px-1 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer rounded-none border-none",
+                          "flex-1 h-14 px-1 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer rounded-none border-none",
                           index === 0 && "rounded-s-2xl",
-                          index === AVAILABLE_GRADES.length - 1 && "rounded-e-2xl",
+                          index === AVAILABLE_GRADES.length - 1 &&
+                            "rounded-e-2xl",
                           isSelected
                             ? "bg-primary text-primary-foreground font-black"
                             : "bg-transparent hover:bg-default/15 text-foreground",
@@ -332,7 +346,7 @@ export function FilterDrawer({
               <Button
                 type="button"
                 onClick={resetFilters}
-                className="h-10 w-full px-4 rounded-2xl bg-muted/10 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="h-12 w-full px-4 rounded-2xl bg-muted/10 hover:bg-muted/20 text-foreground text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <RefreshCwIcon size={14} />
                 <span>پاک کردن</span>
@@ -341,7 +355,7 @@ export function FilterDrawer({
               <Button
                 type="button"
                 onClick={onClose}
-                className="h-10 px-4 w-full rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
+                className="h-12 px-4 w-full rounded-2xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/90 transition-colors flex items-center justify-center gap-1.5 cursor-pointer active:scale-95"
               >
                 <span>
                   مشاهده نتایج ({toPersianDigits(hook.products.length)})

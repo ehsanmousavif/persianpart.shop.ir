@@ -3,14 +3,14 @@ import type { CollectionConfig } from 'payload'
 export const Products: CollectionConfig = {
   slug: 'products',
   labels: {
-    singular: 'محصول / کاشی',
-    plural: 'محصولات و کاتالوگ انبار',
+    singular: 'محصول',
+    plural: 'محصولات',
   },
   admin: {
     useAsTitle: 'name',
     defaultColumns: ['name', 'sku', 'sqmPerCarton', 'isActive', 'updatedAt'],
     group: 'کاتالوگ و انبارداری',
-    description: 'کاتالوگ و موجودی کالاها.',
+    description: 'کاتالوگ و موجودی محصولات.',
   },
   access: {
     read: () => true,

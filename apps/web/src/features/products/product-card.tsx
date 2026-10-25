@@ -127,7 +127,6 @@ export const ProductCard = React.memo(function ProductCard({
           : "bg-muted/5",
       )}
     >
-      {/* Start (Right in RTL): Thumbnail + Brand, Name & (Dimension, Grade) Badges */}
       <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
         <ProductThumbnail
           src={imgSrc}
