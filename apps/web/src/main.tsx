@@ -5,6 +5,23 @@ import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { routeTree } from './routeTree.gen'
 import './styles/globals.css'
 
+// Globally disable text selection except in inputs and editable areas
+if (typeof window !== 'undefined') {
+  document.addEventListener('selectstart', (e) => {
+    const target = e.target as HTMLElement | null
+    if (
+      target &&
+      (target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable ||
+        Boolean(target.closest('input, textarea, [contenteditable="true"], [data-selectable="true"]')))
+    ) {
+      return
+    }
+    e.preventDefault()
+  })
+}
+
 const queryClient = new QueryClient()
 
 const router = createRouter({

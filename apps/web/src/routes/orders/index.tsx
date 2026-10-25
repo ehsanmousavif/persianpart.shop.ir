@@ -125,7 +125,7 @@ const OrderCard = React.memo(function OrderCard({
     ) / 100;
 
   return (
-    <div className="p-4 space-y-3 rounded-2xl bg-muted/5">
+    <div className="p-4 space-y-3 rounded-2xl bg-muted/5 select-none">
       {/* Order Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
@@ -423,7 +423,7 @@ function OrdersListPage() {
   ] as const;
 
   return (
-    <div className="w-full h-full  px-3 py-3 space-y-3">
+    <div className="w-full h-full px-3 py-3 space-y-3 select-none">
       {/* Header */}
       <div>
         <h1 className="text-lg font-bold text-foreground flex items-center  gap-1.5">

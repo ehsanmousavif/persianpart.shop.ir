@@ -1,12 +1,14 @@
 import { base } from '../rpc/base'
 import { auth } from './auth'
-import { shopping, catalog } from './shopping'
+import { catalog } from './catalog'
+import { shopping } from './shopping'
 import { order } from './order'
-import { user, customer } from './user'
+import { customer } from './customer'
+import { user } from './user'
 import { system } from './system'
 import { plan } from './plan'
 
-export { auth, shopping, catalog, order, user, customer, system, plan }
+export { auth, catalog, shopping, order, customer, user, system, plan }
 
 export const router = base.router({
   health: base.health.handler(() => ({ status: 'ok' })),

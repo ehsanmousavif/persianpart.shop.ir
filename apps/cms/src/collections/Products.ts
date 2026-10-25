@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { syncSlugAndDimensions } from './hooks/products'
 
 export const Products: CollectionConfig = {
   slug: 'products',
@@ -19,38 +20,7 @@ export const Products: CollectionConfig = {
     delete: () => true,
   },
   hooks: {
-    beforeValidate: [
-      async ({ data, req }) => {
-        if (!data) return data
-        // Auto-generate slug if not specified
-        if (!data.slug && data.sku) {
-          data.slug = String(data.sku).toLowerCase().replace(/[^a-z0-9-]/g, '-')
-        }
-        // Sync width and height from dimension relationship
-        if (data.dimension) {
-          const dimensionId =
-            typeof data.dimension === 'object' && data.dimension !== null
-              ? (data.dimension as any).id
-              : data.dimension
-          if (dimensionId) {
-            try {
-              const dimDoc = await req.payload.findByID({
-                collection: 'dimensions',
-                id: dimensionId,
-                depth: 0,
-              })
-              if (dimDoc) {
-                data.width = (dimDoc as any).width
-                data.height = (dimDoc as any).height
-              }
-            } catch {
-              // fallback
-            }
-          }
-        }
-        return data
-      },
-    ],
+    beforeValidate: [syncSlugAndDimensions],
   },
   fields: [
     {

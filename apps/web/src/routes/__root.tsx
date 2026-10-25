@@ -50,7 +50,7 @@ function RootComponent() {
     <NuqsAdapter>
       <div
         className={cn(
-          'bg-background flex justify-center selection:bg-primary/20 selection:text-foreground',
+          'bg-background flex justify-center select-none',
           isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
         )}
         dir="rtl"

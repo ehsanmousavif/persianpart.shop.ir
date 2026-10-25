@@ -296,7 +296,7 @@ function OrderDetailPage() {
   }
 
   return (
-    <div className="w-full px-3 py-3 space-y-3">
+    <div className="w-full px-3 py-3 space-y-3 select-none">
       {/* Top Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs text-muted">
         <Link
