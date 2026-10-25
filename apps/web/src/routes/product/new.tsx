@@ -276,18 +276,6 @@ function ProductNewConfigurationPage() {
 
               {/* 2. Meterage Controls: NumberField & Slider */}
               <div className="space-y-2.5 ">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs font-bold text-foreground block leading-normal">
-                    متراژ مورد نیاز:
-                  </span>
-                  <span className="text-xs text-muted">
-                    هر کارتن:{" "}
-                    <strong className="font-bold text-foreground">
-                      {toPersianDigits(product.sqmPerCarton)}
-                    </strong>
-                  </span>
-                </div>
-
                 <div className="space-y-4 pt-0.5">
                   <div className="w-full">
                     <I18nProvider locale="fa-IR">

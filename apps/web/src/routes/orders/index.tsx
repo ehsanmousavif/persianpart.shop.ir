@@ -37,14 +37,20 @@ export const Route = createFileRoute("/orders/")({
   component: OrdersListPage,
 });
 
-function cleanOrderNumber(orderNumber: string): string {
-  if (!orderNumber) return "";
-  const stripped = orderNumber.replace(/^PP-/, "");
-  // If it's a long millisecond timestamp like 1791478408275, take the last 6 digits for human-readable ID
-  if (/^\d{10,}$/.test(stripped)) {
-    return stripped.slice(-6);
+function formatInvoiceNumber(order: { id: string | number; orderNumber?: string } | string | number): string {
+  if (typeof order === "object" && order !== null) {
+    if (order.orderNumber && /^ptp\s+/i.test(order.orderNumber)) {
+      return order.orderNumber.toLowerCase();
+    }
+    const cleanId = String(order.id)
+      .replace(/^ord-/, "")
+      .replace(/^PP-1405-|^PP-REQ-|^PP-|^ptp\s*/i, "");
+    return `ptp ${cleanId}`;
   }
-  return stripped;
+  const cleanId = String(order)
+    .replace(/^ord-/, "")
+    .replace(/^PP-1405-|^PP-REQ-|^PP-|^ptp\s*/i, "");
+  return `ptp ${cleanId}`;
 }
 
 const isCancelledStatus = (s: string) =>
@@ -107,6 +113,8 @@ const OrderCard = React.memo(function OrderCard({
       (ORDER_STATUS_MAP[order.status]?.color as any) || "warning";
   }
 
+  const isCancelled = isCancelledStatus(order.status);
+
   const totalCartons = order.items.reduce((s, i) => s + i.cartonCount, 0);
   const totalArea =
     Math.round(
@@ -121,9 +129,9 @@ const OrderCard = React.memo(function OrderCard({
       {/* Order Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1.5 rounded-lg bg-muted/5 text-xs font-bold text-foreground flex items-center gap-1">
-            <span className="text-muted text-[11px] font-normal">سفارش</span>
-            <span>#{toPersianDigits(cleanOrderNumber(order.orderNumber))}</span>
+          <span className="px-2 py-1.5 rounded-lg bg-muted/5 text-xs font-bold text-foreground flex items-center gap-1" dir="ltr">
+            <span className="text-muted text-[11px] font-normal">فاکتور</span>
+            <span>{formatInvoiceNumber(order)}</span>
           </span>
           <Badge variant={dynamicStatusColor} size="sm">
             {dynamicStatusLabel}
@@ -186,15 +194,17 @@ const OrderCard = React.memo(function OrderCard({
           </div>
 
           <div className="flex items-center gap-1.5">
-            <Button
-              type="button"
-              onPress={() => onReorder(order.id)}
-              className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
-              aria-label="سفارش مجدد اقلام"
-            >
-              <RefreshCwIcon size={13} />
-              <span>تکرار</span>
-            </Button>
+            {!isCancelled && (
+              <Button
+                type="button"
+                onPress={() => onReorder(order.id)}
+                className="h-10 px-4 rounded-2xl bg-muted/10 hover:bg-muted/15 text-foreground text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 shrink-0"
+                aria-label="سفارش مجدد اقلام"
+              >
+                <RefreshCwIcon size={13} />
+                <span>تکرار</span>
+              </Button>
+            )}
 
             <Link
               to="/orders/$id"

@@ -222,9 +222,14 @@ export function mapDocToOrder(doc: any): Order {
 
   const userObj = typeof doc.user === 'object' && doc.user !== null ? doc.user : null
 
+  const cleanId = String(doc.id).replace(/^ord-/, "").replace(/^ptp\s*/i, "");
+  const orderNumber = doc.orderNumber && /^ptp\s+/i.test(doc.orderNumber)
+    ? doc.orderNumber.toLowerCase()
+    : `ptp ${cleanId}`;
+
   return {
     id: String(doc.id),
-    orderNumber: doc.orderNumber || `PP-${doc.id}`,
+    orderNumber,
     date: persianDate,
     createdAt,
     status: normalizedStatus as any,
@@ -291,8 +296,9 @@ export const orderStore = {
     notes?: string
   }): Order => {
     const randomNum = Math.floor(1000 + Math.random() * 9000)
-    const newId = payload.id || `ord-${randomNum}`
-    const orderNumber = payload.orderNumber || `PP-1405-${randomNum}`
+    const newId = payload.id || `${randomNum}`
+    const cleanId = String(newId).replace(/^ord-/, "").replace(/^ptp\s*/i, "")
+    const orderNumber = payload.orderNumber || `ptp ${cleanId}`
     const now = new Date()
     const isoString = now.toISOString()
     const persianDate = formatPersianDate(now)
@@ -503,6 +509,10 @@ export const orderStore = {
   reorderToCart: (orderId: string): { success: boolean; warnings: string[] } => {
     const order = currentOrders.find((o) => o.id === orderId)
     if (!order) return { success: false, warnings: ['سفارش یافت نشد.'] }
+
+    if (order.status === 'cancelled' || order.status === 'cancelled_by_customer' || order.status === 'cancelled_by_admin') {
+      return { success: false, warnings: ['این سفارش لغو شده است و امکان سفارش مجدد آن وجود ندارد.'] }
+    }
 
     const warnings: string[] = []
 

@@ -43,13 +43,20 @@ export const Route = createFileRoute("/orders/$id")({
   component: OrderDetailPage,
 });
 
-function cleanOrderNumber(orderNumber: string): string {
-  if (!orderNumber) return "";
-  const stripped = orderNumber.replace(/^PP-/, "");
-  if (/^\d{10,}$/.test(stripped)) {
-    return stripped.slice(-6);
+function formatInvoiceNumber(order: { id: string | number; orderNumber?: string } | string | number): string {
+  if (typeof order === "object" && order !== null) {
+    if (order.orderNumber && /^ptp\s+/i.test(order.orderNumber)) {
+      return order.orderNumber.toLowerCase();
+    }
+    const cleanId = String(order.id)
+      .replace(/^ord-/, "")
+      .replace(/^PP-1405-|^PP-REQ-|^PP-|^ptp\s*/i, "");
+    return `ptp ${cleanId}`;
   }
-  return stripped;
+  const cleanId = String(order)
+    .replace(/^ord-/, "")
+    .replace(/^PP-1405-|^PP-REQ-|^PP-|^ptp\s*/i, "");
+  return `ptp ${cleanId}`;
 }
 
 const CANCELLATION_REASONS = [
@@ -62,7 +69,7 @@ const CANCELLATION_REASONS = [
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData();
   const navigate = useNavigate();
-  const { getOrderById, fetchOrderById, cancelOrder, reactivateOrder, orders } = useOrders();
+  const { getOrderById, fetchOrderById, cancelOrder, orders } = useOrders();
   const { allProducts } = useProducts();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>(
@@ -70,7 +77,6 @@ function OrderDetailPage() {
   );
   const [isCancelReasonOpen, setIsCancelReasonOpen] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
   const [order, setOrder] = useState<Order | null>(
     () => getOrderById(orderId) || null,
   );
@@ -240,50 +246,14 @@ function OrderDetailPage() {
     setShowCancelModal(false);
     toast.info(
       "سفارش لغو شد",
-      `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت لغو شد و موجودی به انبار بازگردانی گردید.`,
+      `سفارش ${formatInvoiceNumber(order)} با موفقیت لغو شد و موجودی به انبار بازگردانی گردید.`,
     );
     const fresh = await fetchOrderById(order.id);
     if (fresh) setOrder(fresh);
   };
 
   const handleReorder = async () => {
-    if (!order) return;
-
-    // When the order was cancelled, re-activate it in-place right on this page!
-    if (isCancelled) {
-      setIsReordering(true);
-      try {
-        const reactivated = await reactivateOrder(order.id);
-        const fresh: Order = reactivated || {
-          ...order,
-          status: "pending",
-          statusLabel: "سفارش ثبت شده",
-          cancelledBy: undefined,
-          notes: "راه‌اندازی مجدد سفارش توسط مشتری",
-          updatedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-        };
-
-        setOrder(fresh);
-        setTimeLeftSeconds(600);
-
-        toast.success(
-          "سفارش مجدداً راه‌اندازی شد",
-          `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت مجدداً راه‌اندازی شد و در مهلت بررسی ۱۰ دقیقه‌ای قرار گرفت.`,
-        );
-      } catch (err: unknown) {
-        const msg =
-          err instanceof Error
-            ? err.message
-            : "خطا در راه‌اندازی مجدد سفارش";
-        toast.error("خطا در راه‌اندازی مجدد", msg);
-      } finally {
-        setIsReordering(false);
-      }
-      return;
-    }
-
-    // For non-cancelled orders (e.g. historical completed orders)
+    if (!order || isCancelled) return;
     setIsReorderModalOpen(true);
   };
 
@@ -337,8 +307,8 @@ function OrderDetailPage() {
           <span>سفارش‌های من</span>
         </Link>
         <span>/</span>
-        <span className="text-foreground font-bold">
-          سفارش #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
+        <span className="text-foreground font-bold" dir="ltr">
+          {formatInvoiceNumber(order)}
         </span>
       </nav>
 
@@ -346,11 +316,9 @@ function OrderDetailPage() {
       <div className="bg-muted/5 rounded-2xl p-5 sm:p-6 space-y-4">
         <div>
           <div className="flex items-center gap-2.5 mb-2 flex-wrap">
-            <span className="px-2 py-1 rounded-lg bg-primary/10 text-xs font-bold text-primary flex items-center gap-1.5">
-              <span className="text-primary text-xs font-semibold">سفارش</span>
-              <span>
-                #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
-              </span>
+            <span className="px-2.5 py-1 rounded-lg bg-primary/10 text-xs font-bold text-primary flex items-center gap-1.5" dir="ltr">
+              <span className="text-primary text-xs font-semibold">فاکتور</span>
+              <span>{formatInvoiceNumber(order)}</span>
             </span>
             <Badge variant={statusConfig.color} size="md">
               {displayStatusLabel}
@@ -425,42 +393,54 @@ function OrderDetailPage() {
         </div>
 
         {/* Action Buttons - زیر تاریخ */}
-        <div className="pt-3 flex items-center gap-2 flex-wrap sm:flex-nowrap">
-          {isCancellableByCustomer && (
-            <>
-              <Button
-                type="button"
-                onPress={() => setShowCancelModal(true)}
-                className="flex-1 h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
-              >
-                <XIcon size={16} />
-                <span>لغو سفارش</span>
-              </Button>
+        {isCancelled ? (
+          <div className="pt-3">
+            <div className="w-full py-3 px-4 rounded-2xl bg-danger/10 border border-danger/20 text-danger text-xs font-bold flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <XIcon size={16} className="shrink-0 text-danger" />
+                <span>این سفارش لغو شده است و امکان سفارش مجدد آن وجود ندارد.</span>
+              </div>
+              {((order as any).cancellationReason || order.notes) && (
+                <span className="text-[11px] font-semibold text-danger/80">
+                  علت: {(order as any).cancellationReason || order.notes}
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="pt-3 flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {isCancellableByCustomer && (
+              <>
+                <Button
+                  type="button"
+                  onPress={() => setShowCancelModal(true)}
+                  className="flex-1 h-10 px-4 rounded-2xl bg-danger/15 text-danger hover:bg-danger/20 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  <XIcon size={16} />
+                  <span>لغو سفارش</span>
+                </Button>
 
-              <Button
-                type="button"
-                onPress={handleEditOrder}
-                className="flex-1 h-10 px-4 rounded-2xl bg-muted/5 text-foreground hover:bg-muted/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
-              >
-                <PencilIcon size={16} />
-                <span>ویرایش فاکتور</span>
-              </Button>
-            </>
-          )}
+                <Button
+                  type="button"
+                  onPress={handleEditOrder}
+                  className="flex-1 h-10 px-4 rounded-2xl bg-muted/5 text-foreground hover:bg-muted/15 text-xs font-bold transition-colors flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap"
+                >
+                  <PencilIcon size={16} />
+                  <span>ویرایش فاکتور</span>
+                </Button>
+              </>
+            )}
 
-          <Button
-            type="button"
-            onPress={handleReorder}
-            isDisabled={isReordering}
-            className="flex-1 h-10 px-4 whitespace-nowrap rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
-          >
-            <RefreshCwIcon
-              size={16}
-              className={cn(isReordering && "animate-spin")}
-            />
-            <span>{isReordering ? "در حال راه‌اندازی..." : "سفارش مجدد"}</span>
-          </Button>
-        </div>
+            <Button
+              type="button"
+              onPress={handleReorder}
+              className="flex-1 h-10 px-4 whitespace-nowrap rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <RefreshCwIcon size={16} />
+              <span>سفارش مجدد</span>
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Visual Stepper Timeline */}
@@ -632,8 +612,8 @@ function OrderDetailPage() {
                 </HeroUIModal.Heading>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
                   آیا از لغو سفارش{" "}
-                  <strong>
-                    #{toPersianDigits(cleanOrderNumber(order.orderNumber))}
+                  <strong dir="ltr">
+                    {formatInvoiceNumber(order)}
                   </strong>{" "}
                   در مهلت ۱۰ دقیقه‌ای اطمینان دارید؟
                 </p>
