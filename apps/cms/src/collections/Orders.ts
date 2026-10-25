@@ -25,8 +25,7 @@ export const Orders: CollectionConfig = {
         // 1. Auto-generate orderNumber if missing
         if (!data.orderNumber) {
           const timestamp = Date.now().toString().slice(-6)
-          const randomSuffix = Math.floor(10 + Math.random() * 90)
-          data.orderNumber = `PP-${timestamp}${randomSuffix}`
+          data.orderNumber = `ptp ${timestamp}`
         }
 
         // 2. Calculate item metrics and order totals
@@ -190,6 +189,21 @@ export const Orders: CollectionConfig = {
         }
 
         return data
+      },
+    ],
+    afterChange: [
+      async ({ doc, req, operation }) => {
+        if (operation === 'create' && (!doc.orderNumber || !doc.orderNumber.startsWith('ptp '))) {
+          try {
+            await req.payload.update({
+              collection: 'orders',
+              id: doc.id,
+              data: {
+                orderNumber: `ptp ${doc.id}`,
+              },
+            })
+          } catch {}
+        }
       },
     ],
   },

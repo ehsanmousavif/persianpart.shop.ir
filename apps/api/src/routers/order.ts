@@ -59,11 +59,11 @@ const detail = base.order.detail.handler(async ({ input, context, errors }) => {
 
 const createCustomOrder = base.order.createCustomOrder.handler(
   async ({ input, context }) => {
-    const orderNumber = `PP-REQ-${Date.now().toString().slice(-6)}`
+    const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
     const orderDoc = await sdk.create({
       collection: 'orders',
       data: {
-        orderNumber,
+        orderNumber: tempOrderNumber,
         user: Number(context.user!.id),
         status: 'pending',
         items: [],
@@ -72,6 +72,17 @@ const createCustomOrder = base.order.createCustomOrder.handler(
         notes: `[سفارش اختصاصی - ${input.productType || 'عمومی'}]: ${input.notes || ''}`,
       },
     })
+
+    const finalOrderNumber = `ptp ${orderDoc.id}`
+    try {
+      await sdk.update({
+        collection: 'orders',
+        id: orderDoc.id,
+        data: {
+          orderNumber: finalOrderNumber,
+        },
+      })
+    } catch {}
 
     return { id: orderDoc.id, message: 'سفارش اختصاصی با موفقیت ثبت شد' }
   }
@@ -105,12 +116,12 @@ const submit = base.order.submit.handler(async ({ input, context, errors }) => {
     }
   })
 
-  const orderNumber = `PP-${Date.now().toString().slice(-8)}`
+  const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
   // Leverage Payload collection hooks to calculate cartons, prices, orderNumber and initial timeline
   const orderDoc = await sdk.create({
     collection: 'orders',
     data: {
-      orderNumber,
+      orderNumber: tempOrderNumber,
       user: Number(userId),
       status: 'pending',
       items: itemsData,
@@ -121,7 +132,19 @@ const submit = base.order.submit.handler(async ({ input, context, errors }) => {
     },
   })
 
-  return orderDoc
+  const finalOrderNumber = `ptp ${orderDoc.id}`
+  try {
+    const updated = await sdk.update({
+      collection: 'orders',
+      id: orderDoc.id,
+      data: {
+        orderNumber: finalOrderNumber,
+      },
+    })
+    return updated || { ...orderDoc, orderNumber: finalOrderNumber }
+  } catch {
+    return { ...orderDoc, orderNumber: finalOrderNumber }
+  }
 })
 
 const list = base.order.list.handler(async ({ input, context }) => {

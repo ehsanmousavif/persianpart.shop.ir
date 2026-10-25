@@ -187,11 +187,11 @@ const createOrder = base.shopping.createOrder.handler(async ({ input, context, e
     throw errors.UNAUTHORIZED({ message: 'برای ثبت سفارش باید وارد شوید.' })
   }
 
-  const orderNumber = `PP-${Date.now().toString().slice(-8)}`
+  const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
   const order = await sdk.create({
     collection: 'orders',
     data: {
-      orderNumber,
+      orderNumber: tempOrderNumber,
       user: Number(context.user.id),
       status: 'pending',
       items: (input.items || []).map((item: any) => ({
@@ -208,7 +208,19 @@ const createOrder = base.shopping.createOrder.handler(async ({ input, context, e
     },
   })
 
-  return order
+  const finalOrderNumber = `ptp ${order.id}`
+  try {
+    const updated = await sdk.update({
+      collection: 'orders',
+      id: order.id,
+      data: {
+        orderNumber: finalOrderNumber,
+      },
+    })
+    return updated || { ...order, orderNumber: finalOrderNumber }
+  } catch {
+    return { ...order, orderNumber: finalOrderNumber }
+  }
 })
 
 const verifyPayment = base.shopping.verifyPayment.handler(async ({ input, errors }) => {
