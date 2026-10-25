@@ -64,10 +64,10 @@ jobs:
       - name: Resolve image name
         id: image
         env:
-          REPOSITORY: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
         run: |
-          repository="$(printf '%s' "$REPOSITORY" | tr '[:upper:]' '[:lower:]')"
-          echo "name=ghcr.io/${repository}/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
+          owner="$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "name=ghcr.io/${owner}/${{ matrix.name }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
