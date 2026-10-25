@@ -50,11 +50,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - name: server
+          - name: api
             dockerfile: apps/api/Dockerfile
-          - name: admin
+          - name: cms
             dockerfile: apps/cms/Dockerfile
-          - name: customer-app
+          - name: web
             dockerfile: apps/web/Dockerfile
 
     steps:
