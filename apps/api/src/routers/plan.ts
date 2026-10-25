@@ -89,14 +89,7 @@ const create = base.plan.create.handler(async ({ input }) => {
       title,
       users: input.users.map((u: any) => Number(u)),
       content: input.content,
-      type: input.type || 'credit_terms',
-      discountPercent: input.discountPercent,
-      discountAmount: input.discountAmount,
-      status: input.status,
-      products: input.products ? input.products.map((p: any) => Number(p)) : null,
-      hasTimer: Boolean(input.hasTimer),
-      expiresAt: input.expiresAt,
-    },
+    } as any,
     depth: 2,
   })
 })

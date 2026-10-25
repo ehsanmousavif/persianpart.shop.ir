@@ -199,9 +199,9 @@ export function ProfileView() {
         >
           <Drawer.Content
             placement="bottom"
-            className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-auto h-auto! max-h-[90dvh]! rounded-t-2xl flex flex-col overflow-hidden pb-safe"
+            className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[90dvh]! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden bg-background border-b-0!"
           >
-            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[90dvh]! min-h-0 outline-none text-start overscroll-contain">
+            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[90dvh]! min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
               {/* Drag Handle UI */}
               <div className="flex justify-center w-full shrink-0 pt-2">
                 <Drawer.Handle className="w-16 h-1.5 rounded-full" />
@@ -304,7 +304,7 @@ export function ProfileView() {
                 </Drawer.Body>
 
                 {/* Footer Actions */}
-                <Drawer.Footer className="px-5 py-3 shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
+                <Drawer.Footer className="px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shrink-0 flex items-center gap-2 border-t border-border/20 bg-background">
                   <Button
                     type="button"
                     onClick={handleCancelEdit}

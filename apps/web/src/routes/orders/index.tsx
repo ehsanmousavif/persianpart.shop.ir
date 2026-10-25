@@ -135,15 +135,34 @@ const OrderCard = React.memo(function OrderCard({
         </span>
       </div>
 
-      <div className="space-y-2.5">
-        <div className="flex items-center gap-2 overflow-x-auto pb-0.5 scrollbar-none">
+      <div className="space-y-2 min-w-0">
+        {/* Items summary */}
+        <div className="flex items-center justify-between text-xs text-muted">
+          <span className="font-bold text-foreground text-xs">
+            {toPersianDigits(order.items.length)} محصول (
+            {toPersianDigits(totalCartons)} کارتن)
+          </span>
+          {totalArea > 0 && (
+            <span className="text-xs text-muted">
+              متراژ کلی:{" "}
+              <strong className="font-bold text-foreground">
+                {toPersianDigits(totalArea)}
+              </strong>{" "}
+              متر
+            </span>
+          )}
+        </div>
+
+        {/* Scrollable Products Images */}
+        <div className="w-full min-w-0 overflow-x-auto py-1 flex items-center gap-2 scrollbar-none overscroll-x-contain touch-pan-x">
           {order.items.map((item, idx) => (
             <img
               key={idx}
               src={item.productImage || "/assets/images/placeholder.svg"}
               alt={item.productName}
-              className="size-12 border border-primary/20 rounded-2xl object-cover shrink-0"
+              className="size-13 border border-primary/20 rounded-2xl object-cover shrink-0 select-none"
               title={item.productName}
+              loading="lazy"
               onError={(e) => {
                 const target = e.currentTarget;
                 if (!target.src.endsWith("/assets/images/placeholder.svg")) {
@@ -152,21 +171,6 @@ const OrderCard = React.memo(function OrderCard({
               }}
             />
           ))}
-          <div className="ps-1 flex flex-col justify-center text-xs text-muted shrink-0 whitespace-nowrap">
-            <span className="font-bold text-foreground block text-xs">
-              {toPersianDigits(order.items.length)} محصول (
-              {toPersianDigits(totalCartons)} کارتن)
-            </span>
-            {totalArea > 0 && (
-              <span className="text-xs text-muted mt-0.5">
-                متراژ کلی:{" "}
-                <strong className="font-bold text-foreground">
-                  {toPersianDigits(totalArea)}
-                </strong>{" "}
-                متر
-              </span>
-            )}
-          </div>
         </div>
 
         {/* Financials & Action Buttons */}

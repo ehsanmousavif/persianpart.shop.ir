@@ -62,7 +62,7 @@ const CANCELLATION_REASONS = [
 function OrderDetailPage() {
   const { orderId } = Route.useLoaderData();
   const navigate = useNavigate();
-  const { getOrderById, fetchOrderById, cancelOrder, orders } = useOrders();
+  const { getOrderById, fetchOrderById, cancelOrder, reactivateOrder, orders } = useOrders();
   const { allProducts } = useProducts();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>(
@@ -70,6 +70,7 @@ function OrderDetailPage() {
   );
   const [isCancelReasonOpen, setIsCancelReasonOpen] = useState(false);
   const [isReorderModalOpen, setIsReorderModalOpen] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [order, setOrder] = useState<Order | null>(
     () => getOrderById(orderId) || null,
   );
@@ -130,7 +131,7 @@ function OrderDetailPage() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [order?.id, isCancelled, isCompleted]);
+  }, [order?.id, isCancelled, isCompleted, order?.updatedAt, order?.status]);
 
   const isWithin10Minutes = timeLeftSeconds > 0;
   const is10MinutesPassed = timeLeftSeconds <= 0;
@@ -245,8 +246,44 @@ function OrderDetailPage() {
     if (fresh) setOrder(fresh);
   };
 
-  const handleReorder = () => {
+  const handleReorder = async () => {
     if (!order) return;
+
+    // When the order was cancelled, re-activate it in-place right on this page!
+    if (isCancelled) {
+      setIsReordering(true);
+      try {
+        const reactivated = await reactivateOrder(order.id);
+        const fresh: Order = reactivated || {
+          ...order,
+          status: "pending",
+          statusLabel: "سفارش ثبت شده",
+          cancelledBy: undefined,
+          notes: "راه‌اندازی مجدد سفارش توسط مشتری",
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        };
+
+        setOrder(fresh);
+        setTimeLeftSeconds(600);
+
+        toast.success(
+          "سفارش مجدداً راه‌اندازی شد",
+          `سفارش #${toPersianDigits(cleanOrderNumber(order.orderNumber))} با موفقیت مجدداً راه‌اندازی شد و در مهلت بررسی ۱۰ دقیقه‌ای قرار گرفت.`,
+        );
+      } catch (err: unknown) {
+        const msg =
+          err instanceof Error
+            ? err.message
+            : "خطا در راه‌اندازی مجدد سفارش";
+        toast.error("خطا در راه‌اندازی مجدد", msg);
+      } finally {
+        setIsReordering(false);
+      }
+      return;
+    }
+
+    // For non-cancelled orders (e.g. historical completed orders)
     setIsReorderModalOpen(true);
   };
 
@@ -414,10 +451,14 @@ function OrderDetailPage() {
           <Button
             type="button"
             onPress={handleReorder}
+            isDisabled={isReordering}
             className="flex-1 h-10 px-4 whitespace-nowrap rounded-2xl bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer"
           >
-            <RefreshCwIcon size={16} />
-            <span>سفارش مجدد</span>
+            <RefreshCwIcon
+              size={16}
+              className={cn(isReordering && "animate-spin")}
+            />
+            <span>{isReordering ? "در حال راه‌اندازی..." : "سفارش مجدد"}</span>
           </Button>
         </div>
       </div>
@@ -607,6 +648,7 @@ function OrderDetailPage() {
                   دلیل لغو:
                 </label>
                 <Dropdown
+                  className="w-full"
                   isOpen={isCancelReasonOpen}
                   onOpenChange={setIsCancelReasonOpen}
                 >
@@ -628,7 +670,7 @@ function OrderDetailPage() {
                   <Dropdown.Popover
                     dir="rtl"
                     placement="bottom"
-                    className="w-[280px] text-right rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
+                    className="w-[var(--trigger-width)] text-right rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"
@@ -653,7 +695,7 @@ function OrderDetailPage() {
                             id={reason}
                             textValue={reason}
                             className={cn(
-                              "rounded-xl px-3 py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between text-right w-full",
+                              "rounded-xl w-full px-3 py-2.5 text-xs font-semibold cursor-pointer transition-colors flex items-center justify-between text-right w-full",
                               isSelected
                                 ? "bg-primary/15 text-primary"
                                 : "hover:bg-default/20 text-foreground",

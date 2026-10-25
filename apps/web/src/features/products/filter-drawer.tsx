@@ -78,9 +78,9 @@ export function FilterDrawer({
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg mx-auto fixed z-50 bottom-0 top-[22%] h-auto! rounded-t-2xl flex flex-col overflow-hidden"
+          className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-[22%] h-auto! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden bg-surface border-b-0!"
         >
-          <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain">
+          <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
             <div className="flex justify-center w-full shrink-0">
               <Drawer.Handle className="w-16 h-1.5 rounded-full" />
             </div>
@@ -169,7 +169,7 @@ export function FilterDrawer({
                     dir="rtl"
                     placement="bottom"
                     shouldFlip={false}
-                    className="w-[calc(100vw-25%)] text-right max-w-md rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
+                    className="w-[var(--trigger-width)] text-right rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"
@@ -234,7 +234,7 @@ export function FilterDrawer({
                     dir="rtl"
                     placement="bottom"
                     shouldFlip={false}
-                    className="w-[calc(100vw-25%)] text-right max-w-md max-h-56 overflow-y-auto rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
+                    className="w-[var(--trigger-width)] text-right max-h-56 overflow-y-auto rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"
@@ -342,7 +342,7 @@ export function FilterDrawer({
             </Drawer.Body>
 
             {/* Footer */}
-            <Drawer.Footer className="px-5 py-3 bg-surface grid grid-cols-2 gap-3 shrink-0">
+            <Drawer.Footer className="px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] bg-surface grid grid-cols-2 gap-3 shrink-0 border-t border-border/10">
               <Button
                 type="button"
                 onClick={resetFilters}

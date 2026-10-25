@@ -392,6 +392,55 @@ export const orderStore = {
     return true
   },
 
+  reactivateOrder: async (orderId: string): Promise<Order | null> => {
+    try {
+      const numericId = !isNaN(Number(orderId)) ? Number(orderId) : orderId
+      await api.order.staffUpdateStatus({
+        id: numericId,
+        newStatus: 'pending',
+        note: 'راه‌اندازی مجدد سفارش توسط مشتری',
+      })
+    } catch (err: any) {
+      console.warn('API reactivateOrder warning:', err?.message || err)
+    }
+
+    let updatedOrder: Order | null = null
+    const updated = currentOrders.map((order) => {
+      if (order.id === orderId || order.orderNumber === orderId) {
+        updatedOrder = mapDocToOrder({
+          ...order,
+          status: 'pending',
+          statusLabel: 'سفارش ثبت شده',
+          cancelledBy: null,
+          notes: 'راه‌اندازی مجدد سفارش توسط مشتری',
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        })
+        return updatedOrder
+      }
+      return order
+    })
+
+    if (!updatedOrder) {
+      const existing = orderStore.getOrderById(orderId)
+      if (existing) {
+        updatedOrder = {
+          ...existing,
+          status: 'pending',
+          statusLabel: 'سفارش ثبت شده',
+          cancelledBy: undefined,
+          notes: 'راه‌اندازی مجدد سفارش توسط مشتری',
+          updatedAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+        }
+        updated.push(updatedOrder)
+      }
+    }
+
+    broadcast(updated)
+    return updatedOrder
+  },
+
   staffCancelOrder: async (orderId: string, reason?: string): Promise<boolean> => {
     try {
       const numericId = !isNaN(Number(orderId)) ? Number(orderId) : orderId
@@ -525,6 +574,11 @@ export function useOrders() {
     },
     cancelOrder: async (orderId: string, reason?: string) => {
       const res = await cancelMutation.mutateAsync({ orderId, reason })
+      return res
+    },
+    reactivateOrder: async (orderId: string) => {
+      const res = await orderStore.reactivateOrder(orderId)
+      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
       return res
     },
     staffCancelOrder: async (orderId: string, reason?: string) => {

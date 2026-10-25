@@ -97,7 +97,7 @@ export const authStore = {
       })
       return true
     } catch (err: any) {
-      throw new Error(err.message || 'کد تایید وارد شده نادرست یا منقضی است.')
+      throw new Error(err.message || 'کد وارد شده اشتباه یا منقضی است.')
     }
   },
 

@@ -238,6 +238,11 @@ export function CodeSlots({
       glide.current.clear();
       activeMv.jump(next);
       setActive(next);
+      if (inputRef.current) {
+        try {
+          inputRef.current.setSelectionRange(next + 1, next + 1);
+        } catch {}
+      }
     },
     [activeMv],
   );
@@ -280,7 +285,9 @@ export function CodeSlots({
       const code = next.join("");
       emitted.current = code;
       onChange?.(code);
-      if (!isFull(prev) && isFull(next)) onComplete?.(code);
+      if (isFull(next) && (!isFull(prev) || statusRef.current === "error" || code !== prev.join(""))) {
+        onComplete?.(code);
+      }
     },
     [onChange, onComplete],
   );
@@ -319,6 +326,14 @@ export function CodeSlots({
   const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (busy || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key;
+    if (k === "Enter") {
+      e.preventDefault();
+      const code = slotsRef.current.filter(Boolean).join("");
+      if (code.length === length) {
+        onComplete?.(code);
+      }
+      return;
+    }
     if (/^[0-9۰-۹٠-٩]$/.test(k)) {
       e.preventDefault();
       insert(toEnglishDigits(k));
@@ -482,27 +497,14 @@ export function CodeSlots({
 
   useEffect(() => {
     if (status !== "error") return;
+    // On error, keep numbers in slots and place active cursor on the last slot
     const filled = slotsRef.current
       .map((c, i) => (c ? i : -1))
       .filter((i) => i >= 0);
-    if (!filled.length) return;
-    filled.reverse();
-    draining.current = true;
-    const L = live.current;
-    const step = L.reduce ? 0 : L.cascade;
-    filled.forEach((i, k) => drive(i, 0, k * step));
-    moveActive(
-      0,
-      slotsRef.current.map((_, j) => j),
-    );
-    clearTimeout(drainTimer.current);
-    drainTimer.current = setTimeout(
-      () => {
-        draining.current = false;
-        commit(Array.from({ length }, () => ""));
-      },
-      L.reduce ? 300 : (filled.length - 1) * step + L.settle * 1000,
-    );
+    if (filled.length > 0) {
+      jumpActive(filled[filled.length - 1]);
+    }
+    inputRef.current?.focus();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [status]);
 
@@ -622,7 +624,7 @@ export function CodeSlots({
 
 function Slot({ mv, drop, char, active, rise, sink }: SlotProps) {
   const [shown, setShown] = useState(char);
-  if (char && char !== shown) setShown(char);
+  if (char !== shown) setShown(char);
   const fill = useTransform(mv, (t: number) => `scale(${Math.max(t, 0)})`);
   const lift = useTransform(
     [mv, drop],

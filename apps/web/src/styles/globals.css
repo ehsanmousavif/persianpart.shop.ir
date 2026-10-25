@@ -252,6 +252,24 @@ h6 {
 }
 
 /* Modal & Drawer Keyframe Animations */
+/* Ensure all bottom sheets & drawers are 100% flush with the bottom on every device */
+[data-slot="drawer"][data-placement="bottom"],
+.drawer__content--bottom,
+.drawer__content[data-placement="bottom"] {
+  bottom: 0 !important;
+  margin-bottom: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+[data-slot="drawer-dialog"],
+.drawer__dialog--bottom,
+.drawer__dialog[data-placement="bottom"] {
+  margin-bottom: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
 @keyframes modalEnter {
   from {
     opacity: 0;

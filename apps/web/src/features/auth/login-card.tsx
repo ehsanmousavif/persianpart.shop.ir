@@ -130,10 +130,15 @@ export function LoginCard() {
       const msg =
         err instanceof Error
           ? err.message
-          : "کد تأیید وارد شده نادرست یا منقضی است.";
+          : "کد وارد شده اشتباه است.";
 
-      setErrorMessage(msg);
-      toast.error("خطای ورود", msg);
+      if (msg.includes("بیش از حد مجاز") || msg.includes("باطل شد")) {
+        setErrorMessage(msg);
+        toast.error("خطا", msg);
+      } else {
+        setErrorMessage(null);
+        toast.error("کد وارد شده اشتباه است");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -331,6 +336,7 @@ export function LoginCard() {
                     onChange={(val) => {
                       setOtpCode(val);
                       if (otpStatus !== "idle") setOtpStatus("idle");
+                      if (errorMessage) setErrorMessage(null);
                     }}
                     onComplete={(code) => handleVerifyOtp(code)}
                     disabled={isLoading}

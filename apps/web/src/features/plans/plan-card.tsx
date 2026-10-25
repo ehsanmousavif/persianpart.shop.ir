@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Link } from "@tanstack/react-router";
 import type { Plan, Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
@@ -7,109 +6,12 @@ import {
   BoxIcon,
   ArrowLeftIcon,
   TomanIcon,
-  ClockIcon,
 } from "../../components/ui/icons";
-import {
-  BellBoldDuotoneIcon,
-} from "@solar-icons/react";
+import { BellBoldDuotoneIcon } from "@solar-icons/react";
 
 export interface PlanCardProps {
   plan: Plan;
   products: Product[];
-}
-
-function PlanCountdownTimer({ expiresAt }: { expiresAt?: string }) {
-  const [timeLeft, setTimeLeft] = useState<{
-    days: number;
-    hours: number;
-    minutes: number;
-    seconds: number;
-    isExpired: boolean;
-  } | null>(null);
-
-  useEffect(() => {
-    let targetDate = expiresAt ? new Date(expiresAt).getTime() : NaN;
-    if (isNaN(targetDate) || targetDate <= Date.now()) {
-      // Demo countdown duration so it always ticks live
-      targetDate = Date.now() + (36 * 3600 + 45 * 60) * 1000;
-    }
-
-    const updateTimer = () => {
-      const now = Date.now();
-      const diff = targetDate - now;
-
-      if (diff <= 0) {
-        setTimeLeft({
-          days: 0,
-          hours: 0,
-          minutes: 0,
-          seconds: 0,
-          isExpired: true,
-        });
-        return;
-      }
-
-      const totalSec = Math.floor(diff / 1000);
-      const days = Math.floor(totalSec / 86400);
-      const hours = Math.floor((totalSec % 86400) / 3600);
-      const minutes = Math.floor((totalSec % 3600) / 60);
-      const seconds = totalSec % 60;
-
-      setTimeLeft({ days, hours, minutes, seconds, isExpired: false });
-    };
-
-    updateTimer();
-    const timer = setInterval(updateTimer, 1000);
-    return () => clearInterval(timer);
-  }, [expiresAt]);
-
-  if (!timeLeft) return null;
-
-  const { days, hours, minutes, seconds, isExpired } = timeLeft;
-  const h = hours.toString().padStart(2, "0");
-  const m = minutes.toString().padStart(2, "0");
-  const s = seconds.toString().padStart(2, "0");
-
-  return (
-    <div
-      className={cn(
-        "text-center font-bold text-sm text-background tracking-widest tabular-nums select-none z-10",
-      )}
-      dir="ltr"
-      aria-label="تایمر مهلت طرح"
-    >
-      {isExpired ? (
-        <span>{toPersianDigits("۰۰ : ۰۰ : ۰۰")}</span>
-      ) : (
-        <>
-          {days > 0 && <span>{toPersianDigits(days)} : </span>}
-          <span>{toPersianDigits(h)}</span>
-          <span className="mx-0.5 opacity-80 animate-pulse">:</span>
-          <span>{toPersianDigits(m)}</span>
-          <span className="mx-0.5 opacity-80 animate-pulse">:</span>
-          <span>{toPersianDigits(s)}</span>
-        </>
-      )}
-    </div>
-  );
-}
-
-// Generate a deterministic demo countdown for any plan
-function getPlanDemoExpiry(plan: Plan): string {
-  if (plan.expiresAt) {
-    const t = new Date(plan.expiresAt).getTime();
-    if (!isNaN(t) && t > Date.now()) {
-      return plan.expiresAt;
-    }
-  }
-  const seed = (plan.id || plan.title || "1")
-    .split("")
-    .reduce((acc, c) => acc + c.charCodeAt(0), 0);
-  const hours = ((seed * 19) % 65) + 14;
-  const minutes = ((seed * 7) % 55) + 5;
-  return new Date(
-    Date.now() + (hours * 3600 + minutes * 60) * 1000,
-  ).toISOString();
 }
 
 export function PlanCard({ plan, products }: PlanCardProps) {
@@ -124,13 +26,10 @@ export function PlanCard({ plan, products }: PlanCardProps) {
     !isCompleted &&
     (plan.status === "active" || (plan.status === undefined && plan.isActive));
 
-  const showTimer = plan.hasTimer !== false;
-  const activeExpiry = getPlanDemoExpiry(plan);
-
   return (
     <div
       className={cn(
-        "px-4 pt-4 flex flex-col justify-around bg-foreground/20 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
+        "px-4 pt-4 flex flex-col justify-around bg-muted/10 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
         !isActive && !isCompleted && "opacity-85",
       )}
     >
@@ -138,38 +37,32 @@ export function PlanCard({ plan, products }: PlanCardProps) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
             <div className="w-full flex gap-1 items-center text-base font-semibold text-foreground leading-snug">
-              <BellBoldDuotoneIcon className="text-yellow-500" />
+              <BellBoldDuotoneIcon size={36} className="text-yellow-500" />
               <span className="text-base">{plan.title}</span>
-              {showTimer && (
-                <div className="w-fit flex items-center gap-1.5 bg-foreground/10 py-1 px-2.5 rounded-xl text-background">
-                  <ClockIcon size={14} className="text-background shrink-0" />
-                  <PlanCountdownTimer expiresAt={activeExpiry} />
-                </div>
-              )}
             </div>
           </div>
 
-          <div className="shrink-0 sm:ms-4 flex flex-col items-center justify-center relative">
-            {/* <img
+          {/* <div className="shrink-0 sm:ms-4 flex flex-col items-center justify-center relative">
+            <img
               src={badgeImg}
               alt="تخفیف طرح"
               className={cn(
                 "size-30 object-contain select-none pointer-events-none drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)]",
               )}
               loading="lazy"
-            /> */}
-          </div>
+            />
+          </div> */}
         </div>
         {(!isActive || !isCompleted) && (
-          <div className="mt-4 rounded-2xl p-4 bg-foreground/90">
+          <div className="mt-4 rounded-2xl p-4 bg-blue-500/20">
             <div className="mb-2 flex items-center gap-2">
-              <span className="h-4 w-1 rounded-full bg-background/70" />
-              <span className="text-sm font-semibold text-background">
+              <span className="h-4 w-1 rounded-full bg-foreground/70" />
+              <span className="text-sm font-semibold text-foreground">
                 شرایط طرح
               </span>
             </div>
 
-            <p className="text-sm leading-7 text-background/75">
+            <p className="text-sm leading-7 text-foreground/75">
               {plan.content ||
                 plan.notes ||
                 "شرایط این طرح توسط مدیریت تعیین شده است."}

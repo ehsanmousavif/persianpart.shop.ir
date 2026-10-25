@@ -115,12 +115,33 @@
   box-shadow: none !important;
 }
 
+@keyframes cs-shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  20%, 60% {
+    transform: translateX(-4px);
+  }
+  40%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+.code-slots__row[data-status='error'] {
+  animation: cs-shake 0.35s ease-in-out;
+}
+
 .code-slots__row[data-status='error'] .code-slots__slot {
-  background: color-mix(in srgb, var(--cs-danger) 15%, var(--cs-slot));
+  background: color-mix(in srgb, var(--cs-danger) 10%, var(--cs-slot)) !important;
+  box-shadow: 0 0 0 1.5px var(--cs-danger) !important;
 }
 
 .code-slots__row[data-status='error'] .code-slots__fill {
-  background: var(--cs-danger);
+  background: color-mix(in srgb, var(--cs-danger) 15%, transparent);
+}
+
+.code-slots__row[data-status='error'] .code-slots__digit {
+  color: var(--cs-danger);
 }
 
 .code-slots__digit {

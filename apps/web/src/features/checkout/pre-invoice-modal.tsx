@@ -313,9 +313,9 @@ export function PreInvoiceModal({
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-xl mx-auto fixed z-50 bottom-0 top-auto h-[85dvh]! max-h-[92dvh]! rounded-t-3xl flex flex-col overflow-hidden pb-safe shadow-2xl"
+          className="w-full max-w-xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-[85dvh]! max-h-[92dvh]! rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden bg-background border-b-0! shadow-2xl"
         >
-          <Drawer.Dialog className="flex flex-col bg-background h-full max-h-full min-h-0 outline-none text-start overscroll-contain">
+          <Drawer.Dialog className="flex flex-col bg-background h-full max-h-full min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
             {/* Drag Handle UI */}
             <div className="flex justify-center w-full shrink-0 pt-2">
               <Drawer.Handle className="w-16 h-1.5 rounded-full" />
@@ -375,7 +375,7 @@ export function PreInvoiceModal({
               </div>
             </div>
 
-            <Drawer.Footer className="w-full py-3 shrink-0 flex items-center gap-2.5 bg-background">
+            <Drawer.Footer className="w-full px-4 pt-2 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))] shrink-0 flex items-center gap-2.5 bg-background border-t border-border/10">
               {/* Button 1: ویرایش مقادیر */}
               <Button
                 type="button"

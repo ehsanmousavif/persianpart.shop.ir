@@ -72,10 +72,10 @@ export function OrderEntryModal({
     <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
       <HeroUIModal.Backdrop
         isDismissable
-        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4 animate-backdrop-enter"
+        className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 m-0! mb-0! sm:p-4 animate-backdrop-enter"
       >
-        <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 flex flex-col items-center">
-          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-2xl sm:rounded-2xl flex flex-col max-h-[92vh] z-10 overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start">
+        <HeroUIModal.Container className="pointer-events-none w-full max-w-xl h-auto p-0 m-0! mb-0! flex flex-col items-center justify-end sm:justify-center">
+          <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-t-2xl rounded-b-none! sm:rounded-2xl flex flex-col max-h-[92dvh] m-0! mb-0! bottom-0! z-10 overflow-hidden animate-drawer-slide-up sm:animate-modal-enter text-start border-b-0!">
             {/* Handle for mobile */}
             <div className="sm:hidden flex justify-center pt-2.5 pb-1 shrink-0">
               <div className="w-10 h-1 rounded-full bg-muted/40" />
@@ -107,7 +107,7 @@ export function OrderEntryModal({
             </HeroUIModal.Header>
 
             {/* Content Body */}
-            <HeroUIModal.Body className="p-4 overflow-y-auto space-y-4 text-start">
+            <HeroUIModal.Body className="p-4 overflow-y-auto space-y-4 text-start pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
               {/* Selected Product Summary Card */}
               <div className="flex items-center gap-3 p-2.5 bg-muted/5 rounded-2xl">
                 <img
