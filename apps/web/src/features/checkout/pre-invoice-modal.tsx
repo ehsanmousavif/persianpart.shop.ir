@@ -205,6 +205,23 @@ export function PreInvoiceModal({
 
     let createdId = "";
     let createdOrderNumber = "";
+
+    if (editOrderId) {
+      orderStore.updateOrder(editOrderId, {
+        items: orderItems,
+        subtotal: invoiceTotals.subtotal,
+        discountAmount: invoiceTotals.discountAmount,
+        taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
+        finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
+      });
+
+      // Slight delay to allow the user to see the complete 360 spin & checkmark animation
+      setTimeout(() => {
+        onSuccess(editOrderId);
+      }, 450);
+      return;
+    }
+
     try {
       const res: any = await submitOrderMutation.mutateAsync({
         items: invoiceItems.map((item) => ({
@@ -221,22 +238,6 @@ export function PreInvoiceModal({
       }
     } catch (err) {
       console.warn("Backend order submission fallback:", err);
-    }
-
-    if (editOrderId) {
-      orderStore.updateOrder(editOrderId, {
-        items: orderItems,
-        subtotal: invoiceTotals.subtotal,
-        discountAmount: invoiceTotals.discountAmount,
-        taxAmount: Math.round(invoiceTotals.finalPayable * 0.1),
-        finalTotal: Math.round(invoiceTotals.finalPayable * 1.1),
-      });
-
-      // Slight delay to allow the user to see the complete 360 spin & checkmark animation
-      setTimeout(() => {
-        onSuccess(editOrderId);
-      }, 450);
-      return;
     }
 
     const newOrder = orderStore.createOrder({

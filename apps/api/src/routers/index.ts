@@ -5,10 +5,9 @@ import { shopping } from './shopping'
 import { order } from './order'
 import { customer } from './customer'
 import { user } from './user'
-import { system } from './system'
 import { plan } from './plan'
 
-export { auth, catalog, shopping, order, customer, user, system, plan }
+export { auth, catalog, shopping, order, customer, user, plan }
 
 export const router = base.router({
   health: base.health.handler(() => ({ status: 'ok' })),
@@ -20,7 +19,6 @@ export const router = base.router({
   order,
   customer,
   user,
-  system,
   plan,
 })
 

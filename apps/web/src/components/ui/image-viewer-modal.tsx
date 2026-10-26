@@ -25,6 +25,8 @@ export function ImageViewerModal({
   // Tracking refs for mouse/touch interactions
   const isDraggingRef = useRef<boolean>(false)
   const dragStartRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const dragStartPosRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
+  const hasDraggedRef = useRef<boolean>(false)
   const scaleRef = useRef<number>(1)
   const positionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
 
@@ -34,10 +36,28 @@ export function ImageViewerModal({
   const pinchStartMidpointRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const pinchStartPositionRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 })
   const lastTapRef = useRef<{ time: number; x: number; y: number }>({ time: 0, x: 0, y: 0 })
+  const touchStartRef = useRef<{ x: number; y: number; time: number; moved: boolean }>({
+    x: 0,
+    y: 0,
+    time: 0,
+    moved: false,
+  })
 
   // Keep ref sync with state for instantaneous event callbacks
   scaleRef.current = scale
   positionRef.current = position
+
+  // Determines whether click/tap coordinate falls in empty space outside image
+  const isPointOutsideImage = useCallback((clientX: number, clientY: number) => {
+    if (!imgRef.current) return true
+    const rect = imgRef.current.getBoundingClientRect()
+    return (
+      clientX < rect.left ||
+      clientX > rect.right ||
+      clientY < rect.top ||
+      clientY > rect.bottom
+    )
+  }, [])
 
   // Clamps translation so image can be panned naturally within bounds
   const clampPosition = useCallback((x: number, y: number, currentScale: number) => {
@@ -133,6 +153,9 @@ export function ImageViewerModal({
 
   // Mouse pan handling (Desktop)
   const handleMouseDown = (e: ReactMouseEvent) => {
+    hasDraggedRef.current = false
+    dragStartPosRef.current = { x: e.clientX, y: e.clientY }
+
     if (scaleRef.current <= 1.02) return
     isDraggingRef.current = true
     setIsInteracting(true)
@@ -143,6 +166,9 @@ export function ImageViewerModal({
   }
 
   const handleMouseMove = (e: ReactMouseEvent) => {
+    if (Math.hypot(e.clientX - dragStartPosRef.current.x, e.clientY - dragStartPosRef.current.y) > 5) {
+      hasDraggedRef.current = true
+    }
     if (!isDraggingRef.current || scaleRef.current <= 1.02) return
     const newX = e.clientX - dragStartRef.current.x
     const newY = e.clientY - dragStartRef.current.y
@@ -155,6 +181,14 @@ export function ImageViewerModal({
     if (isDraggingRef.current) {
       isDraggingRef.current = false
       setIsInteracting(false)
+    }
+  }
+
+  // Click handler to dismiss when clicking empty area outside image
+  const handleClick = (e: ReactMouseEvent) => {
+    if (hasDraggedRef.current) return
+    if (isPointOutsideImage(e.clientX, e.clientY)) {
+      onClose()
     }
   }
 
@@ -208,6 +242,12 @@ export function ImageViewerModal({
       isDraggingRef.current = false
     } else if (e.touches.length === 1) {
       const t = e.touches[0]!
+      touchStartRef.current = {
+        x: t.clientX,
+        y: t.clientY,
+        time: Date.now(),
+        moved: false,
+      }
       if (scaleRef.current > 1.02) {
         // 1 finger pan
         isDraggingRef.current = true
@@ -256,14 +296,19 @@ export function ImageViewerModal({
       positionRef.current = combinedPos
       setScale(newScale)
       setPosition(combinedPos)
-    } else if (e.touches.length === 1 && isDraggingRef.current && scaleRef.current > 1.02) {
-      // 1 finger Dragging
+    } else if (e.touches.length === 1) {
       const t = e.touches[0]!
-      const newX = t.clientX - dragStartRef.current.x
-      const newY = t.clientY - dragStartRef.current.y
-      const clamped = clampPosition(newX, newY, scaleRef.current)
-      positionRef.current = clamped
-      setPosition(clamped)
+      if (Math.hypot(t.clientX - touchStartRef.current.x, t.clientY - touchStartRef.current.y) > 8) {
+        touchStartRef.current.moved = true
+      }
+      if (isDraggingRef.current && scaleRef.current > 1.02) {
+        // 1 finger Dragging
+        const newX = t.clientX - dragStartRef.current.x
+        const newY = t.clientY - dragStartRef.current.y
+        const clamped = clampPosition(newX, newY, scaleRef.current)
+        positionRef.current = clamped
+        setPosition(clamped)
+      }
     }
   }
 
@@ -278,9 +323,16 @@ export function ImageViewerModal({
       return
     }
 
-    // Double tap detection on touch
+    // Check tap on empty space outside image or double tap
     if (e.changedTouches.length === 1) {
       const t = e.changedTouches[0]!
+
+      // Single tap on empty space closes the image viewer
+      if (!touchStartRef.current.moved && isPointOutsideImage(t.clientX, t.clientY)) {
+        onClose()
+        return
+      }
+
       const now = Date.now()
       const prev = lastTapRef.current
       const distFromPrev = Math.hypot(t.clientX - prev.x, t.clientY - prev.y)
@@ -339,6 +391,11 @@ export function ImageViewerModal({
     <HeroUIModal.Root isOpen={isOpen} onOpenChange={(open) => !open && onClose()}>
       <HeroUIModal.Backdrop
         isDismissable
+        onClick={(e) => {
+          if (e.target === e.currentTarget) {
+            onClose()
+          }
+        }}
         className="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center p-0 select-none animate-backdrop-enter"
       >
         <HeroUIModal.Container className="pointer-events-none w-full h-full p-0 flex items-center justify-center">
@@ -358,6 +415,7 @@ export function ImageViewerModal({
               className={`relative w-full h-full flex items-center justify-center overflow-hidden touch-none select-none ${
                 scale > 1.02 ? 'cursor-grab active:cursor-grabbing' : 'cursor-zoom-in'
               }`}
+              onClick={handleClick}
               onMouseDown={handleMouseDown}
               onMouseMove={handleMouseMove}
               onMouseUp={handleMouseUp}

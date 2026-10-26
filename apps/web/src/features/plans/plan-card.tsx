@@ -2,12 +2,7 @@ import { Link } from "@tanstack/react-router";
 import type { Plan, Product } from "../../types";
 import { toPersianDigits, formatToman } from "../../lib/utils/currency";
 import { cn } from "../../lib/utils";
-import {
-  BoxIcon,
-  ArrowLeftIcon,
-  TomanIcon,
-} from "../../components/ui/icons";
-import { BellBoldDuotoneIcon } from "@solar-icons/react";
+import { BoxIcon, ArrowLeftIcon, TomanIcon } from "../../components/ui/icons";
 
 export interface PlanCardProps {
   plan: Plan;
@@ -29,7 +24,7 @@ export function PlanCard({ plan, products }: PlanCardProps) {
   return (
     <div
       className={cn(
-        "px-4 pt-4 flex flex-col justify-around bg-muted/10 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
+        "px-4 pt-4 flex flex-col justify-around bg-muted/5 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
         !isActive && !isCompleted && "opacity-85",
       )}
     >
@@ -37,32 +32,17 @@ export function PlanCard({ plan, products }: PlanCardProps) {
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
             <div className="w-full flex gap-1 items-center text-base font-semibold text-foreground leading-snug">
-              <BellBoldDuotoneIcon size={36} className="text-yellow-500" />
               <span className="text-base">{plan.title}</span>
             </div>
           </div>
-
-          {/* <div className="shrink-0 sm:ms-4 flex flex-col items-center justify-center relative">
-            <img
-              src={badgeImg}
-              alt="تخفیف طرح"
-              className={cn(
-                "size-30 object-contain select-none pointer-events-none drop-shadow-[0_10px_20px_rgba(20,70,80,0.3)]",
-              )}
-              loading="lazy"
-            />
-          </div> */}
         </div>
         {(!isActive || !isCompleted) && (
-          <div className="mt-4 rounded-2xl p-4 bg-blue-500/20">
-            <div className="mb-2 flex items-center gap-2">
-              <span className="h-4 w-1 rounded-full bg-foreground/70" />
-              <span className="text-sm font-semibold text-foreground">
-                شرایط طرح
-              </span>
-            </div>
-
-            <p className="text-sm leading-7 text-foreground/75">
+          <div className="mt-4 rounded-2xl p-4 bg-primary">
+            <span className="h-4 w-1 rounded-full bg-primary" />
+            <span className="text-sm font-semibold text-primary-foreground">
+              شرایط طرح
+            </span>
+            <p className="text-sm leading-7 text-primary-foreground">
               {plan.content ||
                 plan.notes ||
                 "شرایط این طرح توسط مدیریت تعیین شده است."}

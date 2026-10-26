@@ -32,6 +32,7 @@ export function ProfileView() {
   const [formData, setFormData] = useState({
     name: user?.name || "",
     storeName: user?.storeName || "",
+    address: user?.address || "",
   });
 
   if (!user) {
@@ -59,6 +60,7 @@ export function ProfileView() {
     setFormData({
       name: user.name,
       storeName: user.storeName,
+      address: user.address || "",
     });
     setIsEditing(true);
   };
@@ -67,6 +69,7 @@ export function ProfileView() {
     setFormData({
       name: user.name,
       storeName: user.storeName,
+      address: user.address || "",
     });
     setIsEditing(false);
   };
@@ -87,6 +90,7 @@ export function ProfileView() {
     updateProfile({
       name: formData.name.trim(),
       storeName: formData.storeName.trim(),
+      address: formData.address.trim(),
     });
 
     toast.success(
@@ -198,11 +202,11 @@ export function ProfileView() {
         >
           <Drawer.Content
             placement="bottom"
-            className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[90dvh]! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden  border-b-0!"
+            className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[92dvh] rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden border-b-0! shadow-2xl"
           >
-            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[90dvh]! min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
+            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[92dvh] min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
               {/* Drag Handle UI */}
-              <div className="flex justify-center w-full shrink-0 pt-2">
+              <div className="flex justify-center w-full shrink-0 pt-2 pb-1">
                 <Drawer.Handle className="w-16 h-1.5 rounded-full" />
               </div>
 
@@ -281,7 +285,7 @@ export function ProfileView() {
                   </TextField>
 
                   {/* Phone Number - Strictly Non-Editable */}
-                  <div className="space-y-1 text-start  cursor-no-drop">
+                  <div className="space-y-1 text-start cursor-no-drop">
                     <div className="flex items-center justify-between">
                       <label className="text-sm font-semibold text-foreground flex items-center gap-1">
                         <PhoneIcon size={15} className="text-muted" />

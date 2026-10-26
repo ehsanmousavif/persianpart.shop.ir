@@ -119,11 +119,11 @@ export function ProductBottomSheet({
         >
           <Drawer.Content
             placement="bottom"
-            className="w-full max-w-xl sm:max-w-2xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-[85dvh] sm:h-[88dvh] md:h-[90dvh] max-h-[95dvh]! rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden bg-background border-b-0! shadow-2xl"
+            className="w-full max-w-xl sm:max-w-2xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[92dvh] sm:max-h-[94dvh] rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden border-b-0! shadow-2xl"
           >
-            <Drawer.Dialog className="flex flex-col bg-background h-full max-h-full min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
+            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[92dvh] sm:max-h-[94dvh] min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
               {/* Drag Handle UI */}
-              <div className="flex justify-center w-full shrink-0 pt-1">
+              <div className="flex justify-center w-full shrink-0 pt-2 pb-1">
                 <Drawer.Handle className="w-16 h-1.5 rounded-full" />
               </div>
 
@@ -148,7 +148,7 @@ export function ProductBottomSheet({
               <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-2 space-y-2.5 scrollbar-none pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))]">
                 <div className="space-y-2">
                   <div
-                    className="relative aspect-18/9 shrink-0 overflow-hidden bg-muted/10 rounded-2xl group cursor-pointer"
+                    className="relative h-48 sm:h-56 w-full shrink-0 overflow-hidden bg-muted/10 rounded-2xl group cursor-pointer"
                     onClick={() => setZoomImageUrl(currentHeroUrl)}
                     role="button"
                     tabIndex={0}

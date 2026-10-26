@@ -4,7 +4,6 @@ import { authContract } from './auth'
 import { catalogContract } from './catalog'
 import { customerContract, userContract } from './customer'
 import { orderContract } from './order'
-import { systemContract } from './system'
 import { planContract } from './plan'
 import { shoppingContract } from './shopping'
 
@@ -43,7 +42,6 @@ export const appContract = {
   user: userContract,
   order: orderContract,
   plan: planContract,
-  system: systemContract,
 }
 
 export type AppContract = typeof appContract

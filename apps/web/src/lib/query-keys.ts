@@ -39,12 +39,6 @@ export const queryKeys = {
     session: (token?: string | null) => [...queryKeys.auth.all, 'session', token || 'anonymous'] as const,
     profile: () => [...queryKeys.auth.all, 'profile'] as const,
   },
-  system: {
-    all: ['system'] as const,
-    audit: (filters?: Record<string, unknown>) =>
-      filters ? ([...queryKeys.system.all, 'audit', filters] as const) : ([...queryKeys.system.all, 'audit'] as const),
-    csvRuns: () => [...queryKeys.system.all, 'csv-runs'] as const,
-  },
 } as const
 
 export const mutationKeys = {

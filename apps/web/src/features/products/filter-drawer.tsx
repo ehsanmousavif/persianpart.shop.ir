@@ -1,12 +1,5 @@
 import { useState } from "react";
-import {
-  Drawer,
-  Dropdown,
-  ButtonGroup,
-  Button,
-  Label,
-  Switch,
-} from "@heroui/react";
+import { Drawer, Dropdown, Button, Label, Switch } from "@heroui/react";
 import { StarIcon } from "@solar-icons/react/bold";
 import { useProducts } from "./product-store";
 import {
@@ -78,12 +71,11 @@ export function FilterDrawer({
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-[22%]
-          sm:top-[12%] md:top-[22%] h-auto! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden  border-b-0!"
+          className="w-full max-w-xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[88dvh] sm:max-h-[85dvh] rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden border-b-0! shadow-2xl"
         >
-          <Drawer.Dialog className="flex flex-col h-full min-h-0 bg-surface outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
-            <div className="flex justify-center w-full shrink-0">
-              <Drawer.Handle className="w-20 h-2 rounded-full mt-10" />
+          <Drawer.Dialog className="flex flex-col h-auto! max-h-[88dvh] sm:max-h-[85dvh] min-h-0 bg-surface outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
+            <div className="flex justify-center w-full shrink-0 pt-2.5 pb-1">
+              <Drawer.Handle className="w-16 h-1.5 rounded-full" />
             </div>
 
             <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
@@ -305,8 +297,12 @@ export function FilterDrawer({
                   </label>
                 </div>
 
-                <ButtonGroup className="w-full rounded-2xl overflow-hidden bg-muted/5 p-0 gap-0 flex border border-border/30">
-                  {AVAILABLE_GRADES.map((grade, index) => {
+                <div
+                  role="group"
+                  aria-label="درجه کیفی"
+                  className="w-full rounded-2xl bg-muted/10 flex items-center"
+                >
+                  {AVAILABLE_GRADES.map((grade) => {
                     const isSelected = filters.selectedGrades.includes(grade);
 
                     return (
@@ -317,10 +313,7 @@ export function FilterDrawer({
                           toggleArrayFilter("selectedGrades", grade)
                         }
                         className={cn(
-                          "flex-1 h-14 px-1 text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer rounded-none border-none",
-                          index === 0 && "rounded-s-2xl",
-                          index === AVAILABLE_GRADES.length - 1 &&
-                            "rounded-e-2xl",
+                          "flex-1 h-12 rounded-none! first:rounded-r-xl! last:rounded-l-xl! text-xs font-bold transition-all flex items-center justify-center cursor-pointer border-0 ring-0 outline-none",
                           isSelected
                             ? "bg-primary text-primary-foreground font-black"
                             : "bg-transparent hover:bg-default/15 text-foreground",
@@ -338,7 +331,7 @@ export function FilterDrawer({
                       </Button>
                     );
                   })}
-                </ButtonGroup>
+                </div>
               </div>
             </Drawer.Body>
 

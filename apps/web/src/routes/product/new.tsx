@@ -1,13 +1,20 @@
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import {
   createFileRoute,
   useNavigate,
   useLocation,
 } from "@tanstack/react-router";
-import { Slider, NumberField, I18nProvider, Button } from "@heroui/react";
+import {
+  Slider,
+  NumberField,
+  I18nProvider,
+  Button,
+  Modal as HeroUIModal,
+} from "@heroui/react";
 import { useProducts, formatGrade } from "../../features/products/product-store";
 import { useProductSelection } from "../../features/products/selection-store";
 import type { Product } from "../../types";
+import type { OrderItem } from "../../types/order";
 import { calculateCartonRequirement } from "../../lib/utils/math";
 import { formatToman, toPersianDigits } from "../../lib/utils/currency";
 import { PreInvoiceModal } from "../../features/checkout/pre-invoice-modal";
@@ -22,7 +29,7 @@ import {
   SolarLayersIcon,
   TomanIcon,
 } from "../../components/ui/icons";
-import { useOrders } from "../../features/orders/order-store";
+import { useOrders, orderStore } from "../../features/orders/order-store";
 import { MoneyBagOutlineIcon } from "@solar-icons/react";
 
 export const Route = createFileRoute("/product/new")({
@@ -40,7 +47,7 @@ function ProductNewConfigurationPage() {
         undefined
       : undefined);
   const { allProducts } = useProducts();
-  const { getOrderById } = useOrders();
+  const { getOrderById, cancelOrder } = useOrders();
   const {
     selectedIds,
     quantities,
@@ -51,14 +58,20 @@ function ProductNewConfigurationPage() {
     reconcileWithProducts,
   } = useProductSelection();
 
-  // Modal state for Pre-Invoice
+  // Modal state for Pre-Invoice and order delete confirmation
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
+  const [showDeleteOrderConfirm, setShowDeleteOrderConfirm] = useState(false);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
 
-  // Hydrate from order if editOrderId is provided and selection is empty
+  // Single-run hydration ref: only hydrate once on mount, never re-hydrate when user clears products
+  const hasHydratedRef = useRef(false);
+
+  // Hydrate from order if editOrderId is provided
   useEffect(() => {
-    if (editOrderId && selectedIds.length === 0) {
+    if (editOrderId && !hasHydratedRef.current) {
       const order = getOrderById(editOrderId);
       if (order && order.items && order.items.length > 0) {
+        hasHydratedRef.current = true;
         setBatchSelection(
           order.items.map((item) => ({
             id: item.productId,
@@ -67,7 +80,7 @@ function ProductNewConfigurationPage() {
         );
       }
     }
-  }, [editOrderId, selectedIds.length, getOrderById, setBatchSelection]);
+  }, [editOrderId, getOrderById, setBatchSelection]);
 
   // Reconcile selected IDs with live products
   useEffect(() => {
@@ -110,7 +123,74 @@ function ProductNewConfigurationPage() {
   };
 
   const handleRemoveProduct = (productId: string) => {
+    if (editOrderId && selectedProducts.length <= 1) {
+      setPendingDeleteProductId(productId);
+      setShowDeleteOrderConfirm(true);
+      return;
+    }
     unselectProduct(productId);
+  };
+
+  const handleConfirmDeleteOrder = async () => {
+    if (editOrderId) {
+      await cancelOrder(editOrderId, "لغو سفارش به دلیل حذف تمامی اقلام فاکتور");
+    }
+    if (pendingDeleteProductId) {
+      unselectProduct(pendingDeleteProductId);
+    }
+    clearSelection();
+    setShowDeleteOrderConfirm(false);
+    toast.info("فاکتور حذف شد", "فاکتور به دلیل حذف تمامی اقلام کلا پاک گردید.");
+    navigate({ to: "/orders" });
+  };
+
+  const handleSaveEditedOrder = () => {
+    if (!editOrderId || !totals.hasValidQuantities) return;
+    const existingOrder = getOrderById(editOrderId);
+    if (!existingOrder) return;
+
+    const orderItems: OrderItem[] = selectedProducts.map((p) => {
+      const area = quantities[p.id] ?? 0;
+      const calc = calculateCartonRequirement(
+        area,
+        p.sqmPerCarton,
+        p.finalCustomerPricePerSqm,
+        p.inventorySqm > 0 ? p.inventorySqm : 500,
+      );
+      return {
+        productId: p.id,
+        productName: p.name,
+        productSlug: p.slug || p.id,
+        productSku: p.sku,
+        dimension: `${p.dimensions.width}×${p.dimensions.height}`,
+        unitPrice: p.finalCustomerPricePerSqm,
+        requestedArea: area,
+        deliverableArea: calc.deliverableArea,
+        cartonCount: calc.cartonCount,
+        totalPrice: calc.totalPrice,
+        productImage: p.images?.[0] || "/placeholder.png",
+        status: existingOrder.status,
+      };
+    });
+
+    const subtotal = totals.totalPrice;
+    const taxAmount = Math.round(subtotal * 0.1);
+    const finalTotal = subtotal + taxAmount;
+
+    orderStore.updateOrder(editOrderId, {
+      items: orderItems,
+      subtotal,
+      discountAmount: 0,
+      taxAmount,
+      finalTotal,
+    });
+
+    clearSelection();
+    toast.success("فاکتور به‌روزرسانی شد", "تغییرات فاکتور با موفقیت ذخیره گردید.");
+    navigate({
+      to: "/orders/$id",
+      params: { id: editOrderId },
+    });
   };
 
   const handleBackToProducts = () => {
@@ -414,18 +494,73 @@ function ProductNewConfigurationPage() {
         })}
       </div>
 
-      {/* Sticky Bottom Bar - ONLY "تایید" Button, Aligned with Container Width */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 backdrop-blur-md z-40 p-4">
-        <Button
-          type="button"
-          onPress={() => setIsInvoiceOpen(true)}
-          isDisabled={!totals.hasValidQuantities}
-          className="w-full h-12 px-4 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
-        >
-          <span>تایید</span>
-          <ArrowLeftIcon size={16} />
-        </Button>
+      {/* Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-xl bg-white/95 dark:bg-background/95 backdrop-blur-md z-40 p-4 border-t border-border/20">
+        {editOrderId ? (
+          <Button
+            type="button"
+            onPress={handleSaveEditedOrder}
+            isDisabled={!totals.hasValidQuantities}
+            className="w-full h-12 px-4 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          >
+            <span>ذخیره تغییرات فاکتور</span>
+            <ArrowLeftIcon size={16} />
+          </Button>
+        ) : (
+          <Button
+            type="button"
+            onPress={() => setIsInvoiceOpen(true)}
+            isDisabled={!totals.hasValidQuantities}
+            className="w-full h-12 px-4 rounded-2xl bg-primary hover:bg-primary/90 disabled:opacity-40 disabled:cursor-not-allowed text-primary-foreground text-sm font-bold flex items-center justify-center gap-2 transition-all active:scale-98 cursor-pointer select-none touch-manipulation"
+          >
+            <span>تایید</span>
+            <ArrowLeftIcon size={16} />
+          </Button>
+        )}
       </div>
+
+      {/* Delete Entire Order Confirmation Modal */}
+      <HeroUIModal.Root
+        isOpen={showDeleteOrderConfirm}
+        onOpenChange={(open) => !open && setShowDeleteOrderConfirm(false)}
+      >
+        <HeroUIModal.Backdrop
+          isDismissable
+          className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-backdrop-enter"
+        >
+          <HeroUIModal.Container className="pointer-events-none w-full max-w-sm h-auto p-0 flex flex-col items-center">
+            <HeroUIModal.Dialog className="pointer-events-auto relative w-full bg-surface rounded-2xl flex flex-col z-10 overflow-hidden animate-modal-enter text-center p-6 space-y-4">
+              <div className="w-12 h-12 rounded-2xl bg-danger/15 text-danger flex items-center justify-center mx-auto">
+                <Trash2Icon size={24} />
+              </div>
+              <div>
+                <HeroUIModal.Heading className="text-base font-bold text-foreground">
+                  حذف کامل فاکتور
+                </HeroUIModal.Heading>
+                <p className="text-xs text-muted mt-1 leading-relaxed">
+                  در صورت حذف این مورد فاکتور شما کلا پاک می‌شود. آیا از حذف فاکتور اطمینان دارید؟
+                </p>
+              </div>
+              <div className="w-full flex items-center justify-center gap-2 pt-2">
+                <Button
+                  type="button"
+                  onPress={() => setShowDeleteOrderConfirm(false)}
+                  className="h-11 px-4 w-full rounded-2xl bg-muted/10 text-foreground text-xs font-bold hover:bg-muted/15 cursor-pointer transition-all"
+                >
+                  انصراف
+                </Button>
+                <Button
+                  type="button"
+                  onPress={handleConfirmDeleteOrder}
+                  className="h-11 px-4 w-full rounded-2xl bg-danger text-white hover:bg-danger/90 font-bold text-xs cursor-pointer transition-all shadow-md"
+                >
+                  حذف فاکتور
+                </Button>
+              </div>
+            </HeroUIModal.Dialog>
+          </HeroUIModal.Container>
+        </HeroUIModal.Backdrop>
+      </HeroUIModal.Root>
 
       {/* Pre-Invoice Modal */}
       <PreInvoiceModal
