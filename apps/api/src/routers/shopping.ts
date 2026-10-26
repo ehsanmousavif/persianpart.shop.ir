@@ -1,6 +1,7 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, authed } from '../rpc/base'
 import { calculateCartonMetrics } from './catalog.helpers'
+import { fetchTaxonomy, finalizeOrderNumber } from './router.helpers'
 
 const shippingMethods = base.shopping.shippingMethods.handler(async () => {
   return [
@@ -45,20 +46,12 @@ const cartProducts = base.shopping.cartProducts.handler(async ({ input }) => {
   return products.docs
 })
 
-const addressList = base.shopping.addressList.handler(async ({ context, errors }) => {
-  if (!context.user) {
-    throw errors.UNAUTHORIZED({ message: 'برای مشاهده آدرس‌ها باید وارد حساب خود شوید.' })
-  }
-
+const addressList = authed.shopping.addressList.handler(async ({ context }) => {
   const userDoc: any = await sdk.findByID({ collection: 'users', id: context.user.id })
   return userDoc?.addresses || []
 })
 
-const mutateAddress = base.shopping.mutateAddress.handler(async ({ input, context, errors }) => {
-  if (!context.user) {
-    throw errors.UNAUTHORIZED({ message: 'برای ثبت یا ویرایش آدرس باید وارد حساب خود شوید.' })
-  }
-
+const mutateAddress = authed.shopping.mutateAddress.handler(async ({ input, context }) => {
   const userDoc: any = await sdk.findByID({ collection: 'users', id: context.user.id })
   const currentAddresses: any[] = userDoc?.addresses || []
 
@@ -87,40 +80,19 @@ const mutateAddress = base.shopping.mutateAddress.handler(async ({ input, contex
 })
 
 const categories = base.shopping.categories.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'categories',
-    where,
-    limit: 100,
-    sort: 'ordering',
-  })
-  return res.docs
+  return fetchTaxonomy('categories', { onlyActive: input?.onlyActive, sort: 'ordering' })
 })
 
 const brands = base.shopping.brands.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'brands',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+  return fetchTaxonomy('brands', { onlyActive: input?.onlyActive, sort: 'name' })
 })
 
 const tags = base.shopping.tags.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'tags',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+  return fetchTaxonomy('tags', { onlyActive: input?.onlyActive, sort: 'name' })
 })
 
 const calculateCartons = base.shopping.calculateCartons.handler(async ({ input }) => {
-  return await calculateCartonMetrics(input)
+  return calculateCartonMetrics(input)
 })
 
 const all = base.shopping.all.handler(async ({ input }) => {
@@ -138,7 +110,7 @@ const all = base.shopping.all.handler(async ({ input }) => {
     where.brand = { equals: input.brandId }
   }
 
-  return await sdk.find({
+  return sdk.find({
     collection: 'products',
     where,
     limit: input?.limit || 50,
@@ -155,11 +127,7 @@ const detail = base.shopping.detail.handler(async ({ input }) => {
   })
 })
 
-const createOrder = base.shopping.createOrder.handler(async ({ input, context, errors }) => {
-  if (!context.user) {
-    throw errors.UNAUTHORIZED({ message: 'برای ثبت سفارش باید وارد شوید.' })
-  }
-
+const createOrder = authed.shopping.createOrder.handler(async ({ input, context }) => {
   const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
   const order = await sdk.create({
     collection: 'orders',
@@ -181,19 +149,7 @@ const createOrder = base.shopping.createOrder.handler(async ({ input, context, e
     },
   })
 
-  const finalOrderNumber = `ptp ${order.id}`
-  try {
-    const updated = await sdk.update({
-      collection: 'orders',
-      id: order.id,
-      data: {
-        orderNumber: finalOrderNumber,
-      },
-    })
-    return updated || { ...order, orderNumber: finalOrderNumber }
-  } catch {
-    return { ...order, orderNumber: finalOrderNumber }
-  }
+  return finalizeOrderNumber(order)
 })
 
 const verifyPayment = base.shopping.verifyPayment.handler(async ({ input, errors }) => {
@@ -222,4 +178,3 @@ export const shopping = base.shopping.router({
   createOrder,
   verifyPayment,
 })
-

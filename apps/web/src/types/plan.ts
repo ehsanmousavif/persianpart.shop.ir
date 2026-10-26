@@ -1,6 +1,5 @@
 import type {
   CustomerProfile,
-  CustomerStaffDetail,
   CustomerType,
 } from '@persianpart/contract'
 
@@ -33,6 +32,5 @@ export interface Plan {
 
 export type {
   CustomerProfile,
-  CustomerStaffDetail,
   CustomerType,
 }

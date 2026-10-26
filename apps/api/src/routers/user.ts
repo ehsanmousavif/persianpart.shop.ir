@@ -1,15 +1,12 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, authed, adminOnly } from '../rpc/base'
+import { fetchTaxonomy, getUserProfile } from './router.helpers'
 
-const profile = base.user.profile.handler(async ({ context, errors }) => {
-  if (!context.user) throw errors.UNAUTHORIZED()
-  return sdk.findByID({ collection: 'users', id: context.user.id })
+const profile = authed.user.profile.handler(async ({ context }) => {
+  return getUserProfile(context.user.id)
 })
 
-const update = base.user.update.handler(async ({ input, context, errors }) => {
-  if (!context.user) throw errors.UNAUTHORIZED()
-
-  // Customers can update personal, business, and address info, but phone is strictly immutable
+const update = authed.user.update.handler(async ({ input, context }) => {
   return sdk.update({
     collection: 'users',
     id: context.user.id,
@@ -17,7 +14,7 @@ const update = base.user.update.handler(async ({ input, context, errors }) => {
   })
 })
 
-const list = base.user.list.handler(async ({ input }) => {
+const list = adminOnly.user.list.handler(async ({ input }) => {
   const result = await sdk.find({
     collection: 'users',
     limit: input?.limit || 100,
@@ -26,19 +23,12 @@ const list = base.user.list.handler(async ({ input }) => {
   return result.docs
 })
 
-const deleteUser = base.user.delete.handler(async ({ input }) => {
+const deleteUser = adminOnly.user.delete.handler(async ({ input }) => {
   return sdk.delete({ collection: 'users', id: input.id })
 })
 
-const userCustomerTypes = base.user.customerTypes.handler(async ({ input }) => {
-  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'customer-types',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+const customerTypes = base.user.customerTypes.handler(async ({ input }) => {
+  return fetchTaxonomy('customer-types', { onlyActive: input?.onlyActive })
 })
 
 export const user = base.user.router({
@@ -46,6 +36,5 @@ export const user = base.user.router({
   list,
   update,
   delete: deleteUser,
-  customerTypes: userCustomerTypes,
+  customerTypes,
 })
-

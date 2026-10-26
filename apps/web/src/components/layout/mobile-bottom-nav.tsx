@@ -76,7 +76,7 @@ export function MobileBottomNav() {
           highlightTextColor="#1c1696"
           textColor="#ffffff"
           orientation="vertical"
-          className="w-full h-14 border-none! shadow-none! [box-shadow:none]!"
+          className="w-full h-14 whitespace-nowrap text-xs border-none! shadow-none! [box-shadow:none]!"
         />
       </nav>
       {/* Solid white underlay for the space below nav bottom */}

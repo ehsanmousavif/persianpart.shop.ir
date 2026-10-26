@@ -1,11 +1,13 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, authed } from '../rpc/base'
+import { calculateCartonMetrics } from './catalog.helpers'
+import { finalizeOrderNumber, findOrderByIdOrNumber } from './router.helpers'
 
-const all = base.order.all.handler(async ({ context }) => {
+const all = authed.order.all.handler(async ({ context }) => {
   const allOrders = await sdk.find({
     collection: 'orders',
     where: {
-      user: { equals: context.user!.id },
+      user: { equals: context.user.id },
     },
     limit: 100,
     depth: 2,
@@ -15,16 +17,15 @@ const all = base.order.all.handler(async ({ context }) => {
   return allOrders.docs
 })
 
-const summary = base.order.summary.handler(async ({ context }) => {
+const summary = authed.order.summary.handler(async ({ context }) => {
   const getOrderCount = async (status?: string) => {
     const { totalDocs } = await sdk.count({
       collection: 'orders',
       where: {
-        user: { equals: context.user!.id },
+        user: { equals: context.user.id },
         ...(status && { status: { equals: status } }),
       },
     })
-
     return totalDocs
   }
 
@@ -37,34 +38,34 @@ const summary = base.order.summary.handler(async ({ context }) => {
   return { total, processing, completed }
 })
 
-const detail = base.order.detail.handler(async ({ input, context, errors }) => {
-  const id = input.orderId || input.id || ''
-  const orderDoc = await sdk.findByID({
-    collection: 'orders',
-    id,
-    depth: 3,
-  })
+const detail = authed.order.detail.handler(async ({ input, context, errors }) => {
+  const rawId = input.orderId || input.id || ''
+  const orderDoc: any = await findOrderByIdOrNumber(rawId, 3)
+
+  if (!orderDoc) {
+    throw errors.NOT_FOUND()
+  }
 
   const orderUserId =
     typeof orderDoc.user === 'object' && orderDoc.user !== null
-      ? (orderDoc.user as any).id
+      ? orderDoc.user.id
       : orderDoc.user
 
-  if (orderUserId != context.user!.id) {
+  if (orderUserId != context.user.id && context.user.role !== 'admin' && context.user.role !== 'superadmin') {
     throw errors.NOT_FOUND()
   }
 
   return orderDoc
 })
 
-const createCustomOrder = base.order.createCustomOrder.handler(
+const createCustomOrder = authed.order.createCustomOrder.handler(
   async ({ input, context }) => {
     const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
     const orderDoc = await sdk.create({
       collection: 'orders',
       data: {
         orderNumber: tempOrderNumber,
-        user: Number(context.user!.id),
+        user: Number(context.user.id),
         status: 'pending',
         items: [],
         subtotal: 0,
@@ -73,36 +74,12 @@ const createCustomOrder = base.order.createCustomOrder.handler(
       },
     })
 
-    const finalOrderNumber = `ptp ${orderDoc.id}`
-    try {
-      await sdk.update({
-        collection: 'orders',
-        id: orderDoc.id,
-        data: {
-          orderNumber: finalOrderNumber,
-        },
-      })
-    } catch {}
-
-    return { id: orderDoc.id, message: 'سفارش اختصاصی با موفقیت ثبت شد' }
+    const finalized = await finalizeOrderNumber(orderDoc)
+    return { id: finalized.id, message: 'سفارش اختصاصی با موفقیت ثبت شد' }
   }
 )
 
-const submit = base.order.submit.handler(async ({ input, context, errors }) => {
-  let userId = context.user?.id
-  if (!userId) {
-    const activeUsers = await sdk.find({
-      collection: 'users',
-      where: { status: { equals: 'active' } },
-      limit: 1,
-    })
-    if (activeUsers.docs.length > 0) {
-      userId = activeUsers.docs[0].id
-    } else {
-      throw errors.UNAUTHORIZED()
-    }
-  }
-
+const submit = authed.order.submit.handler(async ({ input, context }) => {
   const itemsData = input.items.map((item) => {
     const requestedArea = item.requestedArea || item.requestedSqm || 1
     const pId = isNaN(Number(item.productId)) ? 1 : Number(item.productId)
@@ -117,12 +94,11 @@ const submit = base.order.submit.handler(async ({ input, context, errors }) => {
   })
 
   const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
-  // Leverage Payload collection hooks to calculate cartons, prices, orderNumber and initial timeline
   const orderDoc = await sdk.create({
     collection: 'orders',
     data: {
       orderNumber: tempOrderNumber,
-      user: Number(userId),
+      user: Number(context.user.id),
       status: 'pending',
       items: itemsData,
       subtotal: 0,
@@ -132,24 +108,12 @@ const submit = base.order.submit.handler(async ({ input, context, errors }) => {
     },
   })
 
-  const finalOrderNumber = `ptp ${orderDoc.id}`
-  try {
-    const updated = await sdk.update({
-      collection: 'orders',
-      id: orderDoc.id,
-      data: {
-        orderNumber: finalOrderNumber,
-      },
-    })
-    return updated || { ...orderDoc, orderNumber: finalOrderNumber }
-  } catch {
-    return { ...orderDoc, orderNumber: finalOrderNumber }
-  }
+  return finalizeOrderNumber(orderDoc)
 })
 
-const list = base.order.list.handler(async ({ input, context }) => {
+const list = authed.order.list.handler(async ({ input, context }) => {
   const where: any = {}
-  if (context.user?.id) {
+  if (context.user?.id && context.user.role !== 'admin' && context.user.role !== 'superadmin') {
     where.user = { equals: context.user.id }
   }
   if (input?.status) {
@@ -172,45 +136,14 @@ const list = base.order.list.handler(async ({ input, context }) => {
 })
 
 const getById = base.order.getById.handler(async ({ input, errors }) => {
-  const rawId = String(input.id || '')
-  if (!rawId) {
+  const orderDoc = await findOrderByIdOrNumber(input.id, 3)
+  if (!orderDoc) {
     throw errors.NOT_FOUND()
   }
-
-  // 1. If numeric ID, findByID
-  if (!isNaN(Number(rawId))) {
-    try {
-      return await sdk.findByID({
-        collection: 'orders',
-        id: Number(rawId),
-        depth: 3,
-      })
-    } catch {
-      // fallback to orderNumber query
-    }
-  }
-
-  // 2. Query by orderNumber or string id
-  const res = await sdk.find({
-    collection: 'orders',
-    where: {
-      or: [
-        { orderNumber: { equals: rawId } },
-        { id: { equals: isNaN(Number(rawId)) ? rawId : Number(rawId) } },
-      ],
-    },
-    limit: 1,
-    depth: 3,
-  })
-
-  if (res.docs.length === 0) {
-    throw errors.NOT_FOUND()
-  }
-
-  return res.docs[0]
+  return orderDoc
 })
 
-const cancel = base.order.cancel.handler(async ({ input, errors }) => {
+const cancel = authed.order.cancel.handler(async ({ input, errors }) => {
   const orderDoc = await sdk.findByID({
     collection: 'orders',
     id: input.id,
@@ -230,14 +163,13 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
   }
 
   const deadline = new Date(orderDoc.createdAt).getTime() + 10 * 60 * 1000
-
   if (Date.now() > deadline) {
     throw errors.BAD_REQUEST({
       message: 'مهلت لغو سفارش توسط کاربر منقضی شده است',
     })
   }
 
-  return await sdk.update({
+  return sdk.update({
     collection: 'orders',
     id: input.id,
     data: {
@@ -248,15 +180,15 @@ const cancel = base.order.cancel.handler(async ({ input, errors }) => {
   })
 })
 
-const prepareReorder = base.order.prepareReorder.handler(async ({ input }) => {
-  const orderDoc = await sdk.findByID({
+const prepareReorder = authed.order.prepareReorder.handler(async ({ input }) => {
+  const orderDoc: any = await sdk.findByID({
     collection: 'orders',
     id: input.id,
     depth: 2,
   })
   return {
     orderId: orderDoc.id,
-    items: ((orderDoc as any).items || []).map((i: any) => ({
+    items: (orderDoc.items || []).map((i: any) => ({
       productId: i.product?.id || i.product,
       requestedSqm: i.requestedArea || 1,
     })),
@@ -267,23 +199,28 @@ const validateCart = base.order.pricing.validateCart.handler(async ({ input }) =
   let subtotal = 0
   const validatedItems = await Promise.all(
     input.items.map(async (item) => {
-      const product = await sdk.findByID({ collection: 'products', id: item.productId })
+      const product: any = await sdk.findByID({ collection: 'products', id: item.productId })
       const requestedArea = item.requestedArea || item.requestedSqm || 1
       const pricePerSqm = Number(product.basePricePerSqm) || 500000
       const sqmPerCarton = Number(product.sqmPerCarton) || 1.44
-      const cartonCount = Math.ceil(requestedArea / sqmPerCarton)
-      const deliverableArea = Math.round(cartonCount * sqmPerCarton * 100) / 100
-      const itemTotal = Math.round(deliverableArea * pricePerSqm)
-      subtotal += itemTotal
+
+      const metrics = await calculateCartonMetrics({
+        productId: item.productId,
+        requestedArea,
+        pricePerSqm,
+        sqmPerCarton,
+      })
+
+      subtotal += metrics.totalPrice
 
       return {
         productId: item.productId,
         productName: product.name || 'محصول',
         requestedArea,
-        cartonCount,
-        deliverableArea,
+        cartonCount: metrics.cartonCount,
+        deliverableArea: metrics.deliverableArea,
         unitPrice: pricePerSqm,
-        totalPrice: itemTotal,
+        totalPrice: metrics.totalPrice,
         hasIssues: false,
       }
     })
@@ -299,53 +236,6 @@ const validateCart = base.order.pricing.validateCart.handler(async ({ input }) =
   }
 })
 
-const staffList = base.order.staffList.handler(async ({ input }) => {
-  const where: any = {}
-  if (input?.status) {
-    where.status = { equals: input.status }
-  }
-  if (input?.customerId) {
-    where.user = { equals: input.customerId }
-  }
-
-  const res = await sdk.find({
-    collection: 'orders',
-    where,
-    limit: input?.limit || 50,
-    page: input?.page || 1,
-    depth: 2,
-    sort: '-createdAt',
-  })
-
-  return {
-    items: res.docs,
-    total: res.totalDocs,
-  }
-})
-
-const staffUpdateStatus = base.order.staffUpdateStatus.handler(async ({ input }) => {
-  return await sdk.update({
-    collection: 'orders',
-    id: input.id,
-    data: {
-      status: input.newStatus as any,
-      notes: input.note,
-    },
-  })
-})
-
-const staffCancel = base.order.staffCancel.handler(async ({ input }) => {
-  return await sdk.update({
-    collection: 'orders',
-    id: input.id,
-    data: {
-      status: 'cancel',
-      cancelledBy: 'admin',
-      notes: input.cancellationReason || input.cancellationNote || 'لغو توسط ادمین',
-    },
-  })
-})
-
 export const order = base.order.router({
   all,
   list,
@@ -359,7 +249,4 @@ export const order = base.order.router({
   pricing: {
     validateCart,
   },
-  staffList,
-  staffUpdateStatus,
-  staffCancel,
 })

@@ -10,8 +10,6 @@ import {
 import { useAuth } from "./auth-store";
 import { toast } from "../../components/feedback/toast";
 import {
-  PhoneIcon,
-  ArrowLeftIcon,
   RefreshCwIcon,
   AlertCircleIcon,
   PencilIcon,
@@ -250,25 +248,24 @@ export function LoginCard() {
 
                       setPhone(cleaned);
                     }}
-                    // placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                    dir="rtl"
+                    placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                    dir="ltr"
                     autoFocus
                     disabled={isLoading}
-                    className="h-14 flex-1 shadow-none! px-4 text-start text-sm font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm placeholder:font-base border-0 ring-0"
+                    className="h-14 flex-1 shadow-none! px-4 text-left text-sm font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm placeholder:font-light border-0 ring-0"
                   />
                 </InputGroup>
               </div>
 
               <Button
                 type="submit"
-                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 "
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />
                 ) : (
                   <>
-                    <span>دریافت کد تأیید</span>
-                    <ArrowLeftIcon size={16} />
+                    <span>دریافت کد ورود</span>
                   </>
                 )}
               </Button>
@@ -312,12 +309,12 @@ export function LoginCard() {
               </div>
 
               <div>
-                <label className="mb-2.5 block text-start text-xs font-bold text-foreground/80">
+                <label className="my-6 block text-start text-xs font-bold text-foreground/80">
                   کد تأیید ۴ رقمی پیامک‌شده
                 </label>
 
                 <div
-                  className="flex w-full items-center justify-center py-2"
+                  className="flex w-full items-center justify-center mt-5"
                   dir="ltr"
                 >
                   <CodeSlots
@@ -339,12 +336,24 @@ export function LoginCard() {
                     bounce={0.3}
                     gap={12}
                     settle={0.5}
-                    className="border-none! shadow-none! [box-shadow:none]!"
                   />
                 </div>
               </div>
 
-              {/* Timer and Resend */}
+              <Button
+                type="button"
+                onPress={() => handleVerifyOtp()}
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
+              >
+                {isLoading ? (
+                  <RefreshCwIcon size={18} className="animate-spin" />
+                ) : (
+                  <>
+                    <LockIcon size={16} />
+                    <span>تأیید و ورود به پنل</span>
+                  </>
+                )}
+              </Button>
               <div className="flex items-center justify-between pt-1 text-xs">
                 {countdown > 0 ? (
                   <span className="font-medium text-muted">
@@ -365,21 +374,6 @@ export function LoginCard() {
                   </Button>
                 )}
               </div>
-
-              <Button
-                type="button"
-                onPress={() => handleVerifyOtp()}
-                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
-              >
-                {isLoading ? (
-                  <RefreshCwIcon size={18} className="animate-spin" />
-                ) : (
-                  <>
-                    <LockIcon size={16} />
-                    <span>تأیید و ورود به پنل</span>
-                  </>
-                )}
-              </Button>
             </motion.div>
           )}
         </AnimatePresence>

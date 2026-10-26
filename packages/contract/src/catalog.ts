@@ -172,7 +172,7 @@ export const UpdateDimensionInputSchema = z.object({
 export type UpdateDimensionInput = z.infer<typeof UpdateDimensionInputSchema>
 
 // ============================================================================
-// 5. Internal/Staff Product Schemas
+// 5. Product Specifications & Quality Schemas
 // ============================================================================
 
 export const ProductDimensionsSchema = z.object({
@@ -538,68 +538,6 @@ export const tagContract = {
     .meta(openapi({ method: 'POST', path: '/tags/{id}/toggle-active', summary: 'فعال/غیرفعال‌سازی تگ' }))
     .input(z.object({ id: EntityIdSchema }))
     .output(TagSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
-}
-
-export const productContract = {
-  staffList: oc
-    .meta(openapi({ method: 'GET', path: '/staff/products', summary: 'لیست محصولات کاتالوگ با قیمت پایه و موجودی (پرسنل)' }))
-    .input(ProductFilterInputSchema)
-    .output(createPaginatedResponseSchema(ProductSchema))
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-    }),
-
-  staffGetById: oc
-    .meta(openapi({ method: 'GET', path: '/staff/products/{id}', summary: 'مشاهده جزییات محصول برای پرسنل' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(ProductSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
-
-  staffCreate: oc
-    .meta(openapi({ method: 'POST', path: '/staff/products', summary: 'تعریف محصول جدید توسط پرسنل' }))
-    .input(CreateProductInputSchema)
-    .output(ProductSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      CONFLICT: { data: StandardErrorDataSchema },
-    }),
-
-  staffUpdate: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/products/{id}', summary: 'ویرایش مشخصات محصول توسط پرسنل' }))
-    .input(UpdateProductInputSchema)
-    .output(ProductSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-      CONFLICT: { data: StandardErrorDataSchema },
-    }),
-
-  staffToggleActive: oc
-    .meta(openapi({ method: 'POST', path: '/staff/products/{id}/toggle-active', summary: 'فعال/غیرفعال‌سازی محصول' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(ProductSchema)
-    .errors({
-      UNAUTHORIZED: { data: StandardErrorDataSchema },
-      FORBIDDEN: { data: StandardErrorDataSchema },
-      NOT_FOUND: { data: StandardErrorDataSchema },
-    }),
-
-  staffPricePreview: oc
-    .meta(openapi({ method: 'POST', path: '/staff/products/price-preview', summary: 'پیش‌نمایش محاسبه قیمت برای رده مشتری خاص' }))
-    .input(PricePreviewInputSchema)
-    .output(PricePreviewOutputSchema)
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       FORBIDDEN: { data: StandardErrorDataSchema },

@@ -69,7 +69,7 @@ interface OrderTimelineSeed {
   status: string
   title?: string
   description?: string
-  actorType?: 'customer' | 'staff' | 'system'
+  actorType?: 'customer' | 'admin' | 'system'
 }
 
 interface OrderSeed {
@@ -201,7 +201,7 @@ const ORDERS_SEED: OrderSeed[] = [
         status: 'completed',
         title: 'تکمیل شده',
         description: 'حواله رسمی خروج از انبار صادر و سفارش با موفقیت نهایی گردید.',
-        actorType: 'staff',
+        actorType: 'admin',
       },
     ],
   },
@@ -264,7 +264,7 @@ const ORDERS_SEED: OrderSeed[] = [
         status: 'cancelled_by_admin',
         title: 'لغو توسط ادمین',
         description: 'سفارش توسط مدیریت / واحد بازرگانی به علت عدم تایید موجودی انبار لغو گردید.',
-        actorType: 'staff',
+        actorType: 'admin',
       },
     ],
   },

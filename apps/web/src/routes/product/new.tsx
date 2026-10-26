@@ -5,7 +5,7 @@ import {
   useLocation,
 } from "@tanstack/react-router";
 import { Slider, NumberField, I18nProvider, Button } from "@heroui/react";
-import { useProducts } from "../../features/products/product-store";
+import { useProducts, formatGrade } from "../../features/products/product-store";
 import { useProductSelection } from "../../features/products/selection-store";
 import type { Product } from "../../types";
 import { calculateCartonRequirement } from "../../lib/utils/math";
@@ -20,10 +20,10 @@ import {
   SolarRulerIcon,
   SolarBoxIcon,
   SolarLayersIcon,
-  SolarTagIcon,
   TomanIcon,
 } from "../../components/ui/icons";
 import { useOrders } from "../../features/orders/order-store";
+import { MoneyBagOutlineIcon } from "@solar-icons/react";
 
 export const Route = createFileRoute("/product/new")({
   component: ProductNewConfigurationPage,
@@ -240,6 +240,9 @@ function ProductNewConfigurationPage() {
                         {toPersianDigits(product.dimensions.width)} ×{" "}
                         {toPersianDigits(product.dimensions.height)}
                       </span>
+                      <span className="px-2 py-1 rounded-lg text-xs font-semibold bg-primary/10 text-primary">
+                        {formatGrade(product.grade)}
+                      </span>
                       <span className="text-xs font-semibold text-muted">
                         {product.brand}
                       </span>
@@ -282,7 +285,7 @@ function ProductNewConfigurationPage() {
                       <Slider
                         minValue={0}
                         maxValue={maxInventory}
-                        step={0.1}
+                        step={1}
                         value={area}
                         onChange={(val) => {
                           const num =
@@ -307,15 +310,6 @@ function ProductNewConfigurationPage() {
                   </div>
 
                   <div className="flex justify-between rounded-lg mt-3 items-center text-xs text-foreground font-bold">
-                    <div
-                      onClick={() =>
-                        handleAreaChange(product.id, maxInventory, maxInventory)
-                      }
-                      className="p-2.5 rounded-xl bg-primary text-primary-foreground cursor-pointer select-none active:scale-95 transition-transform"
-                    >
-                      سقف موجودی: {toPersianDigits(maxInventory)}
-                    </div>
-
                     <div className="flex items-center gap-1.5 justify-center shrink-0">
                       <I18nProvider locale="fa-IR">
                         <NumberField
@@ -332,7 +326,7 @@ function ProductNewConfigurationPage() {
                             maximumFractionDigits: 1,
                           }}
                           aria-label={`متراژ ${product.name}`}
-                          className="max-w-36 shadow-none! [box-shadow:none]! border-none!"
+                          className="max-w-36  shadow-none! [box-shadow:none]! border-none!"
                         >
                           <NumberField.Group className="rounded-2xl bg-muted/10 transition-colors overflow-hidden shadow-none! [box-shadow:none]! border-none! ring-0!">
                             <NumberField.DecrementButton className="flex items-center justify-center text-muted hover:text-foreground active:scale-90 transition-all rounded cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed [&_svg]:size-3 shadow-none! [box-shadow:none]! border-none!" />
@@ -341,6 +335,14 @@ function ProductNewConfigurationPage() {
                           </NumberField.Group>
                         </NumberField>
                       </I18nProvider>
+                    </div>
+                    <div
+                      onClick={() =>
+                        handleAreaChange(product.id, maxInventory, maxInventory)
+                      }
+                      className="p-2.5 rounded-xl bg-secondary text-secondary-foreground cursor-pointer select-none active:scale-95 transition-transform"
+                    >
+                      سقف موجودی: {toPersianDigits(maxInventory)}
                     </div>
                   </div>
                 </div>
@@ -377,30 +379,30 @@ function ProductNewConfigurationPage() {
                 </div>
 
                 {/* 3. متراژ تحویلی واقعی */}
-                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-primary/15 text-primary flex items-center justify-center shrink-0">
-                    <SolarLayersIcon size={14} />
+                <div className="p-2.5 bg-primary rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-primary/15 text-background flex items-center justify-center shrink-0">
+                    <SolarLayersIcon size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                    <span className="text-xs text-primary-foreground    font-medium block leading-tight mb-1">
                       متراژ تحویلی
                     </span>
-                    <span className="font-bold text-foreground text-sm leading-normal  block">
+                    <span className="font-bold text-primary-foreground  text-sm leading-normal  block">
                       {toPersianDigits(calc.deliverableArea)}
                     </span>
                   </div>
                 </div>
 
                 {/* 4. مبلغ برآورد */}
-                <div className="p-2.5 bg-muted/5 rounded-2xl flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-success/15 text-success flex items-center justify-center shrink-0">
-                    <SolarTagIcon size={14} />
+                <div className="p-2.5 bg-success rounded-2xl flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-xl  text-background flex items-center justify-center shrink-0">
+                    <MoneyBagOutlineIcon size={20} />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <span className="text-xs text-muted font-medium block leading-tight mb-1">
+                    <span className="text-xs text-background font-medium block leading-tight  mb-1">
                       مبلغ برآورد
                     </span>
-                    <span className="font-bold text-foreground text-sm leading-normal  inline-flex items-center gap-1">
+                    <span className="font-bold text-background text-sm leading-normal  inline-flex items-center gap-1">
                       <span>{formatToman(calc.totalPrice)}</span>
                       <TomanIcon className="size-4" />
                     </span>

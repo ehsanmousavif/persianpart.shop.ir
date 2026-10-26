@@ -1,69 +1,41 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, adminOnly } from '../rpc/base'
 import { calculateCartonMetrics } from './catalog.helpers'
+import {
+  fetchTaxonomy,
+  getUserMarkupPercent,
+  applyProductPricing,
+} from './router.helpers'
 
 const list = base.catalog.list.handler(async ({ input, context }) => {
-  try {
-    const where: Record<string, any> = {}
-    if (input?.onlyActive !== false) {
-      where.isActive = { equals: true }
-    }
-    if (input?.search) {
-      where.name = { contains: input.search }
-    }
-    if (input?.categoryId) {
-      where.category = { equals: input.categoryId }
-    }
-    if (input?.brandId) {
-      where.brand = { equals: input.brandId }
-    }
+  const where: Record<string, any> = {}
+  if (input?.onlyActive !== false) {
+    where.isActive = { equals: true }
+  }
+  if (input?.search) {
+    where.name = { contains: input.search }
+  }
+  if (input?.categoryId) {
+    where.category = { equals: input.categoryId }
+  }
+  if (input?.brandId) {
+    where.brand = { equals: input.brandId }
+  }
 
-    const res = await sdk.find({
-      collection: 'products',
-      where,
-      limit: input?.limit || 50,
-      page: input?.page || 1,
-      depth: 2,
-    })
+  const res = await sdk.find({
+    collection: 'products',
+    where,
+    limit: input?.limit || 50,
+    page: input?.page || 1,
+    depth: 2,
+  })
 
-    // Calculate customer-specific markup if customer is authenticated
-    let markupPercent = 0
-    if (context?.user?.id) {
-      try {
-        const userDoc: any = await sdk.findByID({
-          collection: 'users',
-          id: context.user.id,
-          depth: 1,
-        })
-        const ct = userDoc?.customerType
-        if (ct && typeof ct === 'object') {
-          markupPercent = Number(ct.markupPercent) || 0
-        } else if (ct) {
-          const ctDoc: any = await sdk.findByID({ collection: 'customer-types', id: ct })
-          markupPercent = Number(ctDoc?.markupPercent) || 0
-        }
-      } catch {
-        // fallback to standard price
-      }
-    }
+  const markupPercent = await getUserMarkupPercent(context?.user?.id)
+  const items = res.docs.map((prod: any) => applyProductPricing(prod, markupPercent))
 
-    const mappedDocs = res.docs.map((prod: any) => {
-      const basePrice = Number(prod.basePricePerSqm) || 0
-      const finalPrice = Math.round(basePrice * (1 + markupPercent / 100))
-      return {
-        ...prod,
-        finalCustomerPricePerSqm: finalPrice,
-        appliedMarkupPercent: markupPercent,
-      }
-    })
-
-    return {
-      items: mappedDocs,
-      total: res.totalDocs,
-    }
-  } catch (err) {
-    console.error('=== [CATALOG LIST ERROR] ===', err)
-    throw err
+  return {
+    items,
+    total: res.totalDocs,
   }
 })
 
@@ -76,90 +48,36 @@ const getById = base.catalog.getById.handler(async ({ input, context }) => {
 
   if (!prod) return null
 
-  let markupPercent = 0
-  if (context?.user?.id) {
-    try {
-      const userDoc: any = await sdk.findByID({
-        collection: 'users',
-        id: context.user.id,
-        depth: 1,
-      })
-      const ct = userDoc?.customerType
-      if (ct && typeof ct === 'object') {
-        markupPercent = Number(ct.markupPercent) || 0
-      } else if (ct) {
-        const ctDoc: any = await sdk.findByID({ collection: 'customer-types', id: ct })
-        markupPercent = Number(ctDoc?.markupPercent) || 0
-      }
-    } catch {
-      // fallback to standard price
-    }
-  }
-
-  const basePrice = Number(prod.basePricePerSqm) || 0
-  const finalPrice = Math.round(basePrice * (1 + markupPercent / 100))
-
-  return {
-    ...prod,
-    finalCustomerPricePerSqm: finalPrice,
-    appliedMarkupPercent: markupPercent,
-  }
+  const markupPercent = await getUserMarkupPercent(context?.user?.id)
+  return applyProductPricing(prod, markupPercent)
 })
 
 const categories = base.catalog.categories.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'categories',
-    where,
-    limit: 100,
-    sort: 'ordering',
-  })
-  return res.docs
+  return fetchTaxonomy('categories', { onlyActive: input?.onlyActive, sort: 'ordering' })
 })
 
 const brands = base.catalog.brands.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'brands',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+  return fetchTaxonomy('brands', { onlyActive: input?.onlyActive, sort: 'name' })
 })
 
 const tags = base.catalog.tags.handler(async ({ input }) => {
-  const where = input?.onlyActive ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'tags',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+  return fetchTaxonomy('tags', { onlyActive: input?.onlyActive, sort: 'name' })
 })
 
 const dimensions = base.catalog.dimensions.handler(async ({ input }) => {
-  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'dimensions',
-    where,
-    limit: 100,
-    sort: 'width',
-  })
-  return res.docs
+  return fetchTaxonomy('dimensions', { onlyActive: input?.onlyActive, sort: 'width' })
 })
 
-const deleteProduct = base.catalog.deleteProduct.handler(async ({ input }) => {
-  return await sdk.delete({ collection: 'products', id: input.id })
+const deleteProduct = adminOnly.catalog.deleteProduct.handler(async ({ input }) => {
+  return sdk.delete({ collection: 'products', id: input.id })
 })
 
-const deleteCategory = base.catalog.deleteCategory.handler(async ({ input }) => {
-  return await sdk.delete({ collection: 'categories', id: input.id })
+const deleteCategory = adminOnly.catalog.deleteCategory.handler(async ({ input }) => {
+  return sdk.delete({ collection: 'categories', id: input.id })
 })
 
 const calculateCartons = base.catalog.calculateCartons.handler(async ({ input }) => {
-  return await calculateCartonMetrics(input)
+  return calculateCartonMetrics(input)
 })
 
 export const catalog = base.catalog.router({

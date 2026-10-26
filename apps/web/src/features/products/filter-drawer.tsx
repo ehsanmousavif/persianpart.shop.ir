@@ -78,15 +78,16 @@ export function FilterDrawer({
       >
         <Drawer.Content
           placement="bottom"
-          className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-[22%] h-auto! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden bg-surface border-b-0!"
+          className="w-full max-w-lg mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-[22%]
+          sm:top-[12%] md:top-[22%] h-auto! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden  border-b-0!"
         >
-          <Drawer.Dialog className="flex flex-col h-full min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
+          <Drawer.Dialog className="flex flex-col h-full min-h-0 bg-surface outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
             <div className="flex justify-center w-full shrink-0">
-              <Drawer.Handle className="w-16 h-1.5 rounded-full" />
+              <Drawer.Handle className="w-20 h-2 rounded-full mt-10" />
             </div>
 
             <Drawer.Header className="w-full flex flex-row! items-center justify-between px-5 pt-2 pb-2 shrink-0">
-              <Drawer.Heading className="text-sm font-extrabold text-foreground flex items-center gap-2">
+              <Drawer.Heading className="w-full text-sm font-extrabold text-foreground flex items-center gap-2">
                 <span> مرتب‌سازی</span>
               </Drawer.Heading>
 

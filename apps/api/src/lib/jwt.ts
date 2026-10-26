@@ -103,3 +103,40 @@ export function extractBearerToken(
   const match = authHeader.match(/^Bearer\s+(.+)$/i)
   return match ? match[1].trim() : null
 }
+
+// In-memory revocation store with expiration timestamp (in seconds)
+const revokedTokens = new Map<string, number>()
+
+/**
+ * Revokes a token by adding it to the server-side revocation registry
+ */
+export function revokeToken(token: string, expiresAt?: number): void {
+  if (!token) return
+  const now = Math.floor(Date.now() / 1000)
+  const exp = expiresAt || (now + JWT_DEFAULT_EXPIRY_SECONDS)
+  revokedTokens.set(token, exp)
+
+  // Prune expired entries periodically when map exceeds threshold
+  if (revokedTokens.size > 1000) {
+    for (const [key, timestamp] of revokedTokens.entries()) {
+      if (now > timestamp) {
+        revokedTokens.delete(key)
+      }
+    }
+  }
+}
+
+/**
+ * Checks whether a token has been revoked / logged out
+ */
+export function isTokenRevoked(token: string): boolean {
+  if (!token) return false
+  const exp = revokedTokens.get(token)
+  if (!exp) return false
+  const now = Math.floor(Date.now() / 1000)
+  if (now > exp) {
+    revokedTokens.delete(token)
+    return false
+  }
+  return true
+}

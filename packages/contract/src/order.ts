@@ -102,14 +102,14 @@ export const OrderItemSnapshotSchema = z.object({
 
 export type OrderItemSnapshot = z.infer<typeof OrderItemSnapshotSchema>
 
-export const TimelineActorTypeSchema = z.enum(['customer', 'staff', 'system'])
+export const TimelineActorTypeSchema = z.enum(['customer', 'admin', 'system'])
 export type TimelineActorType = z.infer<typeof TimelineActorTypeSchema>
 
 export const TimelineEventTypeSchema = z.enum([
   'order_created',
   'status_changed',
   'customer_cancelled',
-  'staff_cancelled',
+  'admin_cancelled',
   'order_completed',
 ])
 
@@ -159,32 +159,6 @@ export const CustomerOrderFilterInputSchema = PaginationInputSchema.extend({
 })
 
 export type CustomerOrderFilterInput = z.infer<typeof CustomerOrderFilterInputSchema>
-
-export const StaffOrderFilterInputSchema = PaginationInputSchema.extend({
-  status: OrderStatusSchema.optional(),
-  customerId: EntityIdSchema.optional(),
-  search: z.string().optional(),
-  fromDate: z.string().optional(),
-  toDate: z.string().optional(),
-})
-
-export type StaffOrderFilterInput = z.infer<typeof StaffOrderFilterInputSchema>
-
-export const StaffUpdateOrderStatusInputSchema = z.object({
-  id: EntityIdSchema,
-  newStatus: OrderStatusSchema,
-  note: z.string().optional(),
-})
-
-export type StaffUpdateOrderStatusInput = z.infer<typeof StaffUpdateOrderStatusInputSchema>
-
-export const StaffCancelOrderInputSchema = z.object({
-  id: EntityIdSchema,
-  cancellationReason: z.string().min(1, 'دلیل لغو سفارش الزامی است'),
-  cancellationNote: z.string().optional(),
-})
-
-export type StaffCancelOrderInput = z.infer<typeof StaffCancelOrderInputSchema>
 
 export const CustomerCancelOrderInputSchema = z.object({
   id: EntityIdSchema,
@@ -368,62 +342,6 @@ export const orderContract = {
     .errors({
       UNAUTHORIZED: {},
       NOT_FOUND: {},
-    }),
-
-  staffList: oc
-    .meta(openapi({ method: 'GET', path: '/staff/orders', summary: 'لیست تمام سفارش‌های سیستم برای پرسنل' }))
-    .input(
-      z
-        .object({
-          status: z.string().optional(),
-          customerId: z.string().optional(),
-          search: z.string().optional(),
-          page: z.number().optional(),
-          limit: z.number().optional(),
-          fromDate: z.string().optional(),
-          toDate: z.string().optional(),
-        })
-        .optional()
-    )
-    .output(createPaginatedResponseSchema(OrderSchema).or(z.array(z.any())).or(z.any()))
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-    }),
-
-
-  staffUpdateStatus: oc
-    .meta(openapi({ method: 'POST', path: '/staff/orders/{id}/update-status', summary: 'تغییر مرحله و وضعیت سفارش در ماشین وضعیت توسط پرسنل' }))
-    .input(
-      z.object({
-        id: z.union([EntityIdSchema, z.number()]),
-        newStatus: z.string(),
-        note: z.string().optional(),
-      })
-    )
-    .output(OrderSchema.or(z.any()))
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      NOT_FOUND: {},
-      INVALID_STATUS_TRANSITION: {},
-    }),
-
-  staffCancel: oc
-    .meta(openapi({ method: 'POST', path: '/staff/orders/{id}/cancel', summary: 'لغو اداری سفارش توسط پرسنل همراه با ثبت دلیل' }))
-    .input(
-      z.object({
-        id: z.union([EntityIdSchema, z.number()]),
-        cancellationReason: z.string().optional(),
-        cancellationNote: z.string().optional(),
-      })
-    )
-    .output(OrderSchema.or(z.any()))
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      NOT_FOUND: {},
-      INVALID_STATUS_TRANSITION: {},
     }),
 
   pricing: pricingContract,

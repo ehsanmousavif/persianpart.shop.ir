@@ -2,7 +2,7 @@
   --cs-accent: var(--color-primary, #1c1696);
   --cs-success: var(--color-success, #059669);
   --cs-ink: var(--color-foreground, #0e0c2d);
-  --cs-slot: rgba(105, 102, 136, 0.12);
+  --cs-slot: color-mix(in srgb, var(--muted, #696688) 5%, transparent);
   --cs-digit: var(--color-foreground, #0e0c2d);
   --cs-danger: var(--color-danger, #dc2626);
   --cs-size: 56px;
@@ -96,11 +96,9 @@
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  background: color-mix(in srgb, var(--cs-accent) 15%, transparent);
+  background: color-mix(in srgb, var(--cs-accent) 8%, transparent);
   transform-origin: center;
   transition: background-color 0.2s ease;
-  border: none !important;
-  box-shadow: none !important;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -110,9 +108,9 @@
 }
 
 .code-slots__slot[data-active] {
-  background: color-mix(in srgb, var(--cs-ink) 10%, var(--cs-slot));
-  border: none !important;
-  box-shadow: none !important;
+  background: color-mix(in srgb, var(--cs-accent, #1c1696) 8%, transparent) !important;
+  outline: 1px solid var(--cs-accent, #1c1696) !important;
+  box-shadow: 0 0 0 1px var(--cs-accent, #1c1696) !important;
 }
 
 @keyframes cs-shake {

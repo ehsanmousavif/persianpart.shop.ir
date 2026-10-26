@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { api, type CustomerProfile, type StaffProfile } from '../lib/api-client'
+import { api, type CustomerProfile } from '../lib/api-client'
 import { queryKeys, mutationKeys } from '../lib/query-keys'
 
 export function useAuth() {
@@ -12,34 +12,26 @@ export function useAuth() {
     return null
   })
 
-  const { data: sessionData, isLoading } = useQuery({
+  const { data: customer, isLoading } = useQuery({
     queryKey: queryKeys.auth.session(token),
     queryFn: async () => {
       const currentToken = typeof window !== 'undefined' ? localStorage.getItem('persianpart_token') : null
       if (!currentToken) {
-        return { customer: null, staff: null }
+        return null
       }
       try {
-        if (currentToken.startsWith('staff_')) {
-          const staffProfile = await api.auth.staff.me()
-          return { staff: staffProfile as StaffProfile, customer: null }
-        } else {
-          const custProfile = await api.auth.customer.me()
-          return { customer: custProfile as CustomerProfile, staff: null }
-        }
+        const custProfile = await api.auth.customer.me()
+        return custProfile as CustomerProfile
       } catch {
         if (typeof window !== 'undefined') {
           localStorage.removeItem('persianpart_token')
         }
         setToken(null)
-        return { customer: null, staff: null }
+        return null
       }
     },
     staleTime: 5 * 60 * 1000,
   })
-
-  const customer = sessionData?.customer || null
-  const staff = sessionData?.staff || null
 
   const requestOtpMutation = useMutation({
     mutationKey: mutationKeys.auth.requestOtp,
@@ -61,20 +53,10 @@ export function useAuth() {
     },
   })
 
-  const staffLoginMutation = useMutation({
-    mutationKey: mutationKeys.auth.staffLogin,
-    mutationFn: async ({ identifier, password }: { identifier: string; password: string }) => {
-      const res = await api.auth.staff.login({ identifier, password })
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('persianpart_token', res.token)
-      }
-      setToken(res.token)
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.all })
-      return res
-    },
-  })
-
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await api.auth.customer.logout()
+    } catch {}
     if (typeof window !== 'undefined') {
       localStorage.removeItem('persianpart_token')
     }
@@ -85,21 +67,15 @@ export function useAuth() {
   return {
     token,
     customer,
-    staff,
-    isAuthenticated: !!token && (!!customer || !!staff),
-    isStaff: !!staff,
-    isAdmin: staff?.role === 'admin',
+    isAuthenticated: !!token && !!customer,
     isLoading,
     error: requestOtpMutation.error
       ? (requestOtpMutation.error as Error).message
       : verifyOtpMutation.error
       ? (verifyOtpMutation.error as Error).message
-      : staffLoginMutation.error
-      ? (staffLoginMutation.error as Error).message
       : null,
     requestOtp: (mobile: string) => requestOtpMutation.mutateAsync(mobile),
     verifyOtp: (mobile: string, code: string) => verifyOtpMutation.mutateAsync({ mobile, code }),
-    staffLogin: (identifier: string, password: string) => staffLoginMutation.mutateAsync({ identifier, password }),
     logout,
     refreshSession: () => queryClient.invalidateQueries({ queryKey: queryKeys.auth.all }),
   }

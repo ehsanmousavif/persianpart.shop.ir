@@ -54,8 +54,6 @@ export const mutationKeys = {
   orders: {
     submit: ['orders', 'submit'] as const,
     cancel: ['orders', 'cancel'] as const,
-    staffCancel: ['orders', 'staff-cancel'] as const,
-    staffUpdateStatus: ['orders', 'staff-update-status'] as const,
     prepareReorder: ['orders', 'prepare-reorder'] as const,
   },
   plans: {
@@ -65,7 +63,6 @@ export const mutationKeys = {
   auth: {
     requestOtp: ['auth', 'request-otp'] as const,
     verifyOtp: ['auth', 'verify-otp'] as const,
-    staffLogin: ['auth', 'staff-login'] as const,
     updateProfile: ['auth', 'update-profile'] as const,
   },
   system: {

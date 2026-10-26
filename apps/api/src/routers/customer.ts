@@ -1,15 +1,14 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, authed } from '../rpc/base'
+import { fetchTaxonomy, getUserProfile, formatCustomerProfile } from './router.helpers'
 
-const profile = base.customer.profile.handler(async ({ context }) => {
-  if (!context.user) return null
-  return sdk.findByID({ collection: 'users', id: context.user.id })
+const profile = authed.customer.profile.handler(async ({ context }) => {
+  const userDoc = await getUserProfile(context.user.id)
+  return formatCustomerProfile(userDoc)
 })
 
-const updateProfile = base.customer.updateProfile.handler(async ({ input, context }) => {
-  if (!context.user) return null
-
-  return sdk.update({
+const updateProfile = authed.customer.updateProfile.handler(async ({ input, context }) => {
+  const updatedDoc = await sdk.update({
     collection: 'users',
     id: context.user.id,
     data: {
@@ -22,17 +21,11 @@ const updateProfile = base.customer.updateProfile.handler(async ({ input, contex
       address: input.address,
     },
   })
+  return formatCustomerProfile(updatedDoc)
 })
 
 const types = base.customer.types.handler(async ({ input }) => {
-  const where = input?.onlyActive !== false ? { isActive: { equals: true } } : undefined
-  const res = await sdk.find({
-    collection: 'customer-types',
-    where,
-    limit: 100,
-    sort: 'name',
-  })
-  return res.docs
+  return fetchTaxonomy('customer-types', { onlyActive: input?.onlyActive })
 })
 
 export const customer = base.customer.router({

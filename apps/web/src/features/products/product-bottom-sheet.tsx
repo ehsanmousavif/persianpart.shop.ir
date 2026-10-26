@@ -119,9 +119,9 @@ export function ProductBottomSheet({
         >
           <Drawer.Content
             placement="bottom"
-            className="w-full max-w-xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-auto! max-h-[95dvh]! rounded-t-2xl rounded-b-none! flex flex-col overflow-hidden bg-background border-b-0!"
+            className="w-full max-w-xl sm:max-w-2xl mx-auto fixed z-50 bottom-0! mb-0! inset-x-0 top-auto h-[85dvh] sm:h-[88dvh] md:h-[90dvh] max-h-[95dvh]! rounded-t-3xl rounded-b-none! flex flex-col overflow-hidden bg-background border-b-0! shadow-2xl"
           >
-            <Drawer.Dialog className="flex flex-col bg-background h-auto! max-h-[95dvh]! min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
+            <Drawer.Dialog className="flex flex-col bg-background h-full max-h-full min-h-0 outline-none text-start overscroll-contain m-0! mb-0! p-0! rounded-b-none!">
               {/* Drag Handle UI */}
               <div className="flex justify-center w-full shrink-0 pt-1">
                 <Drawer.Handle className="w-16 h-1.5 rounded-full" />

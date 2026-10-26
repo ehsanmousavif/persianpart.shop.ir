@@ -1,35 +1,15 @@
-import { sdk } from '../payload'
 import { base } from '../rpc/base'
 import { ORPCError } from '@orpc/server'
 import { generateToken } from '../lib/jwt'
 import { sendKavenegarOtp } from '../lib/kavenegar'
 import { createOtp, verifyOtp as verifyStoredOtp, normalizeDigits } from '../lib/otp'
-
-const toPersianDigits = (s: string) => {
-  const p = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return s.replace(/\d/g, (d) => p[Number(d)])
-}
-
-/**
- * Finds user in Payload CMS by checking both standard English and Persian digit representations
- */
-const findUserByPhone = async (phone: string) => {
-  const normalized = normalizeDigits(phone)
-  const persian = toPersianDigits(normalized)
-
-  const existing = await sdk.find({
-    collection: 'users',
-    where: {
-      or: [
-        { phone: { equals: normalized } },
-        { phone: { equals: persian } },
-      ],
-    },
-    limit: 1,
-  })
-
-  return existing.docs[0] || null
-}
+import {
+  toPersianDigits,
+  findUserByPhone,
+  getUserProfile,
+  formatCustomerProfile,
+  handleLogout,
+} from './router.helpers'
 
 /**
  * Shared OTP request logic using Kavenegar pattern lookup service
@@ -69,7 +49,6 @@ async function processRequestOtp(rawPhone: string) {
     })
   }
 
-  // 1. Generate & store OTP
   let otpData: { code: string; expiresInSeconds: number; cooldownSeconds: number }
   try {
     otpData = createOtp(phone, {
@@ -83,15 +62,13 @@ async function processRequestOtp(rawPhone: string) {
     })
   }
 
-  // 2. Dispatch OTP via Kavenegar REST API (pattern: gcotp)
   try {
     await sendKavenegarOtp({
       receptor: phone,
       token: otpData.code,
       template: 'gcotp',
     })
-  } catch (err: any) {
-    console.error('[Kavenegar OTP Dispatch Error]', err)
+  } catch {
     if (process.env.NODE_ENV === 'production') {
       throw new ORPCError('INTERNAL_SERVER_ERROR', {
         message: 'خطا در ارسال پیامک کد تایید از طریق وب‌سرویس. لطفاً لحظاتی بعد مجدداً تلاش کنید.',
@@ -136,7 +113,6 @@ async function processVerifyOtp(rawPhone: string, rawCode: string) {
     })
   }
 
-  // Validate OTP code
   const verification = verifyStoredOtp(phone, code)
   if (!verification.success) {
     throw new ORPCError('BAD_REQUEST', {
@@ -144,7 +120,6 @@ async function processVerifyOtp(rawPhone: string, rawCode: string) {
     })
   }
 
-  // Sign cryptographic JWT token via Hono JWT engine
   const token = await generateToken({
     id: userDoc.id,
     phone: userDoc.phone,
@@ -155,115 +130,47 @@ async function processVerifyOtp(rawPhone: string, rawCode: string) {
   return {
     token,
     user: userDoc,
-    customer: {
-      id: String(userDoc.id),
-      contactName: userDoc.fullName || 'کاربر گرامی',
-      storeName: userDoc.companyName || 'فروشگاه قطعات',
-      mobile: userDoc.phone,
-      province: userDoc.province || 'تهران',
-      city: userDoc.city || 'تهران',
-      address: userDoc.address || '',
-      nationalCode: userDoc.nationalCode || '',
-      economicCode: userDoc.economicCode || '',
-      creditLimit: (userDoc as any).creditLimit || 0,
-    },
+    customer: formatCustomerProfile(userDoc),
   }
 }
 
-const requestOtp = base.auth.requestOtp.handler(async ({ input }) => {
-  return await processRequestOtp(input.phone || input.mobile || '')
-})
+const handleRequestOtp = async ({ input }: { input: { phone?: string; mobile?: string } }) => {
+  return processRequestOtp(input.phone || input.mobile || '')
+}
 
-const verifyOtp = base.auth.verifyOtp.handler(async ({ input }) => {
-  return await processVerifyOtp(input.phone || input.mobile || '', input.code || '')
-})
-
-const session = base.auth.session.handler(async ({ context }) => {
-  if (!context.user) return { user: null }
-  try {
-    const u = await sdk.findByID({ collection: 'users', id: context.user.id })
-    return { user: u }
-  } catch {
-    return { user: null }
-  }
-})
-
-const logout = base.auth.logout.handler(async () => {
-  return { success: true }
-})
-
-const customerRequestOtp = base.auth.customer.requestOtp.handler(async ({ input }) => {
-  return await processRequestOtp(input.phone || input.mobile || '')
-})
-
-const customerVerifyOtp = base.auth.customer.verifyOtp.handler(async ({ input }) => {
-  return await processVerifyOtp(input.phone || input.mobile || '', input.code || '')
-})
-
-const customerMe = base.auth.customer.me.handler(async ({ context }) => {
-  if (!context.user) return null
-  try {
-    const userDoc = await sdk.findByID({ collection: 'users', id: context.user.id })
-    return {
-      id: String(userDoc.id),
-      contactName: userDoc.fullName || 'کاربر گرامی',
-      storeName: userDoc.companyName || 'فروشگاه قطعات',
-      mobile: userDoc.phone,
-      province: userDoc.province || 'تهران',
-      city: userDoc.city || 'تهران',
-      address: userDoc.address || '',
-      nationalCode: userDoc.nationalCode || '',
-      economicCode: userDoc.economicCode || '',
-      creditLimit: (userDoc as any).creditLimit || 0,
-    }
-  } catch {
-    return null
-  }
-})
-
-const customerLogout = base.auth.customer.logout.handler(async () => {
-  return { success: true }
-})
-
-const staffLogin = base.auth.staff.login.handler(async () => {
-  const token = await generateToken({
-    id: 'admin-1',
-    fullName: 'مدیر سیستم',
-    role: 'admin',
-    email: 'admin@persianpart.shop',
-  })
-
-  return {
-    token,
-    staff: { id: 'admin-1', name: 'مدیر سیستم', role: 'admin' },
-  }
-})
-
-const staffMe = base.auth.staff.me.handler(async ({ context }) => {
-  if (!context.user || context.user.role !== 'admin') {
-    return null
-  }
-  return { id: String(context.user.id), name: context.user.fullName || 'مدیر سیستم', role: 'admin' }
-})
-
-const staffLogout = base.auth.staff.logout.handler(async () => {
-  return { success: true }
-})
+const handleVerifyOtp = async ({
+  input,
+}: {
+  input: { phone?: string; mobile?: string; code?: string }
+}) => {
+  return processVerifyOtp(input.phone || input.mobile || '', input.code || '')
+}
 
 export const auth = base.auth.router({
-  requestOtp,
-  verifyOtp,
-  session,
-  logout,
+  requestOtp: base.auth.requestOtp.handler(handleRequestOtp),
+  verifyOtp: base.auth.verifyOtp.handler(handleVerifyOtp),
+  session: base.auth.session.handler(async ({ context }) => {
+    if (!context.user) return { user: null }
+    try {
+      const u = await getUserProfile(context.user.id)
+      return { user: u }
+    } catch {
+      return { user: null }
+    }
+  }),
+  logout: base.auth.logout.handler(async ({ context }) => handleLogout(context)),
   customer: {
-    requestOtp: customerRequestOtp,
-    verifyOtp: customerVerifyOtp,
-    me: customerMe,
-    logout: customerLogout,
-  },
-  staff: {
-    login: staffLogin,
-    me: staffMe,
-    logout: staffLogout,
+    requestOtp: base.auth.customer.requestOtp.handler(handleRequestOtp),
+    verifyOtp: base.auth.customer.verifyOtp.handler(handleVerifyOtp),
+    me: base.auth.customer.me.handler(async ({ context }) => {
+      if (!context.user) return null
+      try {
+        const userDoc = await getUserProfile(context.user.id)
+        return formatCustomerProfile(userDoc)
+      } catch {
+        return null
+      }
+    }),
+    logout: base.auth.customer.logout.handler(async ({ context }) => handleLogout(context)),
   },
 })

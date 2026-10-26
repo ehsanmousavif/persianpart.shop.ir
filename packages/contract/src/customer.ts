@@ -7,7 +7,6 @@ import {
   PaginationInputSchema,
   SlugSchema,
   StandardErrorDataSchema,
-  createPaginatedResponseSchema,
 } from './common'
 
 // ============================================================================
@@ -55,7 +54,7 @@ export const UpdateCustomerTypeInputSchema = z.object({
 export type UpdateCustomerTypeInput = z.infer<typeof UpdateCustomerTypeInputSchema>
 
 // ============================================================================
-// 2. Customer Profile & Staff Customer Schemas
+// 2. Customer Profile Schemas
 // ============================================================================
 
 export const CustomerProfileSchema = z.object({
@@ -78,14 +77,6 @@ export const CustomerProfileSchema = z.object({
 })
 
 export type CustomerProfile = z.infer<typeof CustomerProfileSchema>
-
-export const CustomerStaffDetailSchema = CustomerProfileSchema.extend({
-  isActive: z.boolean(),
-  internalNotes: z.string().optional(),
-  customerType: CustomerTypeSchema.optional(),
-})
-
-export type CustomerStaffDetail = z.infer<typeof CustomerStaffDetailSchema>
 
 export const CreateCustomerInputSchema = z.object({
   storeName: z.string().min(1, 'نام فروشگاه الزامی است'),
@@ -209,60 +200,6 @@ export const customerContract = {
 }
 
 export type CustomerContract = typeof customerContract
-
-export const customerStaffContract = {
-  list: oc
-    .meta(openapi({ method: 'GET', path: '/staff/customers', summary: 'لیست پرسنلی مشتریان با فیلتر' }))
-    .input(CustomerFilterInputSchema)
-    .output(createPaginatedResponseSchema(CustomerStaffDetailSchema))
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-    }),
-
-  getById: oc
-    .meta(openapi({ method: 'GET', path: '/staff/customers/{id}', summary: 'مشاهده جزییات کامل مشتری توسط پرسنل' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(CustomerStaffDetailSchema)
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      NOT_FOUND: {},
-    }),
-
-  create: oc
-    .meta(openapi({ method: 'POST', path: '/staff/customers', summary: 'ایجاد مشتری تجاری جدید توسط پرسنل' }))
-    .input(CreateCustomerInputSchema)
-    .output(CustomerStaffDetailSchema)
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      CONFLICT: {},
-    }),
-
-  update: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/customers/{id}', summary: 'ویرایش مشتری توسط پرسنل' }))
-    .input(UpdateCustomerInputSchema)
-    .output(CustomerStaffDetailSchema)
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      NOT_FOUND: {},
-      CONFLICT: {},
-    }),
-
-  toggleActive: oc
-    .meta(openapi({ method: 'POST', path: '/staff/customers/{id}/toggle-active', summary: 'فعال یا غیرفعال‌سازی حساب مشتری' }))
-    .input(z.object({ id: EntityIdSchema }))
-    .output(CustomerStaffDetailSchema)
-    .errors({
-      UNAUTHORIZED: {},
-      FORBIDDEN: {},
-      NOT_FOUND: {},
-    }),
-
-  types: customerTypeContract,
-}
 
 export const userContract = {
   profile: oc

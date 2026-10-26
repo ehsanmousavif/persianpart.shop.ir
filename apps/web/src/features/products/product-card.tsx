@@ -136,10 +136,10 @@ export const ProductCard = React.memo(function ProductCard({
 
         <div className="flex flex-col justify-between self-stretch min-w-0 py-0.5">
           <div className="min-w-0">
-            <span className="text-xs font-light text-muted/90 block">
+            <span className="text-[11px] sm:text-xs font-light text-muted/90 block truncate">
               {product.brand}
             </span>
-            <h3 className="text-sm font-medium text-foreground leading-snug mt-0.5 max-w-[170px] sm:max-w-xs md:max-w-md">
+            <h3 className="text-[11px] min-[390px]:text-xs sm:text-sm font-medium text-foreground leading-[1.35] mt-0.5 break-words">
               {product.name}
             </h3>
           </div>

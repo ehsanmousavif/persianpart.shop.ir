@@ -37,7 +37,9 @@ export const Route = createFileRoute("/orders/")({
   component: OrdersListPage,
 });
 
-function formatInvoiceNumber(order: { id: string | number; orderNumber?: string } | string | number): string {
+function formatInvoiceNumber(
+  order: { id: string | number; orderNumber?: string } | string | number,
+): string {
   if (typeof order === "object" && order !== null) {
     if (order.orderNumber && /^ptp\s+/i.test(order.orderNumber)) {
       return order.orderNumber.toLowerCase();
@@ -125,13 +127,16 @@ const OrderCard = React.memo(function OrderCard({
     ) / 100;
 
   return (
-    <div className="p-4 space-y-3 rounded-2xl bg-muted/5 select-none">
+    <div className="p-4 space-y-3 rounded-2xl bg-muted/3 select-none">
       {/* Order Top Bar */}
       <div className="flex items-center justify-between gap-2 pb-2 flex-wrap sm:flex-nowrap">
         <div className="flex items-center gap-2">
-          <span className="px-2 py-1.5 rounded-lg bg-muted/5 text-xs font-bold text-foreground flex items-center gap-1" dir="ltr">
-            <span className="text-muted text-[11px] font-normal">فاکتور</span>
-            <span>{formatInvoiceNumber(order)}</span>
+          <span
+            className="px-2 py-1.5 rounded-lg bg-muted/5 text-xs font-bold text-foreground flex items-center gap-1"
+            dir="ltr"
+          >
+            <span className="text-muted text-xs font-normal">فاکتور</span>
+            <span>{formatInvoiceNumber(order.id)}</span>
           </span>
           <Badge variant={dynamicStatusColor} size="sm">
             {dynamicStatusLabel}
@@ -145,40 +150,42 @@ const OrderCard = React.memo(function OrderCard({
 
       <div className="space-y-2 min-w-0">
         {/* Items summary */}
-        <div className="flex items-center justify-between text-xs text-muted">
-          <span className="font-bold text-foreground text-xs">
-            {toPersianDigits(order.items.length)} محصول (
-            {toPersianDigits(totalCartons)} کارتن)
-          </span>
-          {totalArea > 0 && (
-            <span className="text-xs text-muted">
-              متراژ کلی:{" "}
-              <strong className="font-bold text-foreground">
-                {toPersianDigits(totalArea)}
-              </strong>{" "}
-              متر
-            </span>
-          )}
+        <div className="flex items-center  justify-between text-xs text-muted">
+          <div className="w-full flex flex-wrap items-center justify-start gap-1">
+            {order.items.map((item, idx) => (
+              <img
+                key={idx}
+                src={item.productImage || "/assets/images/placeholder.svg"}
+                alt={item.productName}
+                className="size-13 border border-primary/20 rounded-2xl object-cover shrink-0 select-none"
+                title={item.productName}
+                loading="lazy"
+                onError={(e) => {
+                  const target = e.currentTarget;
+                  if (!target.src.endsWith("/assets/images/placeholder.svg")) {
+                    target.src = "/assets/images/placeholder.svg";
+                  }
+                }}
+              />
+            ))}
+          </div>
         </div>
 
         {/* Scrollable Products Images */}
-        <div className="w-full min-w-0 overflow-x-auto py-1 flex items-center gap-2 scrollbar-none overscroll-x-contain touch-pan-x">
-          {order.items.map((item, idx) => (
-            <img
-              key={idx}
-              src={item.productImage || "/assets/images/placeholder.svg"}
-              alt={item.productName}
-              className="size-13 border border-primary/20 rounded-2xl object-cover shrink-0 select-none"
-              title={item.productName}
-              loading="lazy"
-              onError={(e) => {
-                const target = e.currentTarget;
-                if (!target.src.endsWith("/assets/images/placeholder.svg")) {
-                  target.src = "/assets/images/placeholder.svg";
-                }
-              }}
-            />
-          ))}
+        <div className="w-full overflow-x-auto py-1 flex items-center gap-2 scrollbar-none overscroll-x-contain touch-pan-x">
+          <span className="w-full flex items-center gap-2 font-bold rounded-lg py-3 px-4 bg-foreground text-background text-xs">
+            {toPersianDigits(order.items.length)} محصول (
+            {toPersianDigits(totalCartons)} کارتن)
+            {totalArea > 0 && (
+              <span className="text-background/70">
+                متراژ کلی:{" "}
+                <strong className="text-background/80">
+                  {toPersianDigits(totalArea)}
+                </strong>{" "}
+                متر
+              </span>
+            )}
+          </span>
         </div>
 
         {/* Financials & Action Buttons */}
@@ -522,7 +529,6 @@ function OrdersListPage() {
         </div>
       )}
 
-      {/* Pre-Invoice Modal for Reordering */}
       <PreInvoiceModal
         isOpen={Boolean(reorderOrder)}
         onClose={() => setReorderOrder(null)}

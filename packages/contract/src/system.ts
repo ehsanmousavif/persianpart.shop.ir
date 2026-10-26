@@ -114,7 +114,7 @@ export const globalsContract = {
     .output(GlobalConfigSchema),
 
   updateCommerce: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/globals/commerce', summary: 'به‌روزرسانی تنظیمات تجاری و گرد کردن قیمت (فقط ادمین)' }))
+    .meta(openapi({ method: 'PUT', path: '/admin/globals/commerce', summary: 'به‌روزرسانی تنظیمات تجاری و گرد کردن قیمت (فقط ادمین)' }))
     .input(CommerceConfigSchema)
     .output(CommerceConfigSchema)
     .errors({
@@ -123,7 +123,7 @@ export const globalsContract = {
     }),
 
   updateOrdering: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/globals/ordering', summary: 'به‌روزرسانی تنظیمات سفارش‌گیری و مهلت لغو (فقط ادمین)' }))
+    .meta(openapi({ method: 'PUT', path: '/admin/globals/ordering', summary: 'به‌روزرسانی تنظیمات سفارش‌گیری و مهلت لغو (فقط ادمین)' }))
     .input(OrderingConfigSchema)
     .output(OrderingConfigSchema)
     .errors({
@@ -132,7 +132,7 @@ export const globalsContract = {
     }),
 
   updateCatalog: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/globals/catalog', summary: 'به‌روزرسانی رفتار نمایش کاتالوگ و فیلترها (فقط ادمین)' }))
+    .meta(openapi({ method: 'PUT', path: '/admin/globals/catalog', summary: 'به‌روزرسانی رفتار نمایش کاتالوگ و فیلترها (فقط ادمین)' }))
     .input(CatalogConfigSchema)
     .output(CatalogConfigSchema)
     .errors({
@@ -141,7 +141,7 @@ export const globalsContract = {
     }),
 
   updateSupport: oc
-    .meta(openapi({ method: 'PUT', path: '/staff/globals/support', summary: 'به‌روزرسانی اطلاعات تماس و ساعات کاری پشتیبانی' }))
+    .meta(openapi({ method: 'PUT', path: '/admin/globals/support', summary: 'به‌روزرسانی اطلاعات تماس و ساعات کاری پشتیبانی' }))
     .input(SupportConfigSchema)
     .output(SupportConfigSchema)
     .errors({
@@ -154,7 +154,7 @@ export const globalsContract = {
 // 3. Audit Trail Schemas & Contract
 // ============================================================================
 
-export const AuditActorTypeSchema = z.enum(['staff', 'customer', 'system'])
+export const AuditActorTypeSchema = z.enum(['admin', 'customer', 'system'])
 export type AuditActorType = z.infer<typeof AuditActorTypeSchema>
 
 export const AuditActionSchema = z.enum([
@@ -166,12 +166,9 @@ export const AuditActionSchema = z.enum([
   'customer_status_toggled',
   'order_created',
   'order_status_updated',
-  'order_staff_cancelled',
+  'order_admin_cancelled',
   'order_customer_cancelled',
   'global_config_updated',
-  'staff_created',
-  'staff_updated',
-  'staff_status_toggled',
 ])
 
 export type AuditAction = z.infer<typeof AuditActionSchema>
@@ -203,7 +200,7 @@ export type AuditFilterInput = z.infer<typeof AuditFilterInputSchema>
 
 export const auditContract = {
   list: oc
-    .meta(openapi({ method: 'GET', path: '/staff/audit', summary: 'مشاهده لاگ‌های نظارتی تغییرناپذیر سیستم' }))
+    .meta(openapi({ method: 'GET', path: '/admin/audit', summary: 'مشاهده لاگ‌های نظارتی تغییرناپذیر سیستم' }))
     .input(AuditFilterInputSchema)
     .output(createPaginatedResponseSchema(AuditEventSchema))
     .errors({
@@ -212,7 +209,7 @@ export const auditContract = {
     }),
 
   getById: oc
-    .meta(openapi({ method: 'GET', path: '/staff/audit/{id}', summary: 'مشاهده تکی رویداد لاگ نظارتی' }))
+    .meta(openapi({ method: 'GET', path: '/admin/audit/{id}', summary: 'مشاهده تکی رویداد لاگ نظارتی' }))
     .input(z.object({ id: EntityIdSchema }))
     .output(AuditEventSchema)
     .errors({
@@ -304,7 +301,7 @@ export type ImportRunSummary = z.infer<typeof ImportRunSummarySchema>
 
 export const csvImportContract = {
   preview: oc
-    .meta(openapi({ method: 'POST', path: '/staff/csv-import/preview', summary: 'پیش‌نمایش تغییرات قیمت و موجودی فایل CSV همراه با تشخیص مغایرت‌ها' }))
+    .meta(openapi({ method: 'POST', path: '/admin/csv-import/preview', summary: 'پیش‌نمایش تغییرات قیمت و موجودی فایل CSV همراه با تشخیص مغایرت‌ها' }))
     .input(CsvPreviewInputSchema)
     .output(ImportPreviewReportSchema)
     .errors({
@@ -314,7 +311,7 @@ export const csvImportContract = {
     }),
 
   apply: oc
-    .meta(openapi({ method: 'POST', path: '/staff/csv-import/apply', summary: 'اعمال نهایی تغییرات قیمت و موجودی فایل CSV پیش‌نمایش شده' }))
+    .meta(openapi({ method: 'POST', path: '/admin/csv-import/apply', summary: 'اعمال نهایی تغییرات قیمت و موجودی فایل CSV پیش‌نمایش شده' }))
     .input(CsvApplyInputSchema)
     .output(ImportRunSummarySchema)
     .errors({
@@ -325,7 +322,7 @@ export const csvImportContract = {
     }),
 
   listRuns: oc
-    .meta(openapi({ method: 'GET', path: '/staff/csv-import/history', summary: 'مشاهده تاریخچه اجرای خط‌لوله‌های ایمپورت CSV' }))
+    .meta(openapi({ method: 'GET', path: '/admin/csv-import/history', summary: 'مشاهده تاریخچه اجرای خط‌لوله‌های ایمپورت CSV' }))
     .input(PaginationInputSchema)
     .output(createPaginatedResponseSchema(ImportRunSummarySchema))
     .errors({
@@ -334,7 +331,7 @@ export const csvImportContract = {
     }),
 
   getRunDetail: oc
-    .meta(openapi({ method: 'GET', path: '/staff/csv-import/history/{id}', summary: 'مشاهده جزییات و گزارش کامل یک ایمپورت مشخص' }))
+    .meta(openapi({ method: 'GET', path: '/admin/csv-import/history/{id}', summary: 'مشاهده جزییات و گزارش کامل یک ایمپورت مشخص' }))
     .input(z.object({ id: EntityIdSchema }))
     .output(ImportPreviewReportSchema)
     .errors({
@@ -414,7 +411,7 @@ export const cmsContract = {
 export const systemContract = {
   csvImport: {
     preview: oc
-      .meta(openapi({ method: 'POST', path: '/staff/csv-import/preview', summary: 'پیش‌نمایش تغییرات فایل CSV' }))
+      .meta(openapi({ method: 'POST', path: '/admin/csv-import/preview', summary: 'پیش‌نمایش تغییرات فایل CSV' }))
       .input(CsvPreviewInputSchema)
       .output(ImportPreviewReportSchema.or(z.any()))
       .errors({
@@ -424,7 +421,7 @@ export const systemContract = {
       }),
 
     apply: oc
-      .meta(openapi({ method: 'POST', path: '/staff/csv-import/apply', summary: 'اعمال تغییرات فایل CSV' }))
+      .meta(openapi({ method: 'POST', path: '/admin/csv-import/apply', summary: 'اعمال تغییرات فایل CSV' }))
       .input(
         z
           .object({
@@ -441,7 +438,7 @@ export const systemContract = {
       }),
 
     listRuns: oc
-      .meta(openapi({ method: 'GET', path: '/staff/csv-import/history', summary: 'تاریخچه ایمپورت‌ها' }))
+      .meta(openapi({ method: 'GET', path: '/admin/csv-import/history', summary: 'تاریخچه ایمپورت‌ها' }))
       .input(
         z
           .object({
@@ -459,7 +456,7 @@ export const systemContract = {
 
   audit: {
     list: oc
-      .meta(openapi({ method: 'GET', path: '/staff/audit', summary: 'لاگ‌های نظارتی' }))
+      .meta(openapi({ method: 'GET', path: '/admin/audit', summary: 'لاگ‌های نظارتی' }))
       .input(
         z
           .object({

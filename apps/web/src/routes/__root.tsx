@@ -50,15 +50,15 @@ function RootComponent() {
     <NuqsAdapter>
       <div
         className={cn(
-          'bg-background flex justify-center select-none',
-          isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+          'flex justify-center select-none w-full max-w-full overflow-x-hidden',
+          isLoginPage ? 'h-dvh overflow-hidden bg-[#f8f8fa]' : 'min-h-dvh bg-background'
         )}
         dir="rtl"
       >
         <div
           className={cn(
-            'w-full bg-background text-foreground font-sans antialiased flex flex-col',
-            isLoginPage ? 'h-dvh overflow-hidden' : 'min-h-dvh'
+            'w-full text-foreground font-sans antialiased flex flex-col max-w-full overflow-x-hidden',
+            isLoginPage ? 'h-dvh overflow-hidden bg-[#f8f8fa]' : 'min-h-dvh bg-background'
           )}
         >
           {!isLoginPage && <AppHeader />}

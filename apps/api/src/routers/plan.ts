@@ -1,5 +1,6 @@
 import { sdk } from '../payload'
-import { base } from '../rpc/base'
+import { base, adminOnly } from '../rpc/base'
+import { enrichPlanWithUserName } from './router.helpers'
 
 const list = base.plan.list.handler(async ({ input, context }) => {
   const where: Record<string, any> = {}
@@ -22,19 +23,7 @@ const list = base.plan.list.handler(async ({ input, context }) => {
   })
 
   const currentUserName = context.user?.fullName || (context as any).name || 'همکار'
-
-  const items = result.docs.map((doc: any) => {
-    const dynamicTitle =
-      doc.title && !doc.title.includes('{name}')
-        ? doc.title
-        : `${currentUserName} عزیز، این طرح برای شماست`
-
-    return {
-      ...doc,
-      dynamicTitle: doc.dynamicTitle || dynamicTitle,
-      title: doc.title ? doc.title.replace(/\{name\}/g, currentUserName) : dynamicTitle,
-    }
-  })
+  const items = result.docs.map((doc: any) => enrichPlanWithUserName(doc, currentUserName))
 
   return {
     items,
@@ -54,27 +43,18 @@ const getById = base.plan.getById.handler(async ({ input, context, errors }) => 
   }
 
   const currentUserName = context.user?.fullName || (context as any).name || 'همکار'
-  const dynamicTitle =
-    doc.title && !doc.title.includes('{name}')
-      ? doc.title
-      : `${currentUserName} عزیز، این طرح برای شماست`
-
-  return {
-    ...doc,
-    dynamicTitle: (doc as any).dynamicTitle || dynamicTitle,
-    title: doc.title ? doc.title.replace(/\{name\}/g, currentUserName) : dynamicTitle,
-  }
+  return enrichPlanWithUserName(doc, currentUserName)
 })
 
-const create = base.plan.create.handler(async ({ input }) => {
+const create = adminOnly.plan.create.handler(async ({ input }) => {
   let title = input.title
   if (!title || title.trim() === '') {
     let name = 'همکار'
     if (input.users && input.users.length > 0) {
       try {
-        const u = await sdk.findByID({ collection: 'users', id: input.users[0] })
-        if (u && (u as any).fullName) {
-          name = (u as any).fullName
+        const u: any = await sdk.findByID({ collection: 'users', id: input.users[0] })
+        if (u?.fullName) {
+          name = u.fullName
         }
       } catch {
         // ignore
@@ -94,7 +74,7 @@ const create = base.plan.create.handler(async ({ input }) => {
   })
 })
 
-const update = base.plan.update.handler(async ({ input }) => {
+const update = adminOnly.plan.update.handler(async ({ input }) => {
   const { id, ...data } = input
 
   return sdk.update({

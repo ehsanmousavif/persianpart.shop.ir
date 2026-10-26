@@ -26,8 +26,6 @@ export { appContract } from '@persianpart/contract'
 export type {
   AppContract,
   CustomerProfile,
-  CustomerStaffDetail,
-  StaffProfile,
   CustomerType,
   Product,
   CatalogProduct,

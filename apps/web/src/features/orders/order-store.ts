@@ -430,17 +430,6 @@ export const orderStore = {
   },
 
   reactivateOrder: async (orderId: string): Promise<Order | null> => {
-    try {
-      const numericId = !isNaN(Number(orderId)) ? Number(orderId) : orderId
-      await api.order.staffUpdateStatus({
-        id: numericId,
-        newStatus: 'pending',
-        note: 'راه‌اندازی مجدد سفارش توسط مشتری',
-      })
-    } catch (err: any) {
-      console.warn('API reactivateOrder warning:', err?.message || err)
-    }
-
     let updatedOrder: Order | null = null
     const updated = currentOrders.map((order) => {
       if (order.id === orderId || order.orderNumber === orderId) {
@@ -476,65 +465,6 @@ export const orderStore = {
 
     broadcast(updated)
     return updatedOrder
-  },
-
-  staffCancelOrder: async (orderId: string, reason?: string): Promise<boolean> => {
-    try {
-      const numericId = !isNaN(Number(orderId)) ? Number(orderId) : orderId
-      await api.order.staffCancel({ id: numericId, cancellationReason: reason })
-    } catch (err: any) {
-      console.warn('API staffCancel warning:', err?.message || err)
-    }
-
-    const updated = currentOrders.map((order) => {
-      if (order.id === orderId || order.orderNumber === orderId) {
-        return mapDocToOrder({
-          ...order,
-          status: 'cancelled_by_admin',
-          cancelledBy: 'admin',
-          statusLabel: 'لغو توسط ادمین',
-          notes: reason ? `دلیل لغو ادمین: ${reason}` : 'لغو توسط مدیریت / واحد بازرگانی',
-          updatedAt: new Date().toISOString(),
-        })
-      }
-      return order
-    })
-    broadcast(updated)
-    return true
-  },
-
-  updateOrderStatus: async (orderId: string, newStatus: string, note?: string): Promise<boolean> => {
-    try {
-      const numericId = !isNaN(Number(orderId)) ? Number(orderId) : orderId
-      const updatedDoc: any = await api.order.staffUpdateStatus({
-        id: numericId,
-        newStatus,
-        note,
-      })
-      if (updatedDoc && updatedDoc.id) {
-        const mapped = mapDocToOrder(updatedDoc)
-        const updated = currentOrders.map((o) => (o.id === mapped.id ? mapped : o))
-        broadcast(updated)
-        return true
-      }
-    } catch (err: any) {
-      console.warn('API updateOrderStatus warning:', err?.message || err)
-    }
-
-    // Local fallback update
-    const updated = currentOrders.map((order) => {
-      if (order.id === orderId || order.orderNumber === orderId) {
-        const mapped = mapDocToOrder({
-          ...order,
-          status: newStatus,
-          notes: note || order.notes,
-        })
-        return mapped
-      }
-      return order
-    })
-    broadcast(updated)
-    return true
   },
 
   reorderToCart: (orderId: string): { success: boolean; warnings: string[] } => {
@@ -619,16 +549,6 @@ export function useOrders() {
     },
     reactivateOrder: async (orderId: string) => {
       const res = await orderStore.reactivateOrder(orderId)
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
-      return res
-    },
-    staffCancelOrder: async (orderId: string, reason?: string) => {
-      const res = await orderStore.staffCancelOrder(orderId, reason)
-      queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
-      return res
-    },
-    updateOrderStatus: async (orderId: string, newStatus: string, note?: string) => {
-      const res = await orderStore.updateOrderStatus(orderId, newStatus, note)
       queryClient.invalidateQueries({ queryKey: queryKeys.orders.all })
       return res
     },
