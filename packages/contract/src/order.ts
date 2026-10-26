@@ -64,7 +64,6 @@ export const OrderStatusSchema = z.enum([
   'checking',
   'approved',
   'preparing',
-  'shipping',
   'completed',
   'cancelled_by_customer',
   'cancelled_by_admin',

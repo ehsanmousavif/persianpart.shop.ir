@@ -90,18 +90,20 @@ export function extractBearerToken(
 ): string | null {
   if (!headerOrHeaders) return null
 
-  let authHeader: string | null = null
-
-  if (typeof headerOrHeaders === 'string') {
-    authHeader = headerOrHeaders
-  } else if (typeof headerOrHeaders.get === 'function') {
-    authHeader = headerOrHeaders.get('authorization')
-  }
+  const authHeader =
+    typeof headerOrHeaders === 'string'
+      ? headerOrHeaders
+      : headerOrHeaders.get('authorization')
 
   if (!authHeader) return null
 
-  const match = authHeader.match(/^Bearer\s+(.+)$/i)
-  return match ? match[1].trim() : null
+  const trimmed = authHeader.trim()
+  if (trimmed.toLowerCase().startsWith('bearer ')) {
+    const token = trimmed.slice(7).trim()
+    return token || null
+  }
+
+  return null
 }
 
 // In-memory revocation store with expiration timestamp (in seconds)

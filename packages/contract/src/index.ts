@@ -14,7 +14,7 @@ import { shoppingContract } from './shopping'
  * 1. health & echo - Root probes
  * 2. auth          - Customer OTP authentication & sessions
  * 3. catalog       - Products, parts, categories, brands, tags, dimensions, carton calculation
- * 4. shopping      - Shipping, addresses, and checkout methods
+ * 4. shopping      - Addresses, cart products, and checkout methods
  * 5. customer      - Customer profile & customer pricing tiers
  * 6. user          - User profile, listing, and updates
  * 7. order         - Order lifecycle, reorder preparation & cart pricing validation

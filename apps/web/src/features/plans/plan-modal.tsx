@@ -265,7 +265,7 @@ export function PlanModal({
             className="w-full p-2.5 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs text-foreground transition-all outline-hidden"
           />
           <span className="text-xs text-muted mt-0.5 block">
-            متنی که برای کاربر در این طرح ارسال یا نمایش داده می‌شود.
+            متنی که برای کاربر در این طرح نمایش داده می‌شود.
           </span>
         </div>
 

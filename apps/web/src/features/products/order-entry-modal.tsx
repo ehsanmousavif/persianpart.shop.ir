@@ -143,7 +143,7 @@ export function OrderEntryModal({
               {/* Customer Input: requestedSqm ONLY */}
               <div>
                 <label htmlFor={inputId} className="block text-xs font-bold text-foreground mb-1.5">
-                  متراژ درخواستی (ارسال صرفاً بر اساس متر مربع):
+                  متراژ درخواستی (بر اساس متر مربع):
                 </label>
                 <InputGroup fullWidth className="h-12 rounded-2xl bg-muted/5 focus-within:bg-muted/10 transition-all border border-border/40">
                   <InputGroup.Input
@@ -195,7 +195,7 @@ export function OrderEntryModal({
                       <span>{formatToman(calc.totalPrice)}</span>
                       <TomanIcon className="size-3" />
                     </span>{' '}
-                    محاسبه و ارسال خواهد شد.
+                    محاسبه خواهد شد.
                   </p>
                 </div>
               )}

@@ -42,7 +42,7 @@ function CartPage() {
   const { user, isAuthenticated } = useAuth()
 
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
-  const [deliveryNotes, setDeliveryNotes] = useState('')
+  const [orderNotes, setOrderNotes] = useState('')
   const queryClient = useQueryClient()
 
   const submitOrderMutation = useMutation({
@@ -75,7 +75,7 @@ function CartPage() {
           productId: i.productId,
           requestedArea: i.requestedArea || i.deliverableArea || 1,
         })),
-        notes: deliveryNotes || undefined,
+        notes: orderNotes || undefined,
       }
 
       const newOrder = await submitOrderMutation.mutateAsync(orderPayload)
@@ -245,9 +245,9 @@ function CartPage() {
             </label>
             <textarea
               rows={2}
-              value={deliveryNotes}
-              onChange={(e) => setDeliveryNotes(e.target.value)}
-              placeholder="یادداشت تحویل یا هماهنگی..."
+              value={orderNotes}
+              onChange={(e) => setOrderNotes(e.target.value)}
+              placeholder="یادداشت یا هماهنگی سفارش..."
               className="w-full p-3 rounded-2xl bg-muted/5 focus:bg-muted/10 text-xs text-foreground transition-all outline-hidden"
             />
           </div>

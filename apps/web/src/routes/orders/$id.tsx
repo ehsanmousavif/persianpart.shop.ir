@@ -61,7 +61,7 @@ function formatInvoiceNumber(order: { id: string | number; orderNumber?: string 
 
 const CANCELLATION_REASONS = [
   "تغییر در متراژ یا اقلام سفارش",
-  "تغییر در زمان‌بندی پروژه و ارسال",
+  "تغییر در زمان‌بندی پروژه",
   "ثبت اشتباه فاکتور",
   "انصراف موقت خریدار",
 ] as const;

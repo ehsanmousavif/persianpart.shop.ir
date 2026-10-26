@@ -16,7 +16,6 @@ export type OrderStatus =
   | 'cancelled_by_customer'
   | 'cancelled_by_admin'
   | 'preparing'
-  | 'shipping'
   | 'processing'
   | 'ready'
 
@@ -79,7 +78,6 @@ export const ORDER_STATUS_MAP: Record<
   cancelled: { label: 'لغو شده', color: 'danger' },
   checking: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
   preparing: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
-  shipping: { label: 'در حال ارسال', color: 'primary' },
   processing: { label: 'در حال بررسی واحد بازرگانی', color: 'warning' },
   ready: { label: 'تکمیل شده', color: 'success' },
 }

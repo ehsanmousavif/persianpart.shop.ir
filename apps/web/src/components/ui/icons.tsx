@@ -19,7 +19,6 @@ import {
   AltArrowLeftIcon,
   AddIcon,
   MinusIcon as SolarMinusIcon,
-  DeliveryIcon,
   BoxIcon as SolarBoxIcon,
   LayersIcon as SolarLayersIcon,
   PhoneIcon as SolarPhoneIcon,
@@ -90,7 +89,6 @@ export const ChevronRightIcon = createSolarIcon(AltArrowRightIcon);
 export const ChevronLeftIcon = createSolarIcon(AltArrowLeftIcon);
 export const PlusIcon = createSolarIcon(AddIcon);
 export const MinusIcon = createSolarIcon(SolarMinusIcon);
-export const TruckIcon = createSolarIcon(DeliveryIcon);
 export const PackageIcon = createSolarIcon(SolarBoxIcon);
 export const BoxIcon = createSolarIcon(SolarBoxIcon);
 export const LayersIcon = createSolarIcon(SolarLayersIcon);

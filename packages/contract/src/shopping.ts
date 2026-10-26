@@ -2,16 +2,6 @@ import { oc } from '@orpc/contract'
 import { openapi } from '@orpc/openapi'
 import { z } from 'zod'
 
-export const ShippingMethodSchema = z.object({
-  id: z.string(),
-  title: z.string(),
-  description: z.string(),
-  estimatedDays: z.string(),
-  isExpress: z.boolean(),
-})
-
-export type ShippingMethod = z.infer<typeof ShippingMethodSchema>
-
 export const MutateAddressInputSchema = z.object({
   id: z.string().optional(),
   title: z.string().optional(),

@@ -80,7 +80,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
       {/* Input Stage: Area required (Meter-based only) */}
       <div>
         <label htmlFor={inputId} className="block text-xs font-bold text-foreground mb-1.5 text-start">
-          متراژ مورد نیاز (ارسال صرفاً بر اساس متر مربع):
+          متراژ مورد نیاز (بر اساس متر مربع):
         </label>
         <InputGroup fullWidth className="h-11 rounded-2xl bg-muted/10 border border-border/40 transition-all">
           <InputGroup.Input
@@ -131,7 +131,7 @@ export function CartonCalculator({ product, onAddedToCart }: CartonCalculatorPro
               <span>{formatToman(calc.totalPrice)}</span>
               <TomanIcon className="size-3" />
             </span>{' '}
-            محاسبه و ارسال خواهد شد.
+            محاسبه خواهد شد.
           </p>
         </div>
       )}
