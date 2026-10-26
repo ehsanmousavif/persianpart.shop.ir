@@ -24,11 +24,11 @@ export function PlanCard({ plan, products }: PlanCardProps) {
   return (
     <div
       className={cn(
-        "px-4 pt-4 flex flex-col justify-around bg-muted/5 gap-4 text-start transition-all h-full rounded-3xl text-background! relative overflow-hidden",
+        "px-5 pt-5 pb-1 flex flex-col bg-muted/5 gap-4 text-start transition-all h-fit rounded-3xl text-background! relative overflow-hidden",
         !isActive && !isCompleted && "opacity-85",
       )}
     >
-      <div className="space-y-4">
+      <div className="space-y-4 h-fit">
         <div className="flex items-center justify-between gap-3">
           <div className="flex-1">
             <div className="w-full flex gap-1 items-center text-base font-semibold text-foreground leading-snug">

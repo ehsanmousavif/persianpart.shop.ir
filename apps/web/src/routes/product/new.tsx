@@ -11,7 +11,10 @@ import {
   Button,
   Modal as HeroUIModal,
 } from "@heroui/react";
-import { useProducts, formatGrade } from "../../features/products/product-store";
+import {
+  useProducts,
+  formatGrade,
+} from "../../features/products/product-store";
 import { useProductSelection } from "../../features/products/selection-store";
 import type { Product } from "../../types";
 import type { OrderItem } from "../../types/order";
@@ -61,7 +64,9 @@ function ProductNewConfigurationPage() {
   // Modal state for Pre-Invoice and order delete confirmation
   const [isInvoiceOpen, setIsInvoiceOpen] = useState(false);
   const [showDeleteOrderConfirm, setShowDeleteOrderConfirm] = useState(false);
-  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<string | null>(null);
+  const [pendingDeleteProductId, setPendingDeleteProductId] = useState<
+    string | null
+  >(null);
 
   // Single-run hydration ref: only hydrate once on mount, never re-hydrate when user clears products
   const hasHydratedRef = useRef(false);
@@ -105,8 +110,8 @@ function ProductNewConfigurationPage() {
   // Automatically initialize quantities for new products in selection
   useEffect(() => {
     selectedProducts.forEach((prod) => {
-      if (quantities[prod.id] === undefined) {
-        setQuantity(prod.id, Math.max(prod.sqmPerCarton || 1, 10));
+      if (quantities[prod.id] === undefined || quantities[prod.id] < 1) {
+        setQuantity(prod.id, Math.max(1, prod.sqmPerCarton || 1));
       }
     });
   }, [selectedProducts, quantities, setQuantity]);
@@ -116,9 +121,10 @@ function ProductNewConfigurationPage() {
     val: number,
     inventorySqm: number,
   ) => {
+    const minVal = 1;
     const maxVal = inventorySqm > 0 ? inventorySqm : 500;
-    const rawVal = isNaN(val) || val < 0 ? 0 : Math.round(val * 10) / 10;
-    const clampedVal = Math.min(rawVal, maxVal);
+    const rawVal = isNaN(val) || val < minVal ? minVal : Math.round(val * 10) / 10;
+    const clampedVal = Math.max(minVal, Math.min(rawVal, maxVal));
     setQuantity(productId, clampedVal);
   };
 
@@ -133,14 +139,20 @@ function ProductNewConfigurationPage() {
 
   const handleConfirmDeleteOrder = async () => {
     if (editOrderId) {
-      await cancelOrder(editOrderId, "لغو سفارش به دلیل حذف تمامی اقلام فاکتور");
+      await cancelOrder(
+        editOrderId,
+        "لغو سفارش به دلیل حذف تمامی اقلام فاکتور",
+      );
     }
     if (pendingDeleteProductId) {
       unselectProduct(pendingDeleteProductId);
     }
     clearSelection();
     setShowDeleteOrderConfirm(false);
-    toast.info("فاکتور حذف شد", "فاکتور به دلیل حذف تمامی اقلام کلا پاک گردید.");
+    toast.info(
+      "فاکتور حذف شد",
+      "فاکتور به دلیل حذف تمامی اقلام کلا پاک گردید.",
+    );
     navigate({ to: "/orders" });
   };
 
@@ -186,7 +198,10 @@ function ProductNewConfigurationPage() {
     });
 
     clearSelection();
-    toast.success("فاکتور به‌روزرسانی شد", "تغییرات فاکتور با موفقیت ذخیره گردید.");
+    toast.success(
+      "فاکتور به‌روزرسانی شد",
+      "تغییرات فاکتور با موفقیت ذخیره گردید.",
+    );
     navigate({
       to: "/orders/$id",
       params: { id: editOrderId },
@@ -393,7 +408,7 @@ function ProductNewConfigurationPage() {
                     <div className="flex items-center gap-1.5 justify-center shrink-0">
                       <I18nProvider locale="fa-IR">
                         <NumberField
-                          minValue={0}
+                          minValue={1}
                           maxValue={maxInventory}
                           step={1}
                           value={area}
@@ -538,7 +553,8 @@ function ProductNewConfigurationPage() {
                   حذف کامل فاکتور
                 </HeroUIModal.Heading>
                 <p className="text-xs text-muted mt-1 leading-relaxed">
-                  در صورت حذف این مورد فاکتور شما کلا پاک می‌شود. آیا از حذف فاکتور اطمینان دارید؟
+                  در صورت حذف این مورد فاکتور شما کلا پاک می‌شود. آیا از حذف
+                  فاکتور اطمینان دارید؟
                 </p>
               </div>
               <div className="w-full flex items-center justify-center gap-2 pt-2">
