@@ -3,15 +3,33 @@ import { base, authed, adminOnly } from '../rpc/base'
 import { fetchTaxonomy, getUserProfile } from './router.helpers'
 
 const profile = authed.user.profile.handler(async ({ context }) => {
-  return getUserProfile(context.user.id)
+  const userDoc: any = await getUserProfile(context.user.id)
+  if (!userDoc) return null
+  const { notes, ...safeUser } = userDoc
+  return safeUser
 })
 
 const update = authed.user.update.handler(async ({ input, context }) => {
-  return sdk.update({
+  // Whitelist safe update fields to prevent mass assignment of role, status, customerType, or creditLimit
+  const allowedData: Record<string, any> = {}
+  if (input.fullName !== undefined) allowedData.fullName = input.fullName
+  if (input.companyName !== undefined) allowedData.companyName = input.companyName
+  if (input.nationalCode !== undefined) allowedData.nationalCode = input.nationalCode
+  if (input.economicCode !== undefined) allowedData.economicCode = input.economicCode
+  if (input.province !== undefined) allowedData.province = input.province
+  if (input.city !== undefined) allowedData.city = input.city
+  if (input.address !== undefined) allowedData.address = input.address
+  if (input.addresses !== undefined) allowedData.addresses = input.addresses
+
+  const updatedDoc: any = await sdk.update({
     collection: 'users',
     id: context.user.id,
-    data: input,
+    data: allowedData,
   })
+
+  if (!updatedDoc) return null
+  const { notes, ...safeUser } = updatedDoc
+  return safeUser
 })
 
 const list = adminOnly.user.list.handler(async ({ input }) => {

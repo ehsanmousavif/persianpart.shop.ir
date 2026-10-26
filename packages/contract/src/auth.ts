@@ -115,13 +115,5 @@ export const authContract = {
       .errors({
         UNAUTHORIZED: {},
       }),
-
-    logout: oc
-      .meta(openapi({ method: 'POST', path: '/auth/customer/logout', summary: 'خروج مشتری' }))
-      .output(
-        z.object({
-          success: z.boolean(),
-        }).or(z.any())
-      ),
   },
 }

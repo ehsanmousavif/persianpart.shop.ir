@@ -9,7 +9,14 @@ const list = base.plan.list.handler(async ({ input, context }) => {
     where.status = { equals: input.status }
   }
 
-  if (input?.userId) {
+  const isAdmin = context.user?.role === 'admin' || context.user?.role === 'superadmin'
+  if (!isAdmin) {
+    if (context.user?.id) {
+      where.users = { contains: context.user.id }
+    } else {
+      return { items: [], total: 0 }
+    }
+  } else if (input?.userId) {
     where.users = { contains: input.userId }
   }
 
@@ -22,7 +29,7 @@ const list = base.plan.list.handler(async ({ input, context }) => {
     sort: '-createdAt',
   })
 
-  const currentUserName = context.user?.fullName || (context as any).name || 'همکار'
+  const currentUserName = context.user?.fullName || 'همکار'
   const items = result.docs.map((doc: any) => enrichPlanWithUserName(doc, currentUserName))
 
   return {
@@ -32,7 +39,7 @@ const list = base.plan.list.handler(async ({ input, context }) => {
 })
 
 const getById = base.plan.getById.handler(async ({ input, context, errors }) => {
-  const doc = await sdk.findByID({
+  const doc: any = await sdk.findByID({
     collection: 'plans',
     id: input.id,
     depth: 2,
@@ -42,7 +49,20 @@ const getById = base.plan.getById.handler(async ({ input, context, errors }) => 
     throw errors.NOT_FOUND()
   }
 
-  const currentUserName = context.user?.fullName || (context as any).name || 'همکار'
+  const isAdmin = context.user?.role === 'admin' || context.user?.role === 'superadmin'
+  if (!isAdmin) {
+    if (!context.user?.id) {
+      throw errors.NOT_FOUND()
+    }
+    const userIds = Array.isArray(doc.users)
+      ? doc.users.map((u: any) => (typeof u === 'object' && u !== null ? u.id : u))
+      : []
+    if (!userIds.map(String).includes(String(context.user.id))) {
+      throw errors.NOT_FOUND()
+    }
+  }
+
+  const currentUserName = context.user?.fullName || 'همکار'
   return enrichPlanWithUserName(doc, currentUserName)
 })
 
@@ -52,9 +72,9 @@ const create = adminOnly.plan.create.handler(async ({ input }) => {
     let name = 'همکار'
     if (input.users && input.users.length > 0) {
       try {
-        const u: any = await sdk.findByID({ collection: 'users', id: input.users[0] })
-        if (u?.fullName) {
-          name = u.fullName
+        const user: any = await sdk.findByID({ collection: 'users', id: input.users[0] })
+        if (user?.fullName) {
+          name = user.fullName
         }
       } catch {
         // ignore

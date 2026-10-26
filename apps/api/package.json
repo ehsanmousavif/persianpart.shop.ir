@@ -23,7 +23,8 @@
     "dev": "bun --watch src/server.ts",
     "build": "tsc --noEmit",
     "start": "bun run src/server.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "@orpc/client": "2.0.0-beta.42",

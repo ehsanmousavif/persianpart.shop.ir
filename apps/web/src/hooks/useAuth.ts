@@ -55,7 +55,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await api.auth.customer.logout()
+      await api.auth.logout()
     } catch {}
     if (typeof window !== 'undefined') {
       localStorage.removeItem('persianpart_token')

@@ -12,9 +12,9 @@ import {
 // ============================================================================
 
 export const CartItemInputSchema = z.object({
-  productId: z.union([EntityIdSchema, z.number()]),
-  requestedSqm: z.number().optional(),
-  requestedArea: z.number().optional(),
+  productId: z.union([EntityIdSchema, z.number().int().positive()]),
+  requestedSqm: z.number().positive('متراژ باید بزرگتر از صفر باشد').finite().optional(),
+  requestedArea: z.number().positive('متراژ باید بزرگتر از صفر باشد').finite().optional(),
 })
 
 export type CartItemInput = z.infer<typeof CartItemInputSchema>
@@ -148,7 +148,8 @@ export type Order = z.infer<typeof OrderSchema>
 
 export const SubmitOrderInputSchema = z.object({
   items: z.array(CartItemInputSchema).min(1, 'سبد خرید جهت ثبت سفارش الزامی است'),
-  notes: z.string().optional(),
+  notes: z.string().trim().max(1000).optional(),
+  deliveryAddress: z.string().trim().max(1000).optional(),
 })
 
 export type SubmitOrderInput = z.infer<typeof SubmitOrderInputSchema>
@@ -160,8 +161,8 @@ export const CustomerOrderFilterInputSchema = PaginationInputSchema.extend({
 export type CustomerOrderFilterInput = z.infer<typeof CustomerOrderFilterInputSchema>
 
 export const CustomerCancelOrderInputSchema = z.object({
-  id: EntityIdSchema,
-  reason: z.string().optional(),
+  id: z.union([EntityIdSchema, z.number().int().positive()]),
+  reason: z.string().trim().max(500).optional(),
 })
 
 export type CustomerCancelOrderInput = z.infer<typeof CustomerCancelOrderInputSchema>
@@ -222,8 +223,8 @@ export const orderContract = {
     .input(
       z
         .object({
-          limit: z.number().default(100).optional(),
-          page: z.number().default(1).optional(),
+          limit: z.coerce.number().int().min(1).max(100).default(100).optional(),
+          page: z.coerce.number().int().min(1).default(1).optional(),
           status: z.string().optional(),
         })
         .optional()
@@ -235,8 +236,8 @@ export const orderContract = {
     .input(
       z
         .object({
-          limit: z.number().default(100).optional(),
-          page: z.number().default(1).optional(),
+          limit: z.coerce.number().int().min(1).max(100).default(50).optional(),
+          page: z.coerce.number().int().min(1).default(1).optional(),
           status: z.string().optional(),
         })
         .optional()
@@ -260,23 +261,25 @@ export const orderContract = {
     .meta(openapi({ method: 'GET', path: '/orders/detail', summary: 'مشاهده جزییات سفارش' }))
     .input(
       z.object({
-        orderId: z.union([EntityIdSchema, z.number()]).optional(),
-        id: z.union([EntityIdSchema, z.number()]).optional(),
+        orderId: z.union([EntityIdSchema, z.number().int().positive()]).optional(),
+        id: z.union([EntityIdSchema, z.number().int().positive()]).optional(),
       })
     )
     .output(OrderSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: {},
       NOT_FOUND: {},
+      BAD_REQUEST: {},
     }),
 
   getById: oc
     .meta(openapi({ method: 'GET', path: '/orders/{id}', summary: 'مشاهده جزییات سفارش و تایم‌لاین توسط مشتری' }))
-    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .input(z.object({ id: z.union([EntityIdSchema, z.number().int().positive()]) }))
     .output(OrderSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: {},
       NOT_FOUND: {},
+      BAD_REQUEST: {},
     }),
 
   createCustomOrder: oc
@@ -298,18 +301,7 @@ export const orderContract = {
 
   submit: oc
     .meta(openapi({ method: 'POST', path: '/orders', summary: 'ثبت سفارش قطعی تراکنشی توسط مشتری' }))
-    .input(
-      z.object({
-        items: z.array(
-          z.object({
-            productId: z.union([EntityIdSchema, z.number()]),
-            requestedArea: z.number().optional(),
-            requestedSqm: z.number().optional(),
-          })
-        ),
-        notes: z.string().optional(),
-      })
-    )
+    .input(SubmitOrderInputSchema)
     .output(OrderSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: {},
@@ -319,12 +311,7 @@ export const orderContract = {
 
   cancel: oc
     .meta(openapi({ method: 'POST', path: '/orders/{id}/cancel', summary: 'لغو مستقیم سفارش توسط مشتری قبل از انقضای مهلت' }))
-    .input(
-      z.object({
-        id: z.union([EntityIdSchema, z.number()]),
-        reason: z.string().optional(),
-      })
-    )
+    .input(CustomerCancelOrderInputSchema)
     .output(OrderSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: {},
@@ -336,11 +323,12 @@ export const orderContract = {
 
   prepareReorder: oc
     .meta(openapi({ method: 'POST', path: '/orders/{id}/reorder', summary: 'آماده‌سازی سبد خرید مجدد بر اساس سفارش تاریخی و اعتبارسنجی قیمت و موجودی روز' }))
-    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .input(z.object({ id: z.union([EntityIdSchema, z.number().int().positive()]) }))
     .output(PrepareReorderOutputSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: {},
       NOT_FOUND: {},
+      BAD_REQUEST: {},
     }),
 
   pricing: pricingContract,

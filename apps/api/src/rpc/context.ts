@@ -42,14 +42,7 @@ export async function createContext(req: Request): Promise<Context> {
           try {
             userDoc = await sdk.findByID({ collection: 'admins', id })
           } catch {
-            if (id === 'admin-1' || payload.sub === 'admin-1') {
-              userDoc = {
-                id,
-                name: payload.fullName || 'مدیر سیستم',
-                role: 'admin',
-                isActive: true,
-              }
-            }
+            userDoc = null
           }
         } else {
           userDoc = await sdk.findByID({ collection: 'users', id })

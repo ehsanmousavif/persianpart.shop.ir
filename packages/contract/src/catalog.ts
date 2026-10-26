@@ -342,18 +342,22 @@ export const CatalogProductSchema = z.object({
 
 export type CatalogProduct = z.infer<typeof CatalogProductSchema>
 
-export const CatalogFilterInputSchema = PaginationInputSchema.extend({
-  search: z.string().optional(),
-  categoryId: z.union([EntityIdSchema, z.number()]).optional(),
-  brandId: z.union([EntityIdSchema, z.number()]).optional(),
-  color: z.string().optional(),
-  grade: z.string().optional(),
-  tag: z.string().optional(),
-  width: z.coerce.number().positive().optional(),
-  height: z.coerce.number().positive().optional(),
-  availability: AvailabilityBadgeSchema.optional(),
-  onlyActive: z.boolean().optional(),
-}).optional()
+export const CatalogFilterInputSchema = z
+  .object({
+    page: z.coerce.number().int().min(1, 'شماره صفحه باید حداقل ۱ باشد').default(1).optional(),
+    limit: z.coerce.number().int().min(1, 'تعداد در هر صفحه باید حداقل ۱ باشد').max(100, 'حداکثر ۱۰۰ قلم در هر صفحه مجاز است').default(50).optional(),
+    search: z.string().trim().max(100, 'عبارت جستجو نمی‌تواند بیش از ۱۰۰ کاراکتر باشد').optional(),
+    categoryId: z.union([EntityIdSchema, z.number().int().positive()]).optional(),
+    brandId: z.union([EntityIdSchema, z.number().int().positive()]).optional(),
+    color: z.string().trim().max(50).optional(),
+    grade: z.string().trim().max(50).optional(),
+    tag: z.string().trim().max(50).optional(),
+    width: z.coerce.number().positive().optional(),
+    height: z.coerce.number().positive().optional(),
+    availability: AvailabilityBadgeSchema.optional(),
+    onlyActive: z.boolean().optional(),
+  })
+  .optional()
 
 export type CatalogFilterInput = z.infer<typeof CatalogFilterInputSchema>
 
@@ -556,18 +560,19 @@ export const catalogContract = {
 
   getById: oc
     .meta(openapi({ method: 'GET', path: '/catalog/{id}', summary: 'مشاهده جزییات کاتالوگ محصول توسط مشتری' }))
-    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
+    .input(z.object({ id: z.union([EntityIdSchema, z.number().int().positive()]) }))
     .output(CatalogProductSchema.or(z.any()))
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
     }),
 
   calculateCartons: oc
     .meta(openapi({ method: 'POST', path: '/catalog/calculate-cartons', summary: 'محاسبه متراژ تحویلی و تعداد کارتن برای متراژ درخواستی' }))
     .input(
       z.object({
-        productId: z.union([EntityIdSchema, z.number()]).optional(),
+        productId: z.union([EntityIdSchema, z.number().int().positive()]).optional(),
         requestedSqm: z.number().optional(),
         requestedArea: z.number().optional(),
         sqmPerCarton: z.number().optional(),
@@ -584,6 +589,7 @@ export const catalogContract = {
     .errors({
       UNAUTHORIZED: { data: StandardErrorDataSchema },
       NOT_FOUND: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
     }),
 
   categories: oc
@@ -608,11 +614,24 @@ export const catalogContract = {
 
   deleteProduct: oc
     .meta(openapi({ method: 'DELETE', path: '/catalog/products/{id}', summary: 'حذف محصول' }))
-    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
-    .output(z.any()),
+    .input(z.object({ id: z.union([EntityIdSchema, z.number().int().positive()]) }))
+    .output(z.any())
+    .errors({
+      UNAUTHORIZED: { data: StandardErrorDataSchema },
+      FORBIDDEN: { data: StandardErrorDataSchema },
+      NOT_FOUND: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
+    }),
 
   deleteCategory: oc
     .meta(openapi({ method: 'DELETE', path: '/catalog/categories/{id}', summary: 'حذف دسته‌بندی' }))
-    .input(z.object({ id: z.union([EntityIdSchema, z.number()]) }))
-    .output(z.any()),
+    .input(z.object({ id: z.union([EntityIdSchema, z.number().int().positive()]) }))
+    .output(z.any())
+    .errors({
+      UNAUTHORIZED: { data: StandardErrorDataSchema },
+      FORBIDDEN: { data: StandardErrorDataSchema },
+      NOT_FOUND: { data: StandardErrorDataSchema },
+      CONFLICT: { data: StandardErrorDataSchema },
+      BAD_REQUEST: { data: StandardErrorDataSchema },
+    }),
 }

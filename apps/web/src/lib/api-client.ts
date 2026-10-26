@@ -37,8 +37,4 @@ export type {
   OrderStatus,
   OrderTimelineEvent,
   PrepareReorderOutput,
-  ImportPreviewReport,
-  ImportRunSummary,
-  AuditEvent,
-  GlobalConfig,
 } from '@persianpart/contract'

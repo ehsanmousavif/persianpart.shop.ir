@@ -98,6 +98,7 @@ export const shoppingContract = {
     .output(z.any())
     .errors({
       UNAUTHORIZED: {},
+      BAD_REQUEST: {},
     }),
 
   verifyPayment: oc
@@ -105,6 +106,8 @@ export const shoppingContract = {
     .input(z.any())
     .output(z.any())
     .errors({
+      UNAUTHORIZED: {},
+      NOT_FOUND: {},
       BAD_REQUEST: {},
     }),
 }

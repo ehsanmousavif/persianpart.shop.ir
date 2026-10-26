@@ -1,3 +1,4 @@
+import { ORPCError } from '@orpc/server'
 import { sdk } from '../payload'
 
 export interface CartonCalcInput {
@@ -21,25 +22,35 @@ export interface CartonCalcResult {
  * totalPrice = round(deliverableArea * pricePerSqm)
  */
 export async function calculateCartonMetrics(input: CartonCalcInput): Promise<CartonCalcResult> {
-  let sqmPerCarton = input.sqmPerCarton || 1.44
-  let pricePerSqm = input.pricePerSqm || 500000
-  const requestedArea = input.requestedArea || input.requestedSqm || 1
+  let sqmPerCarton = input.sqmPerCarton
+  let pricePerSqm = input.pricePerSqm
 
-  if (input.productId && (!input.sqmPerCarton || !input.pricePerSqm)) {
+  if (input.productId) {
     try {
       const prod: any = await sdk.findByID({ collection: 'products', id: input.productId })
-      if (prod) {
-        sqmPerCarton = prod.sqmPerCarton || sqmPerCarton
-        pricePerSqm = prod.basePricePerSqm || pricePerSqm
+      if (!prod) {
+        throw new ORPCError('NOT_FOUND', { message: 'محصول مورد نظر یافت نشد.' })
       }
-    } catch {
-      // fallback to input defaults
+      sqmPerCarton = sqmPerCarton || prod.sqmPerCarton
+      if (pricePerSqm === undefined) {
+        pricePerSqm = prod.basePricePerSqm
+      }
+    } catch (err) {
+      if (err instanceof ORPCError) throw err
+      throw new ORPCError('NOT_FOUND', { message: 'محصول مورد نظر یافت نشد.' })
     }
   }
 
-  const cartonCount = Math.ceil(requestedArea / sqmPerCarton)
+  if (!sqmPerCarton || sqmPerCarton <= 0) {
+    throw new ORPCError('BAD_REQUEST', {
+      message: 'متراژ هر کارتن (sqmPerCarton) الزامی و باید مقداری بزرگتر از صفر باشد.',
+    })
+  }
+
+  const requestedArea = Math.max(0, input.requestedArea ?? input.requestedSqm ?? 0)
+  const cartonCount = requestedArea > 0 ? Math.ceil(requestedArea / sqmPerCarton) : 0
   const deliverableArea = Math.round(cartonCount * sqmPerCarton * 100) / 100
-  const totalPrice = Math.round(deliverableArea * pricePerSqm)
+  const totalPrice = Math.round(deliverableArea * (pricePerSqm || 0))
 
   return {
     cartonCount,

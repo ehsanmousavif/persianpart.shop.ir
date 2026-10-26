@@ -6,9 +6,9 @@ import type { Context } from '../rpc/context'
 /**
  * Converts English digit strings to Persian digits
  */
-export function toPersianDigits(s: string): string {
-  const p = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
-  return s.replace(/\d/g, (d) => p[Number(d)])
+export function toPersianDigits(object: string): string {
+  const pick = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
+  return object.replace(/\d/g, (d) => pick[Number(d)])
 }
 
 /**
@@ -46,11 +46,11 @@ export function formatCustomerProfile(userDoc: any) {
   if (!userDoc) return null
   return {
     id: String(userDoc.id),
-    contactName: userDoc.fullName || userDoc.name || 'کاربر گرامی',
-    storeName: userDoc.companyName || 'فروشگاه قطعات',
+    contactName: userDoc.fullName || userDoc.name || '',
+    storeName: userDoc.companyName || '',
     mobile: userDoc.phone,
-    province: userDoc.province || 'تهران',
-    city: userDoc.city || 'تهران',
+    province: userDoc.province || '',
+    city: userDoc.city || '',
     address: userDoc.address || '',
     nationalCode: userDoc.nationalCode || '',
     economicCode: userDoc.economicCode || '',
@@ -117,7 +117,11 @@ export function applyProductPricing(product: any, markupPercent: number) {
  * Finalizes an order by updating its orderNumber to standard `ptp {id}` format
  */
 export async function finalizeOrderNumber(orderDoc: any) {
+  if (!orderDoc?.id) return orderDoc
   const finalOrderNumber = `ptp ${orderDoc.id}`
+  if (orderDoc.orderNumber === finalOrderNumber) {
+    return orderDoc
+  }
   try {
     const updated = await sdk.update({
       collection: 'orders',

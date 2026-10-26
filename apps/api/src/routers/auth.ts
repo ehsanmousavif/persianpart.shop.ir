@@ -127,9 +127,11 @@ async function processVerifyOtp(rawPhone: string, rawCode: string) {
     role: 'customer',
   })
 
+  const { notes, ...safeUser } = (userDoc || {}) as any
+
   return {
     token,
-    user: userDoc,
+    user: safeUser,
     customer: formatCustomerProfile(userDoc),
   }
 }
@@ -152,8 +154,10 @@ export const auth = base.auth.router({
   session: base.auth.session.handler(async ({ context }) => {
     if (!context.user) return { user: null }
     try {
-      const user = await getUserProfile(context.user.id)
-      return { user: user }
+      const userDoc: any = await getUserProfile(context.user.id)
+      if (!userDoc) return { user: null }
+      const { notes, ...safeUser } = userDoc
+      return { user: safeUser }
     } catch {
       return { user: null }
     }
@@ -171,6 +175,5 @@ export const auth = base.auth.router({
         return null
       }
     }),
-    logout: base.auth.customer.logout.handler(async ({ context }) => handleLogout(context)),
   },
 })
