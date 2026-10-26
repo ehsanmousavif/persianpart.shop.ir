@@ -315,6 +315,33 @@ h6 {
   background: #94a3b8;
 }
 
+/* Hide scrollbars utility (Cross-browser: Chrome, Safari, iOS Safari, Firefox, Edge) */
+.scrollbar-none,
+.no-scrollbar,
+[data-scrollbar="none"] {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
+}
+
+.scrollbar-none::-webkit-scrollbar,
+.no-scrollbar::-webkit-scrollbar,
+[data-scrollbar="none"]::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+@utility scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+
 /* Modal & Drawer Keyframe Animations */
 /* Ensure all bottom sheets & drawers are 100% flush with the bottom on every device */
 [data-slot="drawer"][data-placement="bottom"],

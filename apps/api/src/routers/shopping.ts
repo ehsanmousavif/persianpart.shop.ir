@@ -3,31 +3,6 @@ import { base, authed } from '../rpc/base'
 import { calculateCartonMetrics } from './catalog.helpers'
 import { fetchTaxonomy, finalizeOrderNumber } from './router.helpers'
 
-const shippingMethods = base.shopping.shippingMethods.handler(async () => {
-  return [
-    {
-      id: 'tipax',
-      title: 'تیپاکس (ارسال پس‌کرایه)',
-      description: 'ارسال سریع به درب فروشگاه، نمایندگی یا تعمیرگاه در سراسر ایران',
-      estimatedDays: '۲۴ الی ۴۸ ساعت',
-      isExpress: true,
-    },
-    {
-      id: 'freight',
-      title: 'ارسال بین‌شهری (پایانه)',
-      description: 'مناسب سفارش‌های حجیم و عمده قطعات سنگین بدنه، موتور و گیربکس',
-      estimatedDays: '۲ الی ۳ روز کاری',
-      isExpress: false,
-    },
-    {
-      id: 'courier',
-      title: 'پیک موتوری / وانت اختصاصی (تهران و حومه)',
-      description: 'تحویل فوری در همان روز ویژه انبارها و همکاران تهران',
-      estimatedDays: 'تحویل روزانه',
-      isExpress: true,
-    },
-  ]
-})
 
 const cartProducts = base.shopping.cartProducts.handler(async ({ input }) => {
   if (!input || input.length === 0) return []
@@ -128,7 +103,7 @@ const detail = base.shopping.detail.handler(async ({ input }) => {
 })
 
 const createOrder = authed.shopping.createOrder.handler(async ({ input, context }) => {
-  const tempOrderNumber = `ptp ${Date.now().toString().slice(-6)}`
+  const tempOrderNumber = `${Date.now().toString().slice(-6)}`
   const order = await sdk.create({
     collection: 'orders',
     data: {
@@ -165,7 +140,6 @@ const verifyPayment = base.shopping.verifyPayment.handler(async ({ input, errors
 })
 
 export const shopping = base.shopping.router({
-  shippingMethods,
   cartProducts,
   addressList,
   mutateAddress,

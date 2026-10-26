@@ -102,7 +102,7 @@ export function FilterDrawer({
             </Drawer.Header>
 
             {/* Body */}
-            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-thin">
+            <Drawer.Body className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-3 space-y-3 scrollbar-none">
               {/* Only In Stock */}
               <div
                 className="py-4 px-4 rounded-2xl bg-muted/5 flex items-center justify-between cursor-pointer select-none"
@@ -235,7 +235,7 @@ export function FilterDrawer({
                     dir="rtl"
                     placement="bottom"
                     shouldFlip={false}
-                    className="w-[var(--trigger-width)] text-right max-h-56 overflow-y-auto rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
+                    className="w-[var(--trigger-width)] text-right max-h-56 overflow-y-auto scrollbar-none rounded-2xl p-1.5 bg-surface z-60 shadow-xl border border-border/20"
                   >
                     <Dropdown.Menu
                       dir="rtl"

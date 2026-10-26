@@ -82,10 +82,6 @@ export const shoppingContract = {
       })
     ),
 
-  shippingMethods: oc
-    .meta(openapi({ method: 'GET', path: '/shopping/shipping-methods', summary: 'روش‌های ارسال' }))
-    .output(z.array(ShippingMethodSchema).or(z.any())),
-
   cartProducts: oc
     .meta(openapi({ method: 'POST', path: '/shopping/cart-products', summary: 'دریافت محصولات سبد خرید با شناسه' }))
     .input(z.array(z.union([z.string(), z.number()])))

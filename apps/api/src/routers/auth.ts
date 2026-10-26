@@ -152,8 +152,8 @@ export const auth = base.auth.router({
   session: base.auth.session.handler(async ({ context }) => {
     if (!context.user) return { user: null }
     try {
-      const u = await getUserProfile(context.user.id)
-      return { user: u }
+      const user = await getUserProfile(context.user.id)
+      return { user: user }
     } catch {
       return { user: null }
     }
