@@ -83,27 +83,11 @@ export function decodeToken(token: string): { header: any; payload: any } | null
 }
 
 /**
- * Extracts the Bearer token string from an Authorization header
+ * Extracts the Bearer token string from an Authorization header (lightweight vanilla JS)
  */
-export function extractBearerToken(
-  headerOrHeaders: Headers | string | null | undefined
-): string | null {
-  if (!headerOrHeaders) return null
-
-  const authHeader =
-    typeof headerOrHeaders === 'string'
-      ? headerOrHeaders
-      : headerOrHeaders.get('authorization')
-
-  if (!authHeader) return null
-
-  const trimmed = authHeader.trim()
-  if (trimmed.toLowerCase().startsWith('bearer ')) {
-    const token = trimmed.slice(7).trim()
-    return token || null
-  }
-
-  return null
+export function extractBearerToken(headers: Headers | string | null | undefined): string | null {
+  const val = (typeof headers === 'string' ? headers : headers?.get?.('authorization'))?.trim()
+  return val?.toLowerCase().startsWith('bearer ') ? val.slice(7).trim() || null : null
 }
 
 // In-memory revocation store with expiration timestamp (in seconds)
