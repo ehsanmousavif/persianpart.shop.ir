@@ -16,7 +16,11 @@ export interface PillNavProps {
   items?: PillNavItem[];
   activeHref?: string;
   defaultActiveIndex?: number;
-  onItemClick?: (item: PillNavItem, index: number, event: React.MouseEvent<HTMLElement>) => void;
+  onItemClick?: (
+    item: PillNavItem,
+    index: number,
+    event: React.MouseEvent<HTMLElement>,
+  ) => void;
   linkComponent?: ElementType;
   theme?: "dark" | "light";
   layout?: "split" | "joined";
@@ -70,13 +74,14 @@ export function PillNav({
           "w-full h-full",
           isVertical
             ? "grid grid-cols-4 items-center gap-1"
-            : "flex items-center justify-between gap-1"
+            : "flex items-center justify-between gap-1",
         )}
       >
         {items.map((item, index) => {
           const href = item.href || "#";
           const isActive = activeHref
-            ? activeHref === href || (href !== "/" && activeHref.startsWith(href))
+            ? activeHref === href ||
+              (href !== "/" && activeHref.startsWith(href))
             : index === defaultActiveIndex;
 
           const isHovered = hoveredHref === href;
@@ -91,15 +96,15 @@ export function PillNav({
               <LinkComponent
                 to={item.href}
                 href={item.href}
-                onClick={(e: React.MouseEvent<HTMLElement>) => onItemClick?.(item, index, e)}
+                onClick={(e: React.MouseEvent<HTMLElement>) =>
+                  onItemClick?.(item, index, e)
+                }
                 onMouseEnter={() => {
                   if (hoverEffect === "glide") setHoveredHref(href);
                 }}
                 className={cn(
                   "relative z-10 flex w-full h-full cursor-pointer items-center justify-center transition-all duration-200 outline-none rounded-2xl touch-manipulation active:scale-95",
-                  isVertical
-                    ? "flex-col gap-0.5 py-1 px-2"
-                    : "flex-row gap-2 px-3 py-1.5"
+                  isVertical ? "flex-col gap-0.5 px-2" : "flex-row gap-2 px-3 ",
                 )}
                 aria-current={isActive ? "page" : undefined}
                 aria-label={item.ariaLabel || item.label}
@@ -123,7 +128,7 @@ export function PillNav({
                 {hoverEffect === "glide" && isHovered && !isActive && (
                   <motion.div
                     layoutId="pill-nav-hover-indicator"
-                    className="absolute inset-0 rounded-2xl bg-white/6 pointer-events-none border-none shadow-none"
+                    className="absolute inset-0 rounded-2xl  text-white hover:text-white/6 pointer-events-none border-none shadow-none"
                     transition={{
                       type: "spring",
                       stiffness: 380,
@@ -132,29 +137,39 @@ export function PillNav({
                   />
                 )}
 
-                {/* Icon */}
-                {item.icon && (
-                  <div
-                    className={cn(
-                      "relative px-3 py-1 rounded-xl transition-all duration-200 flex items-center justify-center",
-                      isActive
-                        ? "text-white [&_svg]:stroke-[2.2]"
-                        : "text-[#9da0b5] [&_svg]:stroke-2"
-                    )}
-                  >
-                    {item.icon}
-                  </div>
-                )}
-
-                {/* Label */}
-                <span
+                <div
                   className={cn(
-                    "text-[11px] font-bold tracking-tight transition-colors duration-200",
-                    isActive ? "text-white" : "text-[#9da0b5]"
+                    "relative flex items-center justify-center transition-colors duration-200 group",
+                    isVertical
+                      ? "flex-col gap-0.5 px-2 py-1"
+                      : "flex-row gap-2 px-3 py-1.5",
+                    isActive
+                      ? "text-white"
+                      : "text-[#9da0b5] hover:text-background",
                   )}
                 >
-                  {item.label}
-                </span>
+                  {item.icon && (
+                    <div
+                      className={cn(
+                        "relative flex items-center justify-center rounded-xl px-3 py-1 transition-colors duration-200",
+                        isActive
+                          ? "[&_svg]:stroke-[2.2]"
+                          : "[&_svg]:stroke-2 group-hover:text-background",
+                      )}
+                    >
+                      {item.icon}
+                    </div>
+                  )}
+
+                  <span
+                    className={cn(
+                      "text-[11px] font-bold tracking-tight transition-colors duration-200",
+                      isActive ? "text-white" : "group-hover:text-background",
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                </div>
               </LinkComponent>
             </motion.div>
           );

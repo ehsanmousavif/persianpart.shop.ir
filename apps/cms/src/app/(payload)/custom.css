@@ -1,11 +1,9 @@
 /* ==========================================================================
-   PersianPart 2.0 — Borderless Minimal Monochrome Gray Admin Theme
-   - Palette: Pure Gray / Zinc Monochrome (Zero Blue/Indigo)
-   - Borders & Shadows: Strictly ZERO Borders (border: none) & ZERO Shadows
-   - Typography: NO Underlines (text-decoration: none on EVERYTHING)
-   - Spacing: Generous, Spacious, Breathing Layout
-   - Geometry: Apple Superellipse Squircles (corner-shape: superellipse(1.5))
-   - Digits: 100% Persian Numerals (ss01 / cv01 / tnum)
+   PersianPart 2.0 — Enterprise Admin Panel Theme for Payload CMS 3
+   - Full RTL Alignment & Persian Numerals (Vazirmatn / Peyda)
+   - Refined Geometric Hierarchy: Crisp Borders (1px) & Soft Elevations
+   - Apple Squircle Corners (corner-shape: superellipse(1.5))
+   - Professional Color Palette: Neutral Slate/Zinc with Brand Indigo (#1C1696)
    ========================================================================== */
 
 @import "@fontsource-variable/vazirmatn/index.css";
@@ -27,7 +25,7 @@
 }
 
 /* --------------------------------------------------------------------------
-   1. CORNER SHAPE (Superellipse Squircles)
+   1. CORNER SHAPE (Superellipse Squircles & Circular Overrides)
    -------------------------------------------------------------------------- */
 @supports (corner-shape: superellipse(1.5)) {
   *,
@@ -41,143 +39,106 @@
 .rounded-full,
 [class*="rounded-full"],
 [class*="rounded-[9999px]"],
-input[type="radio"] {
+input[type="radio"],
+.toggle__thumb,
+.avatar,
+.graphic-icon {
   corner-shape: round !important;
   -webkit-corner-shape: round !important;
 }
 
 /* --------------------------------------------------------------------------
-   2. PURE GRAY MONOCHROME TOKENS (No Blue/Indigo, Borderless, Shadowless)
+   2. SYSTEM DESIGN TOKENS (Light & Dark Themes)
    -------------------------------------------------------------------------- */
 :root {
   --font-body: 'peyda', 'Vazirmatn Variable', 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-mono: 'peyda', 'Vazirmatn', 'SF Mono', Menlo, Consolas, monospace;
+  --font-mono: 'Vazirmatn', 'SF Mono', Menlo, Consolas, monospace;
   font-family: var(--font-body);
 
-  /* Generous Squircle Radii */
+  /* Geometry & Radii */
   --style-radius-s: 8px;
   --style-radius-m: 10px;
   --style-radius-l: 14px;
   --border-radius: 10px;
 
-  /* Gray Monochrome Palette */
-  --gray-bg: #f2f2f5;
-  --gray-card: #ffffff;
-  --gray-card-hover: #fafafc;
-  --gray-text: #18181b;
-  --gray-muted: #71717a;
-  --gray-subtle: #a1a1aa;
-  --gray-surface: #e4e4e7;
-  --gray-surface-hover: #d4d4d8;
-  --gray-primary: #18181b;
-  --gray-primary-hover: #27272a;
-  --gray-primary-active: #09090b;
-  --gray-focus-ring: #d4d4d8;
+  /* Brand & Neutral Palette (Light Mode) */
+  --admin-bg: #f8fafc;
+  --admin-card: #ffffff;
+  --admin-card-hover: #f1f5f9;
+  --admin-border: #e2e8f0;
+  --admin-border-focus: #1c1696;
+  --admin-text: #0f172a;
+  --admin-muted: #64748b;
+  --admin-subtle: #94a3b8;
+  --admin-surface: #f1f5f9;
+  --admin-surface-hover: #e2e8f0;
+  --admin-primary: #1c1696;
+  --admin-primary-hover: #2924b8;
+  --admin-primary-fg: #ffffff;
 
-  /* Payload CMS Variables */
-  --theme-bg: var(--gray-bg);
-  --theme-input-bg: var(--gray-card);
-  --theme-text: var(--gray-text);
-  --gutter-h: 20px !important;
-  --app-header-height: 56px !important;
-  --nav-bg: #1e1e24;
-  --gutter-h: 20px !important;
-  --app-header-height: 56px !important;
+  /* Payload CMS Variable Mappings */
+  --theme-bg: var(--admin-bg);
+  --theme-input-bg: var(--admin-card);
+  --theme-text: var(--admin-text);
+  --gutter-h: 24px !important;
+  --app-header-height: 58px !important;
   --nav-bg: #ffffff;
 
   --theme-elevation-0: #ffffff;
-  --theme-elevation-50: #f4f4f5;
-  --theme-elevation-100: #e4e4e7;
-  --theme-elevation-150: transparent;
-  --theme-elevation-200: #d4d4d8;
-  --theme-elevation-250: #c4c4c9;
-  --theme-elevation-300: #a1a1aa;
-  --theme-elevation-400: #71717a;
-  --theme-elevation-500: #52525b;
-  --theme-elevation-600: #3f3f46;
-  --theme-elevation-700: #27272a;
-  --theme-elevation-800: #18181b;
-  --theme-elevation-900: #111113;
-  --theme-elevation-1000: #000000;
+  --theme-elevation-50: #f8fafc;
+  --theme-elevation-100: #f1f5f9;
+  --theme-elevation-150: #e2e8f0;
+  --theme-elevation-200: #cbd5e1;
+  --theme-elevation-300: #94a3b8;
+  --theme-elevation-400: #64748b;
+  --theme-elevation-800: #0f172a;
 }
 
 [data-theme='dark'] {
-  --gray-bg: #111113;
-  --gray-card: #18181b;
-  --gray-card-hover: #1f1f23;
-  --gray-text: #f4f4f5;
-  --gray-muted: #a1a1aa;
-  --gray-subtle: #71717a;
-  --gray-surface: #27272a;
-  --gray-surface-hover: #3f3f46;
-  --gray-primary: #f4f4f5;
-  --gray-primary-hover: #e4e4e7;
-  --gray-primary-active: #ffffff;
-  --gray-focus-ring: #3f3f46;
+  --admin-bg: #09090b;
+  --admin-card: #121215;
+  --admin-card-hover: #18181c;
+  --admin-border: #27272a;
+  --admin-border-focus: #6366f1;
+  --admin-text: #f8fafc;
+  --admin-muted: #a1a1aa;
+  --admin-subtle: #71717a;
+  --admin-surface: #1e1e24;
+  --admin-surface-hover: #27272a;
+  --admin-primary: #6366f1;
+  --admin-primary-hover: #818cf8;
+  --admin-primary-fg: #ffffff;
 
-  --theme-bg: var(--gray-bg);
-  --theme-input-bg: var(--gray-card);
-  --theme-text: var(--gray-text);
-  --gutter-h: 20px !important;
-  --app-header-height: 56px !important;
-  --nav-bg: #1e1e24;
+  --theme-bg: var(--admin-bg);
+  --theme-input-bg: var(--admin-card);
+  --theme-text: var(--admin-text);
+  --nav-bg: #121215;
 
-  --theme-elevation-0: #18181b;
-  --theme-elevation-50: #1f1f23;
-  --theme-elevation-100: #27272a;
-  --theme-elevation-150: transparent;
+  --theme-elevation-0: #121215;
+  --theme-elevation-50: #18181c;
+  --theme-elevation-100: #1e1e24;
+  --theme-elevation-150: #27272a;
   --theme-elevation-200: #3f3f46;
-  --theme-elevation-250: #52525b;
-  --theme-elevation-300: #71717a;
+  --theme-elevation-300: #52525b;
   --theme-elevation-400: #a1a1aa;
-  --theme-elevation-500: #d4d4d8;
-  --theme-elevation-600: #e4e4e7;
-  --theme-elevation-700: #f4f4f5;
   --theme-elevation-800: #fafafa;
-  --theme-elevation-900: #ffffff;
-  --theme-elevation-1000: #ffffff;
 }
 
 /* --------------------------------------------------------------------------
-   3. ZERO BORDERS, ZERO SHADOWS & NO UNDERLINES ANYWHERE
+   3. GLOBAL TYPOGRAPHY & RTL NUMERAL ENFORCEMENT
    -------------------------------------------------------------------------- */
-*,
-*::before,
-*::after {
-  box-shadow: none !important;
-  text-decoration: none !important;
-  text-decoration-line: none !important;
-}
-
-a,
-a:hover,
-a:focus,
-a:active,
-a:visited,
-.btn,
-.nav__link,
-.step-nav__item,
-.step-nav__link,
-.card,
-.dashboard__card,
-.table a {
-  text-decoration: none !important;
-  text-decoration-line: none !important;
-}
-
 html,
 body {
-  direction: rtl;
-  background-color: var(--gray-bg);
-  color: var(--gray-text);
+  direction: rtl !important;
+  text-align: right !important;
+  background-color: var(--admin-bg) !important;
+  color: var(--admin-text) !important;
   font-family: var(--font-body);
-  line-height: 1.5 !important;
+  line-height: 1.6 !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
 }
 
-/* Universal Persian Numerals */
 button,
 input,
 select,
@@ -203,801 +164,362 @@ td,
 .status,
 .doc-header,
 .step-nav,
-.field-type,
-[data-slot] {
-  font-family: var(--font-body);
+.field-type {
+  font-family: var(--font-body) !important;
   font-feature-settings: 'ss01' 1, 'cv01' 1, 'tnum' 1 !important;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.015em;
 }
 
-.font-mono,
-code,
-kbd,
-pre {
-  font-family: var(--font-mono) !important;
-  font-feature-settings: 'ss01' 1, 'cv01' 1, 'tnum' 1 !important;
+a {
+  text-decoration: none !important;
 }
 
 /* --------------------------------------------------------------------------
-   4. FULL-SCREEN APP HEADER & BREADCRUMBS (Same Color as Background, Full Width)
+   4. APP HEADER & BREADCRUMBS
    -------------------------------------------------------------------------- */
 .app-header {
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  height: 56px !important;
-  min-height: 56px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0 20px !important;
-  border: none !important;
-  background-color: var(--gray-bg) !important;
-  margin: 0 !important;
+  height: 58px !important;
+  padding: 0 24px !important;
+  background-color: var(--admin-card) !important;
+  border-bottom: 1px solid var(--admin-border) !important;
   box-sizing: border-box !important;
-}
-
-[data-theme='dark'] .app-header {
-  background-color: var(--gray-bg) !important;
-}
-
-.app-header__content {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  box-sizing: border-box !important;
-}
-
-.app-header__wrapper {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  box-sizing: border-box !important;
-}
-
-.app-header__controls-wrapper {
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-}
-
-.template-default__wrap {
-  width: 100% !important;
-  max-width: 100% !important;
-  min-width: 0 !important;
-  box-sizing: border-box !important;
-  background-color: var(--gray-bg) !important;
 }
 
 .step-nav {
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
-  line-height: 1 !important;
-  margin: 0 !important;
+  direction: rtl !important;
 }
 
 .step-nav__item {
-  display: inline-flex !important;
-  align-items: center !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: var(--gray-muted) !important;
+  color: var(--admin-muted) !important;
+  display: inline-flex !important;
+  align-items: center !important;
 }
 
 .step-nav__item:last-child {
-  color: var(--gray-text) !important;
-  font-weight: 600 !important;
+  color: var(--admin-text) !important;
+  font-weight: 700 !important;
 }
 
 .step-nav__separator {
-  display: inline-flex !important;
-  align-items: center !important;
-  color: var(--gray-subtle) !important;
+  transform: rotate(180deg);
+  color: var(--admin-subtle) !important;
   font-size: 11px !important;
 }
 
-/* Document Header (Collection View Title & Controls Bar) */
-.doc-header {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  padding: 16px 20px !important;
-  border: none !important;
-  background-color: transparent !important;
-  margin: 0 !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-.doc-header__title {
-  margin: 0 !important;
-  font-size: 18px !important;
-  font-weight: 700 !important;
-  line-height: 1.2 !important;
-  color: var(--gray-text) !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-}
-
-.doc-header__controls {
-  display: flex !important;
-  align-items: center !important;
-  gap: 10px !important;
-  margin: 0 !important;
-}
-
 /* --------------------------------------------------------------------------
-   5. DISTINCT NAVBAR NAVIGATION (Different Color from Background)
+   5. SIDEBAR NAVIGATION (Docked on Right in RTL)
    -------------------------------------------------------------------------- */
 aside.nav,
-.nav,
-.nav__wrap,
-.nav__header,
-.nav__scroll {
-  border: none !important;
-  border-left: 1px solid rgba(0, 0, 0, 0.06) !important;
-  background-color: #ffffff !important;
-  padding: 12px 6px !important;
+.nav {
+  background-color: var(--admin-card) !important;
+  border-left: 1px solid var(--admin-border) !important;
+  border-right: none !important;
   box-sizing: border-box !important;
 }
 
-[data-theme='dark'] aside.nav,
-[data-theme='dark'] .nav,
-[data-theme='dark'] .nav__wrap,
-[data-theme='dark'] .nav__header,
-[data-theme='dark'] .nav__scroll {
-  background-color: #1e1e24 !important;
-  border-left: 1px solid rgba(255, 255, 255, 0.08) !important;
+.nav__wrap {
+  padding: 16px 10px !important;
+}
+
+.nav-group__label,
+.nav-group__toggle {
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  text-transform: uppercase !important;
+  color: var(--admin-muted) !important;
+  padding: 16px 14px 6px 14px !important;
+  letter-spacing: 0.5px !important;
+  text-align: right !important;
 }
 
 .nav__link {
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  height: 38px !important;
+  height: 40px !important;
   padding: 0 14px !important;
-  margin: 3px 8px !important;
+  margin: 2px 0 !important;
   font-size: 13px !important;
   font-weight: 500 !important;
-  color: var(--gray-muted) !important;
+  color: var(--admin-muted) !important;
   border-radius: 10px !important;
-  border: none !important;
+  border: 1px solid transparent !important;
   transition: all 0.15s ease !important;
-  text-decoration: none !important;
-  line-height: 1 !important;
+  text-align: right !important;
 }
 
 .nav__link:hover {
-  background-color: var(--gray-bg) !important;
-  color: var(--gray-text) !important;
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+  border-color: var(--admin-border) !important;
 }
 
 .nav__link--active,
 .nav__link.active {
-  background-color: var(--gray-surface) !important;
-  color: var(--gray-text) !important;
-  font-weight: 600 !important;
-}
-
-[data-theme='dark'] .nav__link:hover {
-  background-color: rgba(255, 255, 255, 0.06) !important;
-  color: #ffffff !important;
-}
-
-[data-theme='dark'] .nav__link--active,
-[data-theme='dark'] .nav__link.active {
-  background-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-}
-
-.nav-group__toggle,
-.nav-group__label {
-  font-size: 11px !important;
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-primary) !important;
   font-weight: 700 !important;
-  text-transform: uppercase !important;
-  color: var(--gray-subtle) !important;
-  padding: 16px 18px 6px 18px !important;
-  letter-spacing: 0.5px !important;
-  line-height: 1 !important;
+  border-color: var(--admin-border) !important;
 }
 
 /* --------------------------------------------------------------------------
-   6. SPACIOUS DASHBOARD & BORDERLESS CARDS
-   - Increased margins & paddings (lets the layout breathe)
-   - Zero borders, zero shadows, clean squircle cards
+   6. DASHBOARD & BENTO CARDS
    -------------------------------------------------------------------------- */
 .dashboard {
-  width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 24px 20px !important;
-  max-width: 100% !important;
-  margin: 0 !important;
-}
-
-.dashboard__group {
-  margin-bottom: 32px !important;
+  padding: 28px 24px !important;
+  max-width: 1400px !important;
+  margin: 0 auto !important;
 }
 
 .dashboard__group-title {
   font-size: 15px !important;
   font-weight: 700 !important;
-  color: var(--gray-text) !important;
-  margin: 0 0 14px 0 !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 8px !important;
-  line-height: 1.2 !important;
+  color: var(--admin-text) !important;
+  margin-bottom: 16px !important;
+  text-align: right !important;
 }
 
-/* Spacious Responsive Card Grid */
 .card-list {
   display: grid !important;
-  grid-template-columns: 1fr !important;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
   gap: 16px !important;
-  width: 100% !important;
-  margin: 0 !important;
-  padding: 0 !important;
 }
 
-@media (min-width: 600px) {
-  .card-list {
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 16px !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .card-list {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 18px !important;
-  }
-}
-
-@media (min-width: 1320px) {
-  .card-list {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;
-  }
-}
-
-/* Borderless, Shadowless Squircle Cards */
 .card,
 .dashboard__card {
-  border: none !important;
-  background-color: var(--gray-card) !important;
+  background-color: var(--admin-card) !important;
+  border: 1px solid var(--admin-border) !important;
   border-radius: 14px !important;
-  padding: 20px 24px !important;
-  min-height: 64px !important;
+  padding: 18px 20px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  text-decoration: none !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
   transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  margin: 0 !important;
 }
 
 .card:hover,
 .dashboard__card:hover {
-  background-color: var(--gray-card-hover) !important;
   transform: translateY(-2px) !important;
+  border-color: var(--admin-primary) !important;
+  box-shadow: 0 6px 16px rgba(28, 22, 150, 0.08) !important;
 }
 
 .card__title,
 .dashboard__card-title {
-  font-size: 14.5px !important;
+  font-size: 14px !important;
   font-weight: 600 !important;
-  color: var(--gray-text) !important;
-  margin: 0 !important;
-  line-height: 1.2 !important;
+  color: var(--admin-text) !important;
+  text-align: right !important;
 }
 
 .card__count,
 .dashboard__card-count {
   font-size: 12px !important;
-  color: var(--gray-text) !important;
   font-weight: 700 !important;
-  background-color: var(--gray-surface) !important;
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
   padding: 4px 10px !important;
   border-radius: 8px !important;
-  border: none !important;
-  line-height: 1 !important;
+  border: 1px solid var(--admin-border) !important;
 }
 
 /* --------------------------------------------------------------------------
-   7. BORDERLESS SPACIOUS DATA TABLES (Zebra Striped, Zero Harsh Lines)
+   7. COLLECTION LIST & DATA TABLES
    -------------------------------------------------------------------------- */
 .collection-list {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  padding: 16px 20px !important;
-}
-
-.collection-list__controls {
-  margin-bottom: 16px !important;
-  display: flex !important;
-  align-items: center !important;
-  gap: 12px !important;
-  width: 100% !important;
-  box-sizing: border-box !important;
+  padding: 24px !important;
 }
 
 .table-wrap,
 .collection-list__wrap {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-  overflow-x: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  border: none !important;
-  background-color: var(--gray-card) !important;
+  background-color: var(--admin-card) !important;
+  border: 1px solid var(--admin-border) !important;
   border-radius: 14px !important;
-  margin: 0 !important;
+  overflow: hidden !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03) !important;
 }
 
-.table-wrap .table,
 table {
   width: 100% !important;
-  min-width: 720px !important;
   border-collapse: collapse !important;
-  border: none !important;
-  margin: 0 !important;
+  text-align: right !important;
 }
 
-/* Spacious Table Headers */
-.table thead th,
-table thead th {
-  background-color: var(--gray-surface) !important;
-  border: none !important;
-  color: var(--gray-muted) !important;
+thead th {
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-muted) !important;
   font-size: 12px !important;
-  font-weight: 600 !important;
+  font-weight: 700 !important;
   padding: 12px 18px !important;
-  height: 44px !important;
+  border-bottom: 1px solid var(--admin-border) !important;
   text-align: right !important;
-  vertical-align: middle !important;
   white-space: nowrap !important;
-  line-height: 1 !important;
 }
 
-/* Subtle Alternating Zebra Rows */
-table tbody tr:nth-child(even),
-.table tbody tr:nth-child(even) {
-  background-color: rgba(0, 0, 0, 0.02) !important;
+tbody tr {
+  border-bottom: 1px solid var(--admin-border) !important;
+  transition: background-color 0.12s ease !important;
 }
 
-table tbody tr:nth-child(odd),
-.table tbody tr:nth-child(odd) {
-  background-color: transparent !important;
+tbody tr:last-child {
+  border-bottom: none !important;
 }
 
-[data-theme='dark'] table tbody tr:nth-child(even),
-[data-theme='dark'] .table tbody tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.02) !important;
+tbody tr:hover {
+  background-color: var(--admin-surface-hover) !important;
 }
 
-table tbody tr:hover td,
-.table tbody tr:hover td {
-  background-color: var(--gray-surface) !important;
-}
-
-/* Spacious Table Cells */
-.table tbody td,
-table tbody td {
-  border: none !important;
-  color: var(--gray-text) !important;
+tbody td {
+  padding: 12px 18px !important;
   font-size: 13px !important;
-  padding: 14px 18px !important;
+  color: var(--admin-text) !important;
   text-align: right !important;
-  vertical-align: middle !important;
-  line-height: 1.4 !important;
-}
-
-.table td [class^=cell],
-.cell {
-  padding: 0 !important;
-  margin: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  line-height: 1.4 !important;
-}
-
-.select-row,
-.cell-select {
-  display: flex !important;
-  align-items: center !important;
-  justify-content: center !important;
   vertical-align: middle !important;
 }
 
 /* --------------------------------------------------------------------------
-   8. BORDERLESS SQUIRCLE INPUTS (Flat & Comfortable)
+   8. INPUTS, FORMS & CONTROLS
    -------------------------------------------------------------------------- */
 input:not([type='checkbox']):not([type='radio']),
 textarea,
 select,
 .rs__control {
-  border: none !important;
-  background-color: var(--gray-card) !important;
-  color: var(--gray-text) !important;
+  border: 1px solid var(--admin-border) !important;
+  background-color: var(--admin-card) !important;
+  color: var(--admin-text) !important;
   border-radius: 10px !important;
   font-size: 13px !important;
-  transition: background-color 0.15s ease, box-shadow 0.15s ease !important;
-  box-sizing: border-box !important;
-}
-
-[data-theme='dark'] input:not([type='checkbox']):not([type='radio']),
-[data-theme='dark'] textarea,
-[data-theme='dark'] select,
-[data-theme='dark'] .rs__control {
-  background-color: #1f1f23 !important;
-}
-
-input:not([type='checkbox']):not([type='radio']),
-select {
-  height: 40px !important;
   padding: 0 14px !important;
-  vertical-align: middle !important;
+  height: 40px !important;
+  text-align: right !important;
+  box-sizing: border-box !important;
+  transition: all 0.15s ease !important;
 }
 
 textarea {
-  min-height: 88px !important;
-  padding: 12px 14px !important;
-  line-height: 1.6 !important;
+  height: auto !important;
+  min-height: 96px !important;
+  padding: 10px 14px !important;
+  line-height: 1.5 !important;
 }
 
-/* Subtle Focus Ring without harsh border */
 input:focus:not([type='checkbox']):not([type='radio']),
 textarea:focus,
 select:focus,
 .rs__control--is-focused {
   outline: none !important;
-  border: none !important;
-  box-shadow: 0 0 0 2px var(--gray-focus-ring) !important;
+  border-color: var(--admin-border-focus) !important;
+  box-shadow: 0 0 0 3px rgba(28, 22, 150, 0.12) !important;
 }
 
-.field-type {
-  margin-bottom: 18px !important;
-}
-
-.field-type__label,
 .field-label {
-  text-align: right !important;
-  font-size: 12px !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
-  color: var(--gray-text) !important;
+  color: var(--admin-text) !important;
   margin-bottom: 6px !important;
   display: block !important;
-  line-height: 1.3 !important;
+  text-align: right !important;
 }
 
 .field-description {
   font-size: 11.5px !important;
-  color: var(--gray-muted) !important;
+  color: var(--admin-muted) !important;
   margin-top: 4px !important;
-  line-height: 1.4 !important;
-}
-
-/* Checkboxes & Radios */
-input[type='checkbox'] {
-  border-radius: 4px !important;
-  border: none !important;
-  width: 16px !important;
-  height: 16px !important;
-  cursor: pointer !important;
-  accent-color: var(--gray-primary) !important;
-  vertical-align: middle !important;
-  margin: 0 !important;
-}
-
-input[type='radio'] {
-  border-radius: 50% !important;
-  border: none !important;
-  width: 16px !important;
-  height: 16px !important;
-  cursor: pointer !important;
-  accent-color: var(--gray-primary) !important;
-  vertical-align: middle !important;
-  margin: 0 !important;
+  text-align: right !important;
 }
 
 /* --------------------------------------------------------------------------
-   9. BORDERLESS SQUIRCLE BUTTONS (Charcoal & Gray)
+   9. BUTTONS
    -------------------------------------------------------------------------- */
 .btn {
   font-size: 13px !important;
   font-weight: 600 !important;
   height: 38px !important;
   padding: 0 16px !important;
+  border-radius: 10px !important;
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
   cursor: pointer !important;
-  border-radius: 10px !important;
-  border: none !important;
-  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1) !important;
-  text-decoration: none !important;
-  vertical-align: middle !important;
-  box-sizing: border-box !important;
-  line-height: 1 !important;
+  border: 1px solid transparent !important;
+  transition: all 0.15s ease !important;
 }
 
-.btn:active {
-  transform: scale(0.98) !important;
-}
-
-/* Primary Button (Solid Charcoal) */
 .btn--style-primary {
-  background-color: var(--gray-primary) !important;
-  color: #ffffff !important;
-}
-
-[data-theme='dark'] .btn--style-primary {
-  background-color: #f4f4f5 !important;
-  color: #18181b !important;
+  background-color: var(--admin-primary) !important;
+  color: var(--admin-primary-fg) !important;
 }
 
 .btn--style-primary:hover {
-  background-color: var(--gray-primary-hover) !important;
+  background-color: var(--admin-primary-hover) !important;
 }
 
-.btn--style-primary:active {
-  background-color: var(--gray-primary-active) !important;
-}
-
-/* Secondary Button (Soft Neutral Gray) */
 .btn--style-secondary {
-  background-color: var(--gray-surface) !important;
-  color: var(--gray-text) !important;
+  background-color: var(--admin-surface) !important;
+  color: var(--admin-text) !important;
+  border-color: var(--admin-border) !important;
 }
 
 .btn--style-secondary:hover {
-  background-color: var(--gray-surface-hover) !important;
-}
-
-/* Subtle / Ghost Button */
-.btn--style-subtle {
-  background-color: transparent !important;
-  color: var(--gray-muted) !important;
-}
-
-.btn--style-subtle:hover {
-  background-color: var(--gray-surface) !important;
-  color: var(--gray-text) !important;
-}
-
-/* Compact Table Buttons & Pagination */
-.btn--size-small,
-.table .btn,
-.pagination .btn,
-.btn--icon-only {
-  height: 30px !important;
-  min-height: 30px !important;
-  padding: 0 10px !important;
-  font-size: 11.5px !important;
-  border-radius: 8px !important;
-  border: none !important;
-  gap: 4px !important;
-}
-
-.btn--icon-only {
-  width: 30px !important;
-  padding: 0 !important;
+  background-color: var(--admin-surface-hover) !important;
 }
 
 /* --------------------------------------------------------------------------
-   10. BORDERLESS STATUS BADGES (Soft Gray & Muted Tones)
+   10. STATUS BADGES & PILLS
    -------------------------------------------------------------------------- */
 .pill,
 .badge,
 .status {
   font-size: 11px !important;
-  font-weight: 600 !important;
-  height: 22px !important;
-  padding: 0 8px !important;
+  font-weight: 700 !important;
+  padding: 3px 8px !important;
   border-radius: 6px !important;
-  border: none !important;
   display: inline-flex !important;
   align-items: center !important;
   gap: 4px !important;
-  vertical-align: middle !important;
-  line-height: 1 !important;
-  box-sizing: border-box !important;
+  border: 1px solid transparent !important;
 }
 
-/* Success / Active */
 .badge--success,
 .status--active,
 .status--completed,
-.status--delivered,
 .pill--success {
-  background-color: #e2f0e5 !important;
-  color: #276738 !important;
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+  border-color: #a7f3d0 !important;
 }
 
-/* Danger / Cancelled */
 .badge--error,
 .status--cancelled,
-.status--inactive,
-.status--rejected,
 .pill--error {
-  background-color: #fae5e5 !important;
-  color: #9c2828 !important;
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border-color: #fecaca !important;
 }
 
-/* Warning / Pending */
 .badge--warning,
 .status--pending,
-.status--waiting,
 .pill--warning {
-  background-color: #f8ecd2 !important;
-  color: #855b14 !important;
+  background-color: #fffbeb !important;
+  color: #92400e !important;
+  border-color: #fde68a !important;
 }
 
-/* Info / Processing (Neutral Gray) */
 .badge--info,
 .status--processing,
-.status--in_progress,
 .pill--info {
-  background-color: var(--gray-surface) !important;
-  color: var(--gray-text) !important;
-}
-
-/* Dark mode badges */
-[data-theme='dark'] .badge--success,
-[data-theme='dark'] .status--active {
-  background-color: rgba(39, 103, 56, 0.3) !important;
-  color: #6ee7b7 !important;
-}
-
-[data-theme='dark'] .badge--error,
-[data-theme='dark'] .status--cancelled {
-  background-color: rgba(156, 40, 40, 0.3) !important;
-  color: #fca5a5 !important;
-}
-
-[data-theme='dark'] .badge--warning,
-[data-theme='dark'] .status--pending {
-  background-color: rgba(133, 91, 20, 0.3) !important;
-  color: #fcd34d !important;
-}
-
-[data-theme='dark'] .badge--info,
-[data-theme='dark'] .status--processing {
-  background-color: #27272a !important;
-  color: #e4e4e7 !important;
-}
-
-/* --------------------------------------------------------------------------
-   11. RESPONSIVENESS (Mobile & Tablet)
-   -------------------------------------------------------------------------- */
-@media (max-width: 1023px) {
-  .app-header {
-    padding: 0 16px !important;
-  }
-
-  .doc-header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 12px !important;
-    padding: 14px 16px !important;
-  }
-
-  .doc-header__controls {
-    width: 100% !important;
-    flex-wrap: wrap !important;
-  }
-
-  .doc-header__controls .btn {
-    flex: 1 1 auto !important;
-  }
-
-  .collection-edit__main-wrapper {
-    flex-direction: column !important;
-  }
-
-  .collection-edit__sidebar {
-    width: 100% !important;
-    border: none !important;
-    margin-top: 20px !important;
-    padding-top: 16px !important;
-  }
-
-  .collection-list__controls {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 10px !important;
-  }
-
-  .search-filter {
-    width: 100% !important;
-  }
-
-  .search-filter__input {
-    width: 100% !important;
-  }
-}
-
-@media (max-width: 639px) {
-  .dashboard {
-    padding: 16px !important;
-  }
-
-  .app-header {
-    height: 50px !important;
-    padding: 0 14px !important;
-  }
-
-  .btn {
-    height: 36px !important;
-    padding: 0 12px !important;
-    font-size: 12px !important;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   12. BORDERLESS LOGIN & TEMPLATE
-   -------------------------------------------------------------------------- */
-.template-minimal {
-  position: relative;
-  background-color: var(--gray-bg);
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-
-.template-minimal__wrap {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 400px;
-  border: none !important;
-  background-color: var(--gray-card) !important;
-  border-radius: 16px !important;
-  padding: 36px 32px;
-}
-
-.login__brand {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 24px;
-}
-
-.login__brand .graphic-logo {
-  max-height: 38px;
-  width: auto;
-}
-
-/* --------------------------------------------------------------------------
-   13. SMOOTH ENTRANCE ANIMATION
-   -------------------------------------------------------------------------- */
-@keyframes fadeInSlideUp {
-  0% {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.dashboard,
-.collection-list,
-.table-wrap,
-.doc-header,
-.template-minimal__wrap {
-  animation: fadeInSlideUp 0.18s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  background-color: #eff6ff !important;
+  color: #1e40af !important;
+  border-color: #bfdbfe !important;
 }

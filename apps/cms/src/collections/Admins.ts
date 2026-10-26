@@ -9,7 +9,7 @@ export const Admins: CollectionConfig = {
   admin: {
     useAsTitle: 'email',
     defaultColumns: ['email', 'name', 'role', 'isActive', 'updatedAt'],
-    group: 'تنظیمات و دسترسی‌ها',
+    group: 'مدیریت و امنیت',
   },
   auth: true,
   access: {

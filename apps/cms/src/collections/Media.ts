@@ -7,7 +7,7 @@ export const Media: CollectionConfig = {
     plural: 'رسانه‌ها و تصاویر',
   },
   admin: {
-    group: 'رسانه و فایل‌ها',
+    group: 'رسانه و محتوا',
     description: 'مدیریت تصاویر کالاها، لوگوها و فایل‌های سیستم',
   },
   access: {

@@ -52,7 +52,7 @@ export default buildConfig({
     Orders,
     Plans,
     Users,
-    // سایر
+    // رسانه و مدیریت
     Media,
     Admins,
   ],

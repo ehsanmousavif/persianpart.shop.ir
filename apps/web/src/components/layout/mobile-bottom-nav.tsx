@@ -65,7 +65,7 @@ export function MobileBottomNav() {
           linkComponent={Link}
           layout="joined"
           itemStyle="pill"
-          hoverEffect="glide"
+          hoverEffect="fill"
           indicator="pill"
           collapse="never"
           bounce={0.7}

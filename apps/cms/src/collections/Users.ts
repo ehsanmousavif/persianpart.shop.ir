@@ -9,7 +9,7 @@ export const Users: CollectionConfig = {
   admin: {
     useAsTitle: 'fullName',
     defaultColumns: ['fullName', 'phone', 'customerType', 'status', 'companyName', 'createdAt'],
-    group: 'مشتریان',
+    group: 'فروش و مشتریان',
     description: 'فهرست مشتریان و خریداران تجاری.',
   },
   access: {

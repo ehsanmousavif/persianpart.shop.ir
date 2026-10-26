@@ -18,6 +18,8 @@ import {
   ShieldCheckIcon,
   LockIcon,
 } from "../../components/ui/icons";
+import { Smartphone2Icon } from "@solar-icons/react/outline/smartphone-2";
+
 import { toPersianDigits } from "../../lib/utils/currency";
 
 export function LoginCard() {
@@ -128,9 +130,7 @@ export function LoginCard() {
     } catch (err: unknown) {
       setOtpStatus("error");
       const msg =
-        err instanceof Error
-          ? err.message
-          : "کد وارد شده اشتباه است.";
+        err instanceof Error ? err.message : "کد وارد شده اشتباه است.";
 
       if (msg.includes("بیش از حد مجاز") || msg.includes("باطل شد")) {
         setErrorMessage(msg);
@@ -161,9 +161,9 @@ export function LoginCard() {
       transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
       className="w-full"
     >
-      <div className="w-full rounded-3xl bg-background p-6 sm:p-8 ">
+      <div className="w-full rounded-3xl bg-background p-6 sm:p-8 py-20">
         {/* Brand Header */}
-        <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-8 flex flex-col items-center text-center">
           <div className="mb-4 flex size-14 items-center justify-center rounded-2xl border border-primary/20 bg-primary/10 p-2.5">
             <img
               src="/assets/images/persian-part-logo.png"
@@ -171,14 +171,9 @@ export function LoginCard() {
               className="size-10 object-contain"
             />
           </div>
-
           <h1 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
             ورود به پرشین‌پارت
           </h1>
-
-          <p className="mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
-            سامانه هوشمند استعلام قیمت و سفارش‌گذاری عمده کاشی و سرامیک
-          </p>
         </div>
 
         {/* Inline Error Message */}
@@ -192,7 +187,7 @@ export function LoginCard() {
               transition={{ duration: 0.2, ease: "easeOut" }}
               className="mb-4 overflow-hidden"
             >
-              <div className="flex items-start gap-2.5 rounded-2xl border border-danger/20 bg-danger/10 p-3.5 text-xs font-semibold text-danger">
+              <div className="flex items-start gap-2.5 rounded-2xl border border-danger/20 bg-danger/10 py-3.5 px-2 text-xs font-semibold text-danger">
                 <AlertCircleIcon
                   size={18}
                   className="mt-0.5 shrink-0 text-danger"
@@ -218,17 +213,22 @@ export function LoginCard() {
               <div>
                 <label
                   htmlFor="phone-input"
-                  className="mb-2 block text-start text-xs font-bold text-foreground/80"
+                  className="mb-2 block text-start text-xs font-light text-foreground/80"
                 >
                   شماره تلفن همراه
                 </label>
 
                 <InputGroup
+                  dir="ltr"
                   fullWidth
-                  className="h-12 rounded-2xl text-s bg-muted/10 transition-all shadow-none"
+                  className="h-15 relative rounded-2xl text-s bg-foreground/5 transition-all shadow-none"
                 >
                   <InputGroup.Prefix className="pointer-events-none flex items-center justify-center ps-3.5 pe-1 text-muted">
-                    <PhoneIcon size={18} />
+                    <Smartphone2Icon
+                      className="**:stroke-1"
+                      size={24}
+                      // className="absolute left-0 bottom-4"
+                    />
                   </InputGroup.Prefix>
 
                   <InputGroup.Input
@@ -250,24 +250,18 @@ export function LoginCard() {
 
                       setPhone(cleaned);
                     }}
-                    placeholder="۰۹۱۲۳۴۵۶۷۸۹"
-                    dir="ltr"
+                    // placeholder="۰۹۱۲۳۴۵۶۷۸۹"
+                    dir="rtl"
                     autoFocus
                     disabled={isLoading}
-                    className="h-12 flex-1 shadow-none! px-4 text-start text-sm font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm border-0 ring-0 "
+                    className="h-14 flex-1 shadow-none! px-4 text-start text-sm font-bold tracking-widest text-foreground outline-hidden placeholder:text-sm placeholder:font-base border-0 ring-0"
                   />
                 </InputGroup>
-
-                <p className="mt-2 text-start text-xs  leading-relaxed text-muted">
-                  کد یکبار مصرف تأیید ورود از طریق پیامک برای این شماره ارسال
-                  خواهد شد.
-                </p>
               </div>
 
               <Button
                 type="submit"
-                isDisabled={isLoading || !/^09\d{9}$/.test(phone)}
-                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground  ransition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />
@@ -375,8 +369,7 @@ export function LoginCard() {
               <Button
                 type="button"
                 onPress={() => handleVerifyOtp()}
-                isDisabled={isLoading || otpCode.length !== 4}
-                className="flex h-12 shadow-xs shadow-white w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95 disabled:opacity-40"
+                className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary text-sm font-bold text-primary-foreground transition-all hover:bg-primary/90 active:scale-95"
               >
                 {isLoading ? (
                   <RefreshCwIcon size={18} className="animate-spin" />
@@ -392,7 +385,7 @@ export function LoginCard() {
         </AnimatePresence>
 
         {/* Footer B2B Notice */}
-        <div className="mt-7 border-t border-border/40 pt-4 text-center">
+        <div className="mt-7 pt-4 text-center">
           <div className="mb-1 flex items-center justify-center gap-1.5 text-xs text-muted">
             <ShieldCheckIcon size={14} className="shrink-0 text-primary/70" />
             <span>

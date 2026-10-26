@@ -336,6 +336,37 @@ export const orderStore = {
     const updated = [newOrder, ...currentOrders]
     broadcast(updated)
     cartStore.clearCart()
+
+    // Persist order to backend API and Payload CMS to trigger audit logs
+    try {
+      api.order
+        .submit({
+          items: payload.items.map((i) => ({
+            productId: i.productId,
+            requestedArea: i.deliverableArea || i.requestedArea || 1,
+            requestedSqm: i.deliverableArea || i.requestedArea || 1,
+          })),
+          notes: payload.notes || 'ثبت سفارش محصولات آنلاین',
+        })
+        .then((res: any) => {
+          if (res && res.id) {
+            const serverId = String(res.id)
+            const serverOrderNumber = res.orderNumber || `ptp ${serverId}`
+            const synced = currentOrders.map((o) =>
+              o.id === newOrder.id
+                ? { ...o, id: serverId, orderNumber: serverOrderNumber }
+                : o
+            )
+            broadcast(synced)
+          }
+        })
+        .catch((err) => {
+          console.warn('[ORDER_SYNC_BACKEND]: Fallback to local storage:', err)
+        })
+    } catch (err) {
+      console.warn('[ORDER_SYNC_BACKEND]: Dispatch error:', err)
+    }
+
     return newOrder
   },
 

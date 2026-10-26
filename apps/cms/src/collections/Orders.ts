@@ -14,7 +14,7 @@ export const Orders: CollectionConfig = {
   admin: {
     useAsTitle: 'orderNumber',
     defaultColumns: ['orderNumber', 'user', 'status', 'finalTotal', 'createdAt'],
-    group: 'مشتریان',
+    group: 'فروش و مشتریان',
     description: 'فهرست و وضعیت سفارشات.',
   },
   access: {
