@@ -222,7 +222,7 @@ function ProductNewConfigurationPage() {
 
     selectedProducts.map((product) => {
       const maxInv = product.inventorySqm > 0 ? product.inventorySqm : 500;
-      const area = quantities[product.id] ?? 0;
+      const area = Math.max(1, quantities[product.id] ?? 1);
       const calc = calculateCartonRequirement(
         area,
         product.sqmPerCarton,
@@ -240,7 +240,7 @@ function ProductNewConfigurationPage() {
       totalPrice,
       hasValidQuantities:
         selectedProducts.length > 0 &&
-        selectedProducts.every((p) => (quantities[p.id] ?? 0) > 0),
+        selectedProducts.every((p) => (quantities[p.id] ?? 0) >= 1),
     };
   }, [selectedProducts, quantities]);
 
@@ -287,9 +287,11 @@ function ProductNewConfigurationPage() {
         {selectedProducts.map((product) => {
           const maxInventory =
             product.inventorySqm > 0 ? product.inventorySqm : 500;
-          const area =
+          const area = Math.max(
+            1,
             quantities[product.id] ??
-            Math.min(maxInventory, Math.max(product.sqmPerCarton || 1, 10));
+              Math.min(maxInventory, Math.max(product.sqmPerCarton || 1, 1)),
+          );
           const calc = calculateCartonRequirement(
             area,
             product.sqmPerCarton,
@@ -378,14 +380,14 @@ function ProductNewConfigurationPage() {
                   <div className="w-full">
                     <I18nProvider locale="fa-IR">
                       <Slider
-                        minValue={0}
+                        minValue={1}
                         maxValue={maxInventory}
                         step={1}
-                        value={area}
+                        value={Math.max(1, area)}
                         onChange={(val) => {
                           const num =
-                            typeof val === "number" ? val : (val[0] ?? 0);
-                          handleAreaChange(product.id, num, maxInventory);
+                            typeof val === "number" ? val : (val[0] ?? 1);
+                          handleAreaChange(product.id, Math.max(1, num), maxInventory);
                         }}
                         aria-label={`اسلایدر متراژ ${product.name}`}
                         className="w-full"
